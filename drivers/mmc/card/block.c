@@ -444,6 +444,13 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
 #endif
 		}
 
+		// don't redo I/O when nomedium error
+#if defined(CONFIG_MACH_LGE)
+		if (brq.cmd.error == -ENOMEDIUM) {
+			goto cmd_err;
+		}
+#endif
+
 		if (brq.cmd.error || brq.stop.error || brq.data.error) {
 			if (rq_data_dir(req) == READ) {
 				/*
@@ -498,8 +505,13 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
 	mmc_release_host(card->host);
 
 	spin_lock_irq(&md->lock);
-	while (ret)
+	while (ret) {
+		// supressed the error message
+#if defined(CONFIG_MACH_LGE)
+		req->cmd_flags |= REQ_QUIET;
+#endif
 		ret = __blk_end_request(req, -EIO, blk_rq_cur_bytes(req));
+	}
 	spin_unlock_irq(&md->lock);
 
 	return 0;

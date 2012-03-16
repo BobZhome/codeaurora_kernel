@@ -1379,8 +1379,13 @@ void wireless_send_event(struct net_device *	dev,
 	 * and no data is included in the event, this codifies that
 	 * practice.
 	 */
+#if !defined (CONFIG_MACH_LGE)
 	if (WARN_ON(cmd == SIOCGIWSCAN && extra))
 		extra = NULL;
+#else
+	if ((cmd == SIOCGIWSCAN) && extra)
+		extra = NULL;
+#endif
 
 	/* Get the description of the Event */
 	if (cmd <= SIOCIWLAST) {

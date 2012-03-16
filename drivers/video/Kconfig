@@ -2381,6 +2381,28 @@ config FB_MSM_EBI2_TMD_QVGA_EPSON_QCIF
 	---help---
 	  Support for EBI2 TMD QVGA (240x320) and Epson QCIF (176x220) panel
 
+# LGE_CHANGE_S [minjong.gong] 2010-03-24, Google Mass CDMA Hitachi MDDI I/F LCD 
+config FB_MSM_MDDI_HITACHI_HVGA
+	bool "MDDI HITACHI HVGA Panel"
+	select FB_MSM_MDDI
+	---help---
+	  Support for MDDI HITACHI HVGA(320x480) Panel.
+# LGE_CHANGE_E [minjong.gong] 2010-03-24, Google Mass CDMA Hitachi MDDI I/F LCD 
+
+# LGE_CHANGE [dojip.kim@lge.com] 2010-04-23, Thunder Sprint Sharp(NOVATEK) MDDI I/F LCD 
+config FB_MSM_MDDI_NOVATEK_HVGA
+	bool "MDDI Sharp(NOVATEK) HVGA Panel"
+	select FB_MSM_MDDI
+	---help---
+	  Support for MDDI NOVATEK HVGA(320x480) Panel.
+
+# LGE_CHANGE [james.jang@lge.com] 2010-08-28, Thunder Sprint NOVATEK + Hitachi MDDI I/F LCD 
+config FB_MSM_MDDI_NOVATEK_HITACHI_HVGA
+	bool "MDDI NOVATEK + Hitachi HVGA Panel"
+	select FB_MSM_MDDI
+	---help---
+	  Support for MDDI NOVATEK + HITACHI HVGA(320x480) Panel.
+
 config FB_MSM_PANEL_NONE
 	bool "NONE"
 	---help---
@@ -2496,6 +2518,22 @@ config FB_MSM_EXTMDDI_NONE
 	bool "NONE"
 	---help---
 	  This will disable External MDDI functionality.
+endchoice
+
+choice
+	prompt "Default framebuffer color depth"
+	depends on FB_MSM_MDP40 || FB_MSM_MDP31
+	default FB_MSM_DEFAULT_DEPTH_RGBA8888
+
+config FB_MSM_DEFAULT_DEPTH_RGB565
+	bool "16 bits per pixel (RGB565)"
+
+config FB_MSM_DEFAULT_DEPTH_ARGB8888
+	bool "32 bits per pixel (ARGB8888)"
+
+config FB_MSM_DEFAULT_DEPTH_RGBA8888
+	bool "32 bits per pixel (RGBA8888)"
+
 endchoice
 
 endif

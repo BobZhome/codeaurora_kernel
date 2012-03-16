@@ -24,14 +24,23 @@
 
 #include <mach/pmic.h>
 
-#define MAX_KEYPAD_BL_LEVEL	16
+#if defined (CONFIG_LGE_UNIFIED_LED)
+#include <mach/board_lge.h>
+
+struct msm_pmic_leds_pdata *leds_pdata = 0;
+#endif
+#define MAX_KEYPAD_BL_LEVEL	255 /* 1: 10 mA */
 
 static void msm_keypad_bl_led_set(struct led_classdev *led_cdev,
 	enum led_brightness value)
 {
 	int ret;
 
+#if defined (CONFIG_LGE_UNIFIED_LED)
+	ret = leds_pdata->msm_keypad_led_set(value / MAX_KEYPAD_BL_LEVEL);
+#else	/* origin */
 	ret = pmic_set_led_intensity(LED_KEYPAD, value / MAX_KEYPAD_BL_LEVEL);
+#endif
 	if (ret)
 		dev_err(led_cdev->dev, "can't set keypad backlight\n");
 }
@@ -45,6 +54,9 @@ static struct led_classdev msm_kp_bl_led = {
 static int msm_pmic_led_probe(struct platform_device *pdev)
 {
 	int rc;
+#if defined (CONFIG_LGE_UNIFIED_LED)
+	leds_pdata = pdev->dev.platform_data;
+#endif
 
 	rc = led_classdev_register(&pdev->dev, &msm_kp_bl_led);
 	if (rc) {
@@ -52,12 +64,18 @@ static int msm_pmic_led_probe(struct platform_device *pdev)
 		return rc;
 	}
 	msm_keypad_bl_led_set(&msm_kp_bl_led, LED_OFF);
+#if defined (CONFIG_LGE_UNIFIED_LED)
+	leds_pdata->register_custom_leds(pdev);
+#endif
 	return rc;
 }
 
 static int __devexit msm_pmic_led_remove(struct platform_device *pdev)
 {
 	led_classdev_unregister(&msm_kp_bl_led);
+#if defined (CONFIG_LGE_UNIFIED_LED)
+	leds_pdata->unregister_custom_leds();
+#endif
 
 	return 0;
 }
@@ -68,12 +86,18 @@ static int msm_pmic_led_suspend(struct platform_device *dev,
 {
 	led_classdev_suspend(&msm_kp_bl_led);
 
+#if defined (CONFIG_LGE_UNIFIED_LED)
+	leds_pdata->suspend_custom_leds();
+#endif
 	return 0;
 }
 
 static int msm_pmic_led_resume(struct platform_device *dev)
 {
 	led_classdev_resume(&msm_kp_bl_led);
+#if defined (CONFIG_LGE_UNIFIED_LED)
+	leds_pdata->resume_custom_leds();
+#endif
 
 	return 0;
 }

@@ -582,6 +582,13 @@ config TOUCHSCREEN_PCAP
 	  To compile this driver as a module, choose M here: the
 	  module will be called pcap_ts.
 
+config TOUCHSCREEN_MCS6000
+	default n
+	tristate "MCS6000 touchscreens"
+	depends on I2C
+	help
+	  Say Y here if you have a MCS6000 touchscreen.
+	  module will be called mcs6000.
 config TOUCHSCREEN_CY8C_TS
 	tristate "Cypress TMA300-TMG200 based touchscreens"
 	depends on I2C
