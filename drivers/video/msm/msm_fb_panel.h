@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2008-2010, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -135,7 +135,6 @@ struct mipi_panel_info {
 	char eof_bllp_power_stop;
 	char bllp_power_stop;
 	char traffic_mode;
-	char frame_rate;
 	/* command mode */
 	char interleave_max;
 	char insert_dcs_cmd;
@@ -145,7 +144,6 @@ struct mipi_panel_info {
 	char stream;	/* 0 or 1 */
 	char mdp_trigger;
 	char dma_trigger;
-	uint32 dsi_pclk_rate;
 };
 
 struct msm_panel_info {

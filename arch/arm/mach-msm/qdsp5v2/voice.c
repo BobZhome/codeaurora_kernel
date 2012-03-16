@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2010, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -117,10 +117,6 @@ static void voice_auddev_cb_function(u32 evt_id,
 				v->dev_state = DEV_READY;
 				MM_DBG("dev_state into ready\n");
 				wake_up(&v->dev_wait);
-			}
-			if (v->voc_state == VOICE_CHANGE) {
-				MM_DBG("voc_state is in VOICE_CHANGE\n");
-				v->voc_state = VOICE_ACQUIRE;
 			}
 		}
 		break;

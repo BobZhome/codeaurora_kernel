@@ -1,7 +1,7 @@
 /* include/linux/msm_mdp.h
  *
  * Copyright (C) 2007 Google Incorporated
- * Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2010, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -104,7 +104,6 @@ enum {
 #define MDP_OV_PIPE_SHARE		0x00800000
 #define MDP_DEINTERLACE_ODD		0x00400000
 #define MDP_OV_PLAY_NOWAIT		0x00200000
-#define MDP_SOURCE_ROTATED_90		0x00100000
 
 #define MDP_TRANSP_NOP 0xffffffff
 #define MDP_ALPHA_NOP 0xff
@@ -216,11 +215,13 @@ struct msmfb_overlay_3d {
 	uint32_t height;
 };
 
-
 struct msmfb_overlay_blt {
 	uint32_t enable;
 	struct msmfb_data data;
 };
+
+
+
 
 struct mdp_histogram {
 	uint32_t frame_cnt;

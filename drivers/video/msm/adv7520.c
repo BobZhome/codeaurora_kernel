@@ -58,7 +58,6 @@ static struct work_struct hpd_timer_work;
 static struct work_struct hdcp_handle_work;
 static int hdcp_activating;
 static DEFINE_MUTEX(hdcp_state_mutex);
-static int has_hdcp_hw_support = true;
 #endif
 
 static struct timer_list hpd_timer;
@@ -306,8 +305,7 @@ static void adv7520_chip_off(void)
 {
 	if (chip_power_on) {
 #ifdef CONFIG_FB_MSM_HDMI_ADV7520_PANEL_HDCP_SUPPORT
-		if (has_hdcp_hw_support)
-			adv7520_close_hdcp_link();
+		adv7520_close_hdcp_link();
 #endif
 
 		DEV_INFO("%s: turn off chip power\n", __func__);
@@ -357,10 +355,8 @@ static int adv7520_power_on(struct platform_device *pdev)
 		DEV_INFO("power_on: cable detected\n");
 		monitor_sense = adv7520_read_reg(hclient, 0xC6);
 #ifdef CONFIG_FB_MSM_HDMI_ADV7520_PANEL_HDCP_SUPPORT
-		if (has_hdcp_hw_support) {
-			if (!hdcp_activating)
-				adv7520_start_hdcp();
-		}
+		if (!hdcp_activating)
+			adv7520_start_hdcp();
 #endif
 	} else
 		DEV_INFO("power_on: cable NOT detected\n");
@@ -438,10 +434,7 @@ static void adv7520_chip_init(void)
 	/* Set Interrupt Mask register for HPD/HDCP */
 	reg[0x94] = 0xC0;
 #ifdef CONFIG_FB_MSM_HDMI_ADV7520_PANEL_HDCP_SUPPORT
-	if (has_hdcp_hw_support)
-		reg[0x95] = 0xC0;
-	else
-		reg[0x95] = 0x00;
+	reg[0x95] = 0xC0;
 #else
 	reg[0x95] = 0x00;
 #endif
@@ -605,8 +598,9 @@ static void adv7520_isr_w(struct work_struct *work)
 	u8 reg0x96;
 #ifdef CONFIG_FB_MSM_HDMI_ADV7520_PANEL_HDCP_SUPPORT
 	static u8 last_reg0x97;
-	u8 reg0x97 = 0;
+	u8 reg0x97;
 #endif
+
 	if (!external_common_state->hpd_feature_on) {
 		DEV_DBG("adv7520_irq: skipping, hpd off\n");
 		return;
@@ -615,11 +609,9 @@ static void adv7520_isr_w(struct work_struct *work)
 	adv7520_comm_power(1, 1);
 	reg0x96 = adv7520_read_reg(hclient, 0x96);
 #ifdef CONFIG_FB_MSM_HDMI_ADV7520_PANEL_HDCP_SUPPORT
-	if (has_hdcp_hw_support) {
-		reg0x97 = adv7520_read_reg(hclient, 0x97);
-		/* Clearing the Interrupts */
-		adv7520_write_reg(hclient, 0x97, reg0x97);
-	}
+	reg0x97 = adv7520_read_reg(hclient, 0x97);
+	/* Clearing the Interrupts */
+	adv7520_write_reg(hclient, 0x97, reg0x97);
 #endif
 	/* Clearing the Interrupts */
 	adv7520_write_reg(hclient, 0x96, reg0x96);
@@ -647,48 +639,42 @@ static void adv7520_isr_w(struct work_struct *work)
 		mod_timer(&hpd_timer, jiffies + HZ/2);
 	}
 #ifdef CONFIG_FB_MSM_HDMI_ADV7520_PANEL_HDCP_SUPPORT
-	if (has_hdcp_hw_support) {
-		if (hdcp_activating) {
-			/* HDCP controller error Interrupt */
-			if (reg0x97 & 0x80) {
-				DEV_ERR("adv7520_irq: HDCP_ERROR\n");
-				state_count = 0;
-				adv7520_close_hdcp_link();
-			/* BKSV Ready interrupts */
-			} else if (reg0x97 & 0x40) {
-				DEV_INFO("adv7520_irq: BKSV keys ready, Begin"
-					" HDCP encryption\n");
-				state_count = 0;
-				schedule_work(&hdcp_handle_work);
-			} else if (++state_count > 2 && (monitor_sense & 0x4)) {
-				DEV_INFO("adv7520_irq: Still waiting for BKSV,"
-				"restart HDCP\n");
-				hdcp_activating = FALSE;
-				state_count = 0;
-				adv7520_chip_off();
-				adv7520_start_hdcp();
-			}
-			reg0xc8 = adv7520_read_reg(hclient, 0xc8);
-			DEV_INFO("adv7520_irq: DDC controller reg[0xC8]=0x%02x,"
-				"state_count=%d, monitor_sense=%x\n",
-				reg0xc8, state_count, monitor_sense);
-		} else if (!external_common_state->hdcp_active
-			&& (monitor_sense & 0x4)) {
-			DEV_INFO("adv7520_irq: start HDCP with"
-				" monitor sense\n");
+	if (hdcp_activating) {
+		/* HDCP controller error Interrupt */
+		if (reg0x97 & 0x80) {
+			DEV_ERR("adv7520_irq: HDCP_ERROR\n");
 			state_count = 0;
+			adv7520_close_hdcp_link();
+		/* BKSV Ready interrupts */
+		} else if (reg0x97 & 0x40) {
+			DEV_INFO("adv7520_irq: BKSV keys ready, Begin"
+				" HDCP encryption\n");
+			state_count = 0;
+			schedule_work(&hdcp_handle_work);
+		} else if (++state_count > 2 && (monitor_sense & 0x4)) {
+			DEV_INFO("adv7520_irq: Still waiting for BKSV, restart"
+				" HDCP\n");
+			hdcp_activating = FALSE;
+			state_count = 0;
+			adv7520_chip_off();
 			adv7520_start_hdcp();
-		} else
-			state_count = 0;
-		if (last_reg0x97 != reg0x97 || last_reg0x96 != reg0x96)
-			DEV_DBG("adv7520_irq: reg[0x96]=%02x "
-				"reg[0x97]=%02x: HDCP: %d\n", reg0x96, reg0x97,
-				external_common_state->hdcp_active);
-		last_reg0x97 = reg0x97;
-	} else {
-		if (last_reg0x96 != reg0x96)
-			DEV_DBG("adv7520_irq: reg[0x96]=%02x\n", reg0x96);
-	}
+		}
+		reg0xc8 = adv7520_read_reg(hclient, 0xc8);
+		DEV_INFO("adv7520_irq: DDC controller reg[0xC8]=0x%02x, "
+			"state_count=%d, monitor_sense=%x\n",
+			reg0xc8, state_count, monitor_sense);
+	} else if (!external_common_state->hdcp_active
+		&& (monitor_sense & 0x4)) {
+		DEV_INFO("adv7520_irq: start HDCP with monitor sense\n");
+		state_count = 0;
+		adv7520_start_hdcp();
+	} else
+		state_count = 0;
+	if (last_reg0x97 != reg0x97 || last_reg0x96 != reg0x96)
+		DEV_DBG("adv7520_irq: reg[0x96]=%02x "
+			"reg[0x97]=%02x: HDCP: %d\n", reg0x96, reg0x97,
+			external_common_state->hdcp_active);
+	last_reg0x97 = reg0x97;
 #else
 	if (last_reg0x96 != reg0x96)
 		DEV_DBG("adv7520_irq: reg[0x96]=%02x\n", reg0x96);
@@ -742,6 +728,7 @@ static struct platform_device hdmi_device = {
 static void adv7520_ensure_init(void)
 {
 	static boolean init_done;
+
 	if (!init_done) {
 		int rc = dd->pd->init_irq();
 		if (rc) {
@@ -839,13 +826,7 @@ static int __devinit
 	INIT_WORK(&dd->isr_work, adv7520_isr_w);
 	INIT_WORK(&hpd_timer_work, adv7520_hpd_timer_w);
 #ifdef CONFIG_FB_MSM_HDMI_ADV7520_PANEL_HDCP_SUPPORT
-	if (dd->pd->check_hdcp_hw_support)
-		has_hdcp_hw_support = dd->pd->check_hdcp_hw_support();
-
-	if (has_hdcp_hw_support)
-		INIT_WORK(&hdcp_handle_work, adv7520_hdcp_enable);
-	else
-		DEV_INFO("%s: no hdcp hw support.\n", __func__);
+	INIT_WORK(&hdcp_handle_work, adv7520_hdcp_enable);
 #endif
 
 	init_timer(&hpd_timer);

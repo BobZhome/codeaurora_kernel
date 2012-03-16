@@ -79,7 +79,6 @@ struct kgsl_pwrctrl {
 	unsigned int io_fraction;
 	unsigned int io_count;
 	struct kgsl_yamato_context *suspended_ctxt;
-	bool pwrrail_first;
 };
 
 int kgsl_pwrctrl_clk(struct kgsl_device *device, unsigned int pwrflag);

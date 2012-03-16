@@ -172,6 +172,13 @@ struct msm_otg {
 	struct timer_list	id_timer;	/* drives id_status polling */
 	unsigned		b_max_power;	/* ACA: max power of accessory*/
 #endif
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_GADGET
+	/* LGE_CHANGE
+	 * Cable type about factory cable
+	 * 2011-01-23, hyunhui.park@lge.com
+	 */
+	atomic_t		lgeusb_cable_type;
+#endif
 };
 
 static inline int pclk_requires_voting(struct otg_transceiver *xceiv)
@@ -183,7 +190,17 @@ static inline int pclk_requires_voting(struct otg_transceiver *xceiv)
 
 	dev = container_of(xceiv, struct msm_otg, otg);
 
+#ifdef CONFIG_MACH_LGE
+	/* LGE_CHANGE
+	 * NOTE: It need to check that LGE 7x27 does
+	 * not require voting about pclk.
+	 * For avoiding WARN_ON(), we unconditionally returns 0.
+	 * 2011-01-17, hyunhui.park@lge.com
+	 */
+	return 0;
+#else
 	return !dev->pdata->core_clk;
+#endif
 }
 
 static inline int can_phy_power_collapse(struct msm_otg *dev)

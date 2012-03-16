@@ -38,6 +38,11 @@
 #include "msm_fb.h"
 #include "mddihost.h"
 
+#ifdef CONFIG_MACH_LGE
+#include <mach/board_lge.h>
+#endif
+
+
 static uint32 mdp_last_dma2_update_width;
 static uint32 mdp_last_dma2_update_height;
 static uint32 mdp_curr_dma2_update_width;
@@ -51,10 +56,15 @@ int mdp_vsync_usec_wait_line_too_short = 5;
 uint32 mdp_dma2_update_time_in_usec;
 uint32 mdp_total_vdopkts;
 
+#if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
+int g_mddi_lcd_probe = 0;
+#endif
+
 extern u32 msm_fb_debug_enabled;
 extern struct workqueue_struct *mdp_dma_wq;
 
 int vsync_start_y_adjust = 4;
+
 
 static void mdp_dma2_update_lcd(struct msm_fb_data_type *mfd)
 {
@@ -147,9 +157,19 @@ static void mdp_dma2_update_lcd(struct msm_fb_data_type *mfd)
 		}
 	}
 
+#ifdef CONFIG_LGE_HIDDEN_RESET_PATCH
+	if (on_hidden_reset) {
+		src = (uint8 *) lge_get_fb_copy_phys_addr();
+	} else {
+		src = (uint8 *) iBuf->buf;
+		/* starting input address */
+		src += iBuf->dma_x * outBpp + iBuf->dma_y * ystride;
+	}
+#else
 	src = (uint8 *) iBuf->buf;
 	/* starting input address */
 	src += iBuf->dma_x * outBpp + iBuf->dma_y * ystride;
+#endif
 
 	mdp_curr_dma2_update_width = iBuf->dma_w;
 	mdp_curr_dma2_update_height = iBuf->dma_h;
@@ -188,12 +208,29 @@ static void mdp_dma2_update_lcd(struct msm_fb_data_type *mfd)
 			 (iBuf->dma_y << 16) | iBuf->dma_x);
 		MDP_OUTP(MDP_CMD_DEBUG_ACCESS_BASE + 0x01a0, mddi_ld_param);
 		MDP_OUTP(MDP_CMD_DEBUG_ACCESS_BASE + 0x01a4,
-			 (mddi_pkt_desc << 16) | mddi_vdo_packet_reg);
+	/* Don't apply 6013 patch only when using Hitachi HVGA module. 2010-07-28. minjong.gong@lge.com */
+	#if defined (CONFIG_FB_MSM_MDDI_HITACHI_HVGA)
+			(MDDI_VDO_PACKET_DESC << 16) | mddi_vdo_packet_reg);
+	#else
+			(mddi_pkt_desc << 16) | mddi_vdo_packet_reg);
+	#endif
 #else
 		MDP_OUTP(MDP_BASE + 0x90010, (iBuf->dma_y << 16) | iBuf->dma_x);
 		MDP_OUTP(MDP_BASE + 0x00090, mddi_ld_param);
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-04-23, [LS670] fixed the pixel format */
+#if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HVGA)
 		MDP_OUTP(MDP_BASE + 0x00094,
-			 (mddi_pkt_desc << 16) | mddi_vdo_packet_reg);
+			 (0x5565 /*MDDI_VDO_PACKET_DESC*/ << 16) | mddi_vdo_packet_reg);
+#else /* original */
+		MDP_OUTP(MDP_BASE + 0x00094,
+	/* Don't apply 6013 patch only when using Hitachi HVGA module. 2010-07-28. minjong.gong@lge.com */
+	#if defined (CONFIG_FB_MSM_MDDI_HITACHI_HVGA)
+			(MDDI_VDO_PACKET_DESC << 16) | mddi_vdo_packet_reg);
+	#else
+			(mddi_pkt_desc << 16) | mddi_vdo_packet_reg);
+	#endif
+#endif
+
 #endif
 	} else {
 		/* setting EBI2 LCDC write window */
@@ -519,6 +556,7 @@ void mdp_dma_pan_update(struct fb_info *info)
 		/* waiting for this update to complete */
 		mfd->pan_waiting = TRUE;
 		wait_for_completion_killable(&mfd->pan_comp);
+
 	} else
 		mfd->dma_fnc(mfd);
 }

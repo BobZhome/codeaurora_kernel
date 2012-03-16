@@ -22,9 +22,8 @@ static void putc(int c)
 {
 #if defined(MSM_DEBUG_UART_PHYS)
 	unsigned base = MSM_DEBUG_UART_PHYS;
-	while (!(__raw_readl(base + 0x08) & 0x04))
-		;
-	__raw_writel(c, base + 0x0c);
+	while (!(readl(base + 0x08) & 0x04)) ;
+	writel(c, base + 0x0c);
 #endif
 }
 

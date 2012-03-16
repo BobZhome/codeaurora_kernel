@@ -61,7 +61,6 @@ int mmc_assume_removable;
 #else
 int mmc_assume_removable = 1;
 #endif
-EXPORT_SYMBOL(mmc_assume_removable);
 module_param_named(removable, mmc_assume_removable, bool, 0644);
 MODULE_PARM_DESC(
 	removable,
@@ -241,7 +240,7 @@ void mmc_wait_for_req(struct mmc_host *host, struct mmc_request *mrq)
 
 	mmc_start_request(host, mrq);
 
-	wait_for_completion_io(&complete);
+	wait_for_completion(&complete);
 }
 
 EXPORT_SYMBOL(mmc_wait_for_req);
@@ -1120,23 +1119,12 @@ void mmc_rescan(struct work_struct *work)
 	u32 ocr;
 	int err;
 	int extend_wakelock = 0;
-	unsigned long flags;
-
-	spin_lock_irqsave(&host->lock, flags);
-	if (host->rescan_disable) {
-		spin_unlock_irqrestore(&host->lock, flags);
-		return;
-	}
-	spin_unlock_irqrestore(&host->lock, flags);
 
 	mmc_bus_get(host);
 
-	/*
-	 * if there is a _removable_ card registered, check whether it is
-	 * still present
-	 */
-	if (host->bus_ops && host->bus_ops->detect && !host->bus_dead
-	    && !(host->caps & MMC_CAP_NONREMOVABLE)) {
+	/* if there is a card registered, check whether it is still present */
+	if ((host->bus_ops != NULL) && host->bus_ops->detect &&
+		!host->bus_dead) {
 		host->bus_ops->detect(host);
 		/* If the card was removed the bus will be marked
 		 * as dead - extend the wakelock so userspace
@@ -1410,6 +1398,12 @@ int mmc_resume_host(struct mmc_host *host)
 		}
 	}
 	mmc_bus_put(host);
+
+	/*
+	 * We add a slight delay here so that resume can progress
+	 * in parallel.
+	 */
+	mmc_detect_change(host, 1);
 
 	return err;
 }

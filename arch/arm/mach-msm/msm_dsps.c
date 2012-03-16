@@ -118,7 +118,6 @@ static void dsps_suspend(void)
 	pr_debug("%s.\n", __func__);
 
 	writel(1, drv->ppss_base + PPSS_PAUSE_REG);
-	dsb(); /* write needs to be finished before the function returns */
 }
 
 /**
@@ -129,7 +128,6 @@ static void dsps_resume(void)
 	pr_debug("%s.\n", __func__);
 
 	writel(0, drv->ppss_base + PPSS_PAUSE_REG);
-	dsb(); /* write needs to be finished before the function returns */
 }
 
 /**

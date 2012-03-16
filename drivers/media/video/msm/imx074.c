@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -906,7 +906,6 @@ static int32_t imx074_power_down(void)
 }
 static int imx074_probe_init_done(const struct msm_camera_sensor_info *data)
 {
-	gpio_set_value_cansleep(data->sensor_reset, 0);
 	gpio_direction_input(data->sensor_reset);
 	gpio_free(data->sensor_reset);
 	return 0;
@@ -950,6 +949,7 @@ static int imx074_probe_init_sensor(const struct msm_camera_sensor_info *data)
 	goto init_probe_done;
 init_probe_fail:
 	CDBG("imx074_probe_init_sensor fails\n");
+	gpio_set_value_cansleep(data->sensor_reset, 0);
 	imx074_probe_init_done(data);
 init_probe_done:
 	CDBG(" imx074_probe_init_sensor finishes\n");
@@ -1007,7 +1007,7 @@ int imx074_sensor_open_init(const struct msm_camera_sensor_info *data)
 	rc = imx074_probe_init_sensor(data);
 	if (rc < 0) {
 		CDBG("Calling imx074_sensor_open_init fail\n");
-		goto probe_fail;
+		goto init_fail;
 	}
 
 	rc = imx074_sensor_setting(REG_INIT, RES_PREVIEW);
@@ -1024,10 +1024,7 @@ int imx074_sensor_open_init(const struct msm_camera_sensor_info *data)
 		goto init_fail;
 	} else
 		goto init_done;
-probe_fail:
-	CDBG(" imx074_sensor_open_init probe fail\n");
-	kfree(imx074_ctrl);
-	return rc;
+
 init_fail:
 	CDBG(" imx074_sensor_open_init fail\n");
 	imx074_probe_init_done(data);
@@ -1070,6 +1067,7 @@ static int imx074_i2c_probe(struct i2c_client *client,
 	imx074_init_client(client);
 	imx074_client = client;
 
+	msleep(50);
 
 	CDBG("imx074_probe successed! rc = %d\n", rc);
 	return 0;
@@ -1243,6 +1241,7 @@ static int imx074_sensor_probe(const struct msm_camera_sensor_info *info,
 	s->s_config  = imx074_sensor_config;
 	s->s_mount_angle = 90;
 	imx074_probe_init_done(info);
+
 	return rc;
 
 probe_fail:

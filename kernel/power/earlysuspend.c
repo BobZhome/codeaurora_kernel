@@ -17,6 +17,7 @@
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/rtc.h>
+#include <linux/syscalls.h> /* sys_sync */
 #include <linux/wakelock.h>
 #include <linux/workqueue.h>
 
@@ -93,12 +94,21 @@ static void early_suspend(struct work_struct *work)
 	if (debug_mask & DEBUG_SUSPEND)
 		pr_info("early_suspend: call handlers\n");
 	list_for_each_entry(pos, &early_suspend_handlers, link) {
-		if (pos->suspend != NULL)
+		if (pos->suspend != NULL) {
 			pos->suspend(pos);
+#ifdef CONFIG_MACH_LGE
+			// LGE_CHANGE [dojip.kim@lge.com] 2010-09-06
+			printk(KERN_INFO"%s: early suspend funtion [%p]\n",__func__, 
+					pos->suspend);
+#endif
+		}
 	}
 	mutex_unlock(&early_suspend_lock);
 
-	suspend_sys_sync_queue();
+	if (debug_mask & DEBUG_SUSPEND)
+		pr_info("early_suspend: sync\n");
+
+	sys_sync();
 abort:
 	spin_lock_irqsave(&state_lock, irqflags);
 	if (state == SUSPEND_REQUESTED_AND_SUSPENDED)
@@ -127,15 +137,27 @@ static void late_resume(struct work_struct *work)
 	}
 	if (debug_mask & DEBUG_SUSPEND)
 		pr_info("late_resume: call handlers\n");
-	list_for_each_entry_reverse(pos, &early_suspend_handlers, link)
-		if (pos->resume != NULL)
+	list_for_each_entry_reverse(pos, &early_suspend_handlers, link) {
+		if (pos->resume != NULL) {
 			pos->resume(pos);
+#ifdef CONFIG_MACH_LGE
+			// LGE_CHANGE [dojip.kim@lge.com] 2010-09-06
+			printk(KERN_INFO"%s: late resume funtion [%p]\n",__func__, 
+					pos->resume);
+#endif
+		}
+	}
+
 	if (debug_mask & DEBUG_SUSPEND)
 		pr_info("late_resume: done\n");
 abort:
 	mutex_unlock(&early_suspend_lock);
 }
 
+// LGE_CHANGE [dojip.kim@lge.com] 2010-08-24, notify power state to ARM9
+#ifdef CONFIG_LGE_PROC_COMM
+extern int lge_set_sleep_status(int status);
+#endif
 void request_suspend_state(suspend_state_t new_state)
 {
 	unsigned long irqflags;
@@ -155,6 +177,10 @@ void request_suspend_state(suspend_state_t new_state)
 			ktime_to_ns(ktime_get()),
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 			tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+		// LGE_CHANGE [dojip.kim@lge.com] 2010-08-24, notify power state to ARM9
+#ifdef CONFIG_LGE_PROC_COMM 
+		lge_set_sleep_status(new_state);
+#endif
 	}
 	if (!old_sleep && new_state != PM_SUSPEND_ON) {
 		state |= SUSPEND_REQUESTED;

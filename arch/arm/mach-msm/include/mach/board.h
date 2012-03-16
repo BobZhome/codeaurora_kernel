@@ -55,12 +55,28 @@ struct msm_camera_io_clk {
 	uint32_t vfe_clk_rate;
 };
 
+/* LGE_CHANGES_S [junyeong.han@lge.com] 2009-09-07, unified code for 7x27  */
+/* Add power on/off function pointers to devide driver and
+ * platform data which is dependent HW
+ */
+#if defined (CONFIG_MACH_LGE)
+struct msm_camera_device_platform_data {
+	int (*camera_gpio_on) (void);
+	void (*camera_gpio_off)(void);
+	struct msm_camera_io_ext ioext;
+	struct msm_camera_io_clk ioclk;
+	int (*camera_power_on) (void);
+	int (*camera_power_off)(void);
+};
+#else	/* origin */
 struct msm_camera_device_platform_data {
 	int (*camera_gpio_on) (void);
 	void (*camera_gpio_off)(void);
 	struct msm_camera_io_ext ioext;
 	struct msm_camera_io_clk ioclk;
 };
+#endif
+/* LGE_CHANGES_E [junyeong.han@lge.com] 2009-09-07 */
 enum msm_camera_csi_data_format {
 	CSI_8BIT,
 	CSI_10BIT,
@@ -293,7 +309,6 @@ struct msm_hdmi_platform_data {
 	int (*core_power)(int on, int show);
 	int (*cec_power)(int on);
 	int (*init_irq)(void);
-	bool (*check_hdcp_hw_support)(void);
 };
 
 struct msm_i2c_platform_data {
@@ -323,7 +338,7 @@ struct msm_ssbi_platform_data {
 	enum msm_ssbi_controller_type controller_type;
 };
 
-#if defined(CONFIG_USB_PEHCI_HCD) || defined(CONFIG_USB_PEHCI_HCD_MODULE)
+#ifdef CONFIG_USB_PEHCI_HCD
 struct isp1763_platform_data {
 	unsigned reset_gpio;
 	int (*setup_gpio)(int enable);

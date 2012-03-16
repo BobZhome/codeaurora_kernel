@@ -45,7 +45,15 @@ MODULE_VERSION("1.0");
 
 int diag_debug_buf_idx;
 unsigned char diag_debug_buf[1024];
+
+/* Number of maximum USB requests that the USB layer should handle at
+   one time. */
+#define MAX_DIAG_USB_REQUESTS 12
 static unsigned int buf_tbl_size = 8; /*Number of entries in table of buffers */
+
+//LGSI Thunder Upgrade : SLTATE HardKEy Enable saravanak.nachimuthu@lge.com
+extern int key_touch_logging_status;
+//LGSI Thunder Upgrade : SLTATE HardKEy Enable saravanak.nachimuthu@lge.com
 
 struct diag_send_desc_type send = { NULL, NULL, DIAG_STATE_START, 0 };
 struct diag_hdlc_dest_type enc = { NULL, NULL, 0 };
@@ -326,6 +334,19 @@ static void diag_update_msg_mask(int start, int end , uint8_t *buf)
 	}
 	mutex_unlock(&driver->diagchar_mutex);
 	diag_print_mask_table();
+//LGSI Thunder Upgrade : SLTATE HardKEy Enable saravanak.nachimuthu@lge.com
+
+	if(key_touch_logging_status == 0)
+	{
+		printk(KERN_INFO "[SLATE] %s : enable hard key press & pan tap event logging\n",__func__);
+		key_touch_logging_status = 1;
+	}
+	else
+	{
+		printk(KERN_INFO "[SLATE] %s : disable hard key press & pan tap event logging\n",__func__);
+		key_touch_logging_status = 0;
+	}
+//LGSI Thunder Upgrade : SLTATE HardKEy Enable saravanak.nachimuthu@lge.com
 
 }
 
@@ -507,67 +528,73 @@ static int diag_process_apps_pkt(unsigned char *buf, int len)
 	}
 #endif
 	/* Check for registered clients and forward packet to user-space */
-	cmd_code = (int)(*(char *)buf);
-	temp++;
-	subsys_id = (int)(*(char *)temp);
-	temp++;
-	subsys_cmd_code = *(uint16_t *)temp;
-	temp += 2;
+	else{
+		cmd_code = (int)(*(char *)buf);
+		temp++;
+		subsys_id = (int)(*(char *)temp);
+		temp++;
+		subsys_cmd_code = *(uint16_t *)temp;
+		temp += 2;
 
-	for (i = 0; i < diag_max_registration; i++) {
-		if (driver->table[i].process_id != 0) {
-			if (driver->table[i].cmd_code ==
-				 cmd_code && driver->table[i].subsys_id ==
-				 subsys_id &&
-				driver->table[i].cmd_code_lo <=
-				 subsys_cmd_code &&
-				  driver->table[i].cmd_code_hi >=
-				 subsys_cmd_code){
-				driver->pkt_length = len;
-				diag_update_pkt_buffer(buf);
-				diag_update_sleeping_process(
-					driver->table[i].process_id);
-					return 0;
-				} /* end of if */
-			else if (driver->table[i].cmd_code == 255
-				  && cmd_code == 75) {
-				if (driver->table[i].subsys_id ==
-					subsys_id &&
-				   driver->table[i].cmd_code_lo <=
-					subsys_cmd_code &&
-					 driver->table[i].cmd_code_hi >=
-					subsys_cmd_code){
+		for (i = 0; i < diag_max_registration; i++) {
+			if (driver->table[i].process_id != 0) {
+				if (driver->table[i].cmd_code ==
+				     cmd_code && driver->table[i].subsys_id ==
+				     subsys_id &&
+				    driver->table[i].cmd_code_lo <=
+				     subsys_cmd_code &&
+					  driver->table[i].cmd_code_hi >=
+				     subsys_cmd_code){
 					driver->pkt_length = len;
 					diag_update_pkt_buffer(buf);
 					diag_update_sleeping_process(
-						driver->table[i].
-						process_id);
-					return 0;
-				}
-			} /* end of else-if */
-			else if (driver->table[i].cmd_code == 255 &&
-				  driver->table[i].subsys_id == 255) {
-				if (driver->table[i].cmd_code_lo <=
-						 cmd_code &&
-						 driver->table[i].
-						cmd_code_hi >= cmd_code){
-					driver->pkt_length = len;
-					diag_update_pkt_buffer(buf);
-					diag_update_sleeping_process
-						(driver->table[i].
-						 process_id);
-					return 0;
-				}
-			} /* end of else-if */
-		} /* if(driver->table[i].process_id != 0) */
-	}  /* for (i = 0; i < diag_max_registration; i++) */
-	return packet_type;
+						driver->table[i].process_id);
+						return 0;
+				    } /* end of if */
+				else if (driver->table[i].cmd_code == 255
+					  && cmd_code == 75) {
+					if (driver->table[i].subsys_id ==
+					    subsys_id &&
+					   driver->table[i].cmd_code_lo <=
+					    subsys_cmd_code &&
+					     driver->table[i].cmd_code_hi >=
+					    subsys_cmd_code){
+						driver->pkt_length = len;
+						diag_update_pkt_buffer(buf);
+						diag_update_sleeping_process(
+							driver->table[i].
+							process_id);
+						return 0;
+					}
+				} /* end of else-if */
+				else if (driver->table[i].cmd_code == 255 &&
+					  driver->table[i].subsys_id == 255) {
+					if (driver->table[i].cmd_code_lo <=
+							 cmd_code &&
+						     driver->table[i].
+						    cmd_code_hi >= cmd_code){
+						driver->pkt_length = len;
+						diag_update_pkt_buffer(buf);
+						diag_update_sleeping_process
+							(driver->table[i].
+							 process_id);
+						return 0;
+					}
+				} /* end of else-if */
+			} /* if(driver->table[i].process_id != 0) */
+		}  /* for (i = 0; i < diag_max_registration; i++) */
+	} /* else */
+		return packet_type;
 }
 
 void diag_process_hdlc(void *data, unsigned len)
 {
 	struct diag_hdlc_decode_type hdlc;
 	int ret, type = 0;
+/* LG_FW : 2009.02.05 khlee - bug fix */
+#if defined (CONFIG_LGE_DIAGTEST)
+    unsigned int nTempLen = 0;  
+#endif    
 #ifdef DIAG_DEBUG
 	int i;
 	printk(KERN_INFO "\n HDLC decode function, len of data  %d\n", len);
@@ -580,6 +607,55 @@ void diag_process_hdlc(void *data, unsigned len)
 	hdlc.dest_idx = 0;
 	hdlc.escaping = 0;
 
+/* LGE_CHANGES_S [kyuhyung.lee@lge.com] 2010.02.05*/
+/* - In the Radio test process, APP will send packet with double 0x7E tail.  */
+#if defined (CONFIG_LGE_DIAGTEST)
+
+   if( len > 2 )
+  {
+    if( hdlc.src_ptr[len -1] == 0x7E && hdlc.src_ptr[len -2] == 0x7E){
+      len--;
+      hdlc.src_size--;
+    }
+  }
+  
+/* LG_FW : 2009.02.05 khlee - bug fix */
+/* - If packet is started with 0x7E( LG Factory packet), we can not received all of thing.  */
+    do
+    {
+      ret = diag_hdlc_decode(&hdlc);
+
+      nTempLen = hdlc.dest_idx;
+
+      if(ret)
+      {
+        hdlc.dest_idx = 0;    /* Initialize for the next packet */
+      }
+
+      if( hdlc.src_idx >=  hdlc.src_size){
+//        ret = 1;
+        break;
+      }
+      else
+      	{
+// LGE_CHANGE_S [myeonggyu.son@lge.com] [2011.05.29] [gelato] to execute unnormal hdlc diag packet with attached trash data after 0x7E tail [START]
+// ex> [0x7E] [0xFA] [0x33] [0x00] [0x04] [0xB5] [0x78] [0x7E] [0x00] [0x00] [0x00] [0x00] [0x00] [0x00] [0x00] [0x00]
+      		if(nTempLen > 1)
+				break;
+// LGE_CHANGE_E [myeonggyu.son@lge.com] [2011.05.29] [gelato] to execute unnormal hdlc diag packet with attached trash data after 0x7E tail [END]
+			ret = 0; 
+      	}
+    }while ( ret == 0 );
+    
+  	if (ret)
+		type = diag_process_apps_pkt(driver->hdlc_buf,
+					      nTempLen - 3);
+
+	/* ignore 2 bytes for CRC, one for 7E and send */
+	if ((driver->ch) && (ret) && (type) && (nTempLen > 3))
+		smd_write(driver->ch, driver->hdlc_buf, nTempLen - 3);
+
+#else  /* org source */
 	ret = diag_hdlc_decode(&hdlc);
 
 	if (ret)
@@ -618,6 +694,8 @@ void diag_process_hdlc(void *data, unsigned len)
 			       1, DUMP_PREFIX_ADDRESS, data, len, 1);
 #endif /* DIAG DEBUG */
 	}
+#endif
+/* LGE_CHANGES_E [kyuhyung.lee@lge.com] 2010.02.05*/
 
 }
 

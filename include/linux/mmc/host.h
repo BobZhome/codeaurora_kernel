@@ -111,6 +111,8 @@ struct mmc_host_ops {
 
 	/* optional callback for HC quirks */
 	void	(*init_card)(struct mmc_host *host, struct mmc_card *card);
+/* LGE_CHANGE fred.cho@lge.com, 2010-08-05 , check gpio pin status */
+	int (*get_status)(struct mmc_host *host);
 };
 
 struct mmc_card;
@@ -318,14 +320,6 @@ static inline void mmc_set_disable_delay(struct mmc_host *host,
 					 unsigned int disable_delay)
 {
 	host->disable_delay = disable_delay;
-}
-
-/* Module parameter */
-extern int mmc_assume_removable;
-
-static inline int mmc_card_is_removable(struct mmc_host *host)
-{
-	return !(host->caps & MMC_CAP_NONREMOVABLE) && mmc_assume_removable;
 }
 
 #endif

@@ -30,24 +30,22 @@
 #include <linux/ioctl.h>
 #include <linux/delay.h>
 #include <linux/reboot.h>
-#include <linux/debugfs.h>
 #include <asm/mach-types.h>
 #include <asm/uaccess.h>
 #include <mach/mdm.h>
 #include "mdm_ioctls.h"
-#include "msm_watchdog.h"
 
 #define CHARM_MODEM_TIMEOUT	2000
-#define CHARM_MODEM_DELTA	100
 
 static void (*power_on_charm)(void);
 static void (*power_down_charm)(void);
 
-static int charm_debug_on;
+static void charm_dummy_reset(void){
+	return;
+}
 
-#define CHARM_DBG(...)	do { if (charm_debug_on) \
-					pr_info(__VA_ARGS__); \
-			} while (0);
+void (*charm_intentional_reset)(void) = charm_dummy_reset;
+
 
 static void __soc_restart(void)
 {
@@ -56,19 +54,37 @@ static void __soc_restart(void)
 	unlock_kernel();
 }
 
+static void charm_wait_for_mdm(void)
+{
+	msleep(CHARM_MODEM_TIMEOUT);
+	if (gpio_get_value(MDM2AP_STATUS) != 0) {
+		pr_err("%s: MDM2AP_STATUS never went low.\n",
+			__func__);
+		gpio_request(AP2MDM_PMIC_RESET_N, "AP2MDM_PMIC_RESET_N");
+		gpio_direction_output(AP2MDM_PMIC_RESET_N, 1);
+	}
+
+}
+
 static int charm_panic_prep(struct notifier_block *this,
 				unsigned long event, void *ptr)
 {
-	CHARM_DBG("%s: setting AP2MDM_ERRFATAL high\n", __func__);
+	pr_err("%s: setting AP2MDM_ERRFATAL high\n", __func__);
 	gpio_set_value(AP2MDM_ERRFATAL, 1);
 	return NOTIFY_DONE;
+}
+
+void __charm_intentional_reset(void)
+{
+	pr_err("%s: setting AP2MDM_STATUS low\n", __func__);
+	gpio_set_value(AP2MDM_STATUS, 0);
+	charm_wait_for_mdm();
 }
 
 static struct notifier_block charm_panic_blk = {
 	.notifier_call  = charm_panic_prep,
 };
 
-static int successful_boot;
 
 static long charm_modem_ioctl(struct file *filp, unsigned int cmd,
 				unsigned long arg)
@@ -84,7 +100,6 @@ static long charm_modem_ioctl(struct file *filp, unsigned int cmd,
 	gpio_request(MDM2AP_STATUS, "MDM2AP_STATUS");
 	gpio_direction_input(MDM2AP_STATUS);
 
-	CHARM_DBG("%s: Entering ioctl cmd = %d\n", __func__, _IOC_NR(cmd));
 	switch (cmd) {
 	case WAKE_CHARM:
 		/* turn the charm on */
@@ -99,15 +114,8 @@ static long charm_modem_ioctl(struct file *filp, unsigned int cmd,
 	case CHECK_FOR_BOOT:
 		if (gpio_get_value(MDM2AP_STATUS) == 0)
 			put_user(1, (unsigned long __user *) arg);
-		else {
+		else
 			put_user(0, (unsigned long __user *) arg);
-			if (!successful_boot) {
-				successful_boot = 1;
-				pr_info("%s: sucessful_boot = 1. Monitoring \
-					for mdm interrupts\n",
-					__func__);
-			}
-		}
 		break;
 
 	case WAIT_FOR_BOOT:
@@ -115,6 +123,7 @@ static long charm_modem_ioctl(struct file *filp, unsigned int cmd,
 		while (gpio_get_value(MDM2AP_STATUS) == 0)
 			;
 		break;
+
 	default:
 		ret = -EINVAL;
 	}
@@ -126,9 +135,6 @@ static long charm_modem_ioctl(struct file *filp, unsigned int cmd,
 
 static int charm_modem_open(struct inode *inode, struct file *file)
 {
-
-	CHARM_DBG("%s: successful_boot = 0\n", __func__);
-	successful_boot = 0;
 	return 0;
 }
 
@@ -147,72 +153,49 @@ struct miscdevice charm_modem_misc = {
 
 
 
-static void charm_status_fn(struct work_struct *work)
+static void mdm_status_fn(struct work_struct *work)
 {
-	WARN("%s: Status went low!\n", __func__);
+	int val;
+
+	val = gpio_get_value(MDM2AP_STATUS);
+	pr_err("%s: Status went low! = %d\n", __func__, val);
 	__soc_restart();
 }
 
-static DECLARE_WORK(charm_status_work, charm_status_fn);
+static DECLARE_WORK(mdm_status_work, mdm_status_fn);
 
-static void charm_fatal_fn(struct work_struct *work)
+static void mdm_fatal_fn(struct work_struct *work)
 {
-	WARN("%s: Got an error fatal!\n", __func__);
+	pr_err("%s: Got an error fatal!\n", __func__);
 	__soc_restart();
 }
 
-static DECLARE_WORK(charm_fatal_work, charm_fatal_fn);
+static DECLARE_WORK(mdm_fatal_work, mdm_fatal_fn);
 
-static irqreturn_t charm_errfatal(int irq, void *dev_id)
+static int irqc;
+
+static irqreturn_t errfatal(int irq, void *dev_id)
 {
-	pr_info("%s: charm got errfatal interrupt\n", __func__);
-	if (successful_boot) {
-		pr_info("%s: scheduling work now\n", __func__);
-		schedule_work(&charm_fatal_work);
-		disable_irq_nosync(MSM_GPIO_TO_INT(MDM2AP_ERRFATAL));
-	}
+	pr_debug("charm got errfatal! Scheduling work to panic now...\n");
+	irqc++;
+	schedule_work(&mdm_fatal_work);
+	disable_irq_nosync(MSM_GPIO_TO_INT(MDM2AP_ERRFATAL));
 	return IRQ_HANDLED;
 }
+int first_time = 1;
 
-static irqreturn_t charm_status_change(int irq, void *dev_id)
+static irqreturn_t status_change(int irq, void *dev_id)
 {
 
-	pr_info("%s: Charm status went low!\n", __func__);
-	if (successful_boot) {
-		pr_info("%s: scheduling work now\n", __func__);
-		schedule_work(&charm_status_work);
-		disable_irq_nosync(MSM_GPIO_TO_INT(MDM2AP_STATUS));
+	if (first_time) {
+		first_time = 0;
+		goto done;
 	}
+	pr_debug("Charm status went low! Scheduling work to panic now...\n");
+	schedule_work(&mdm_status_work);
+	disable_irq_nosync(MSM_GPIO_TO_INT(MDM2AP_STATUS));
+done:
 	return IRQ_HANDLED;
-}
-
-static int charm_debug_on_set(void *data, u64 val)
-{
-	charm_debug_on = val;
-	return 0;
-}
-
-static int charm_debug_on_get(void *data, u64 *val)
-{
-	*val = charm_debug_on;
-	return 0;
-}
-
-DEFINE_SIMPLE_ATTRIBUTE(charm_debug_on_fops,
-			charm_debug_on_get,
-			charm_debug_on_set, "%llu\n");
-
-static int charm_debugfs_init(void)
-{
-	struct dentry *dent;
-
-	dent = debugfs_create_dir("charm_dbg", 0);
-	if (IS_ERR(dent))
-		return PTR_ERR(dent);
-
-	debugfs_create_file("debug_on", 0644, dent, NULL,
-			&charm_debug_on_fops);
-	return 0;
 }
 
 static int __init charm_modem_probe(struct platform_device *pdev)
@@ -222,20 +205,18 @@ static int __init charm_modem_probe(struct platform_device *pdev)
 
 	gpio_request(AP2MDM_STATUS, "AP2MDM_STATUS");
 	gpio_request(AP2MDM_ERRFATAL, "AP2MDM_ERRFATAL");
-	gpio_request(AP2MDM_KPDPWR_N, "AP2MDM_KPDPWR_N");
-	gpio_request(AP2MDM_PMIC_RESET_N, "AP2MDM_PMIC_RESET_N");
 
 	gpio_direction_output(AP2MDM_STATUS, 1);
 	gpio_direction_output(AP2MDM_ERRFATAL, 0);
 
 	power_on_charm = d->charm_modem_on;
 	power_down_charm = d->charm_modem_off;
+	charm_intentional_reset = __charm_intentional_reset;
 
 	gpio_request(MDM2AP_ERRFATAL, "MDM2AP_ERRFATAL");
 	gpio_direction_input(MDM2AP_ERRFATAL);
 
 	atomic_notifier_chain_register(&panic_notifier_list, &charm_panic_blk);
-	charm_debugfs_init();
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0) {
@@ -245,8 +226,8 @@ static int __init charm_modem_probe(struct platform_device *pdev)
 		goto errfatal_err;
 	}
 
-	ret = request_irq(irq, charm_errfatal,
-		IRQF_TRIGGER_RISING , "charm errfatal", NULL);
+	ret = request_irq(irq, errfatal,
+		IRQF_TRIGGER_HIGH , "charm errfatal", NULL);
 
 	if (ret < 0) {
 		pr_err("%s: MDM2AP_ERRFATAL IRQ#%d request failed with error=%d\
@@ -264,7 +245,7 @@ errfatal_err:
 		goto status_err;
 	}
 
-	ret = request_threaded_irq(irq, NULL, charm_status_change,
+	ret = request_threaded_irq(irq, NULL, status_change,
 		IRQF_TRIGGER_FALLING, "charm status", NULL);
 
 	if (ret < 0) {
@@ -286,38 +267,8 @@ static int __devexit charm_modem_remove(struct platform_device *pdev)
 	return misc_deregister(&charm_modem_misc);
 }
 
-static void charm_modem_shutdown(struct platform_device *pdev)
-{
-	int irq, i;
-
-	pr_info("%s: setting AP2MDM_STATUS low for a graceful restart\n",
-		__func__);
-
-	irq = platform_get_irq(pdev, 0);
-	disable_irq_nosync(irq);
-
-	irq = platform_get_irq(pdev, 1);
-	disable_irq_nosync(irq);
-
-	gpio_set_value(AP2MDM_STATUS, 0);
-
-	for (i = 0; i < CHARM_MODEM_TIMEOUT; i += CHARM_MODEM_DELTA) {
-		pet_watchdog();
-		msleep(CHARM_MODEM_DELTA);
-		if (gpio_get_value(MDM2AP_STATUS) == 0)
-			break;
-	}
-
-	if (i >= CHARM_MODEM_TIMEOUT) {
-		pr_err("%s: MDM2AP_STATUS never went low.\n",
-			 __func__);
-		gpio_direction_output(AP2MDM_PMIC_RESET_N, 0);
-	}
-}
-
 static struct platform_driver charm_modem_driver = {
 	.remove         = charm_modem_remove,
-	.shutdown	= charm_modem_shutdown,
 	.driver         = {
 		.name = "charm_modem",
 		.owner = THIS_MODULE

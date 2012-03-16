@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -124,8 +124,6 @@ static struct clk *camio_jpeg_pclk;
 static struct clk *camio_vpe_clk;
 static struct vreg *vreg_gp2;
 static struct vreg *vreg_lvsw1;
-static struct vreg *vreg_gp6;
-static struct vreg *vreg_gp16;
 static struct msm_camera_io_ext camio_ext;
 static struct msm_camera_io_clk camio_clk;
 static struct resource *camifpadio, *csiio;
@@ -207,7 +205,7 @@ void msm_io_memcpy(void __iomem *dest_addr, void __iomem *src_addr, u32 len)
 	msm_io_dump(dest_addr, len);
 }
 
-static void msm_camera_vreg_enable(struct platform_device *pdev)
+static void msm_camera_vreg_enable(void)
 {
 	vreg_gp2 = vreg_get(NULL, "gp2");
 	if (IS_ERR(vreg_gp2)) {
@@ -225,7 +223,7 @@ static void msm_camera_vreg_enable(struct platform_device *pdev)
 	if (vreg_enable(vreg_gp2)) {
 		pr_err("%s: VREG GP2 enable failed\n", __func__);
 		goto gp2_put;
-	}
+		}
 
 	vreg_lvsw1 = vreg_get(NULL, "lvsw1");
 	if (IS_ERR(vreg_lvsw1)) {
@@ -238,67 +236,17 @@ static void msm_camera_vreg_enable(struct platform_device *pdev)
 		pr_err("%s: VREG LVSW1 set failed\n", __func__);
 		goto lvsw1_put;
 	}
-	if (vreg_enable(vreg_lvsw1)) {
+	if (vreg_enable(vreg_lvsw1))
 		pr_err("%s: VREG LVSW1 enable failed\n", __func__);
-		goto lvsw1_put;
-	}
 
-	if (!strcmp(pdev->name, "msm_camera_sn12m0pz")) {
-		vreg_gp6 = vreg_get(NULL, "gp6");
-		if (IS_ERR(vreg_gp6)) {
-			pr_err("%s: VREG GP6 get failed %ld\n", __func__,
-				PTR_ERR(vreg_gp6));
-			vreg_gp6 = NULL;
-			goto lvsw1_disable;
-		}
-
-		if (vreg_set_level(vreg_gp6, 3050)) {
-			pr_err("%s: VREG GP6 set failed\n", __func__);
-			goto gp6_put;
-		}
-
-		if (vreg_enable(vreg_gp6)) {
-			pr_err("%s: VREG GP6 enable failed\n", __func__);
-			goto gp6_put;
-		}
-		vreg_gp16 = vreg_get(NULL, "gp16");
-		if (IS_ERR(vreg_gp16)) {
-			pr_err("%s: VREG GP16 get failed %ld\n", __func__,
-				PTR_ERR(vreg_gp16));
-			vreg_gp16 = NULL;
-			goto gp6_disable;
-		}
-
-		if (vreg_set_level(vreg_gp16, 1200)) {
-			pr_err("%s: VREG GP16 set failed\n", __func__);
-			goto gp16_put;
-		}
-
-		if (vreg_enable(vreg_gp16)) {
-			pr_err("%s: VREG GP16 enable failed\n", __func__);
-			goto gp16_put;
-		}
-	}
 	return;
 
-gp16_put:
-	vreg_put(vreg_gp16);
-	vreg_gp16 = NULL;
-gp6_disable:
-	 vreg_disable(vreg_gp6);
-gp6_put:
-	vreg_put(vreg_gp6);
-	vreg_gp6 = NULL;
-lvsw1_disable:
-	vreg_disable(vreg_lvsw1);
 lvsw1_put:
 	vreg_put(vreg_lvsw1);
-	vreg_lvsw1 = NULL;
 gp2_disable:
 	vreg_disable(vreg_gp2);
 gp2_put:
 	vreg_put(vreg_gp2);
-	vreg_gp2 = NULL;
 }
 
 static void msm_camera_vreg_disable(void)
@@ -306,22 +254,10 @@ static void msm_camera_vreg_disable(void)
 	if (vreg_gp2) {
 		vreg_disable(vreg_gp2);
 		vreg_put(vreg_gp2);
-		vreg_gp2 = NULL;
 	}
 	if (vreg_lvsw1) {
 		vreg_disable(vreg_lvsw1);
 		vreg_put(vreg_lvsw1);
-		vreg_lvsw1 = NULL;
-	}
-	if (vreg_gp6) {
-		vreg_disable(vreg_gp6);
-		vreg_put(vreg_gp6);
-		vreg_gp6 = NULL;
-	}
-	if (vreg_gp16) {
-		vreg_disable(vreg_gp16);
-		vreg_put(vreg_gp16);
-		vreg_gp16 = NULL;
 	}
 }
 
@@ -704,7 +640,7 @@ int msm_camio_probe_on(struct platform_device *pdev)
 	camio_clk = camdev->ioclk;
 	camio_ext = camdev->ioext;
 	camdev->camera_gpio_on();
-	msm_camera_vreg_enable(pdev);
+	msm_camera_vreg_enable();
 	return msm_camio_clk_enable(CAMIO_CAM_MCLK_CLK);
 }
 
@@ -725,7 +661,7 @@ int msm_camio_sensor_clk_on(struct platform_device *pdev)
 	camio_clk = camdev->ioclk;
 	camio_ext = camdev->ioext;
 	camdev->camera_gpio_on();
-	msm_camera_vreg_enable(pdev);
+	msm_camera_vreg_enable();
 	msm_camio_clk_enable(CAMIO_CAM_MCLK_CLK);
 	msm_camio_clk_enable(CAMIO_CAMIF_PAD_PBDG_CLK);
 	if (!sinfo->csi_if) {

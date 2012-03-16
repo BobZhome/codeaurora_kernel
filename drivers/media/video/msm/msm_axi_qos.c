@@ -48,5 +48,4 @@ void release_axi_qos(void)
 
 	clk_disable(ebi1_clk);
 	clk_put(ebi1_clk);
-	ebi1_clk = NULL;
 }

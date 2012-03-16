@@ -196,7 +196,6 @@ struct pm8058_charger {
 	struct dentry *dent;
 
 	int inited;
-	int present;
 };
 
 static struct pm8058_charger pm8058_chg;

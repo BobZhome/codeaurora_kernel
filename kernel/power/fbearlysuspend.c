@@ -16,6 +16,7 @@
 #include <linux/earlysuspend.h>
 #include <linux/module.h>
 #include <linux/wait.h>
+#include <linux/delay.h>
 
 #include "power.h"
 

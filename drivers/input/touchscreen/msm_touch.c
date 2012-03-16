@@ -1,6 +1,6 @@
 /* drivers/input/touchscreen/msm_touch.c
  *
- * Copyright (c) 2008-2009, 2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2008-2009, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -111,8 +111,8 @@ static irqreturn_t ts_interrupt(int irq, void *dev_id)
 
 	struct ts *ts = dev_id;
 
-	status = readl_relaxed(TSSC_REG(STATUS));
-	avgs = readl_relaxed(TSSC_REG(AVG12));
+	status = readl(TSSC_REG(STATUS));
+	avgs = readl(TSSC_REG(AVG12));
 	x = avgs & 0xFFFF;
 	y = avgs >> 16;
 
@@ -121,13 +121,12 @@ static irqreturn_t ts_interrupt(int irq, void *dev_id)
 	 * the TSSC. If it's not set, then it doesn't need to be cleared
 	 * here, so just return.
 	 */
-	if (!(readl_relaxed(TSSC_REG(CTL)) & TSSC_CTL_DATA))
+	if (!(readl(TSSC_REG(CTL)) & TSSC_CTL_DATA))
 		goto out;
 
 	/* Data has been read, OK to clear the data flag */
-	writel_relaxed(TSSC_CTL_STATE, TSSC_REG(CTL));
-	/* barrier: Write to complete before the next sample */
-	dsb();
+	writel(TSSC_CTL_STATE, TSSC_REG(CTL));
+
 	/* Valid samples are indicated by the sample number in the status
 	 * register being the number of expected samples and the number of
 	 * samples collected being zero (this check is due to ADC contention).

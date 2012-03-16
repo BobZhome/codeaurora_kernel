@@ -24,6 +24,7 @@
 #include <linux/percpu.h>
 
 #include <asm/mach/time.h>
+#include <asm/sched_clock.h>
 #include <mach/msm_iomap.h>
 #include <mach/irqs.h>
 
@@ -406,13 +407,6 @@ static void msm_timer_set_mode(enum clock_event_mode mode,
 		get_cpu_var(msm_active_clock) = clock;
 		put_cpu_var(msm_active_clock);
 		writel(TIMER_ENABLE_EN, clock->regbase + TIMER_ENABLE);
-
-		if (get_irq_chip(clock->irq.irq) &&
-		   get_irq_chip(clock->irq.irq)->unmask) {
-			get_irq_chip(clock->irq.irq)->unmask(
-				clock->irq.irq);
-		}
-
 		if (clock != &msm_clocks[MSM_CLOCK_GPT])
 			writel(TIMER_ENABLE_EN,
 				msm_clocks[MSM_CLOCK_GPT].regbase +
@@ -428,12 +422,6 @@ static void msm_timer_set_mode(enum clock_event_mode mode,
 			msm_read_timer_count(clock, LOCAL_TIMER) +
 			clock_state->sleep_offset;
 		writel(0, clock->regbase + TIMER_MATCH_VAL);
-
-		if (get_irq_chip(clock->irq.irq) &&
-		   get_irq_chip(clock->irq.irq)->mask) {
-			get_irq_chip(clock->irq.irq)->mask(
-				clock->irq.irq);
-		}
 #ifdef CONFIG_ARCH_MSM_SCORPIONMP
 		if (clock != &msm_clocks[MSM_CLOCK_DGT] || smp_processor_id())
 #endif
@@ -445,7 +433,6 @@ static void msm_timer_set_mode(enum clock_event_mode mode,
 		}
 		break;
 	}
-	dsb();
 	local_irq_restore(irq_flags);
 }
 
@@ -856,7 +843,6 @@ void msm_timer_exit_idle(int low_power)
 #else
 	gpt_clk_state->in_sync = gpt_clk_state->in_sync && enabled;
 #endif
-	dsb();
 	msm_timer_sync_gpt_to_sclk(1);
 
 	if (clock == gpt_clk)
@@ -871,7 +857,6 @@ void msm_timer_exit_idle(int low_power)
 #else
 	clock_state->in_sync = clock_state->in_sync && enabled;
 #endif
-	dsb();
 	msm_timer_sync_to_gpt(clock, 1);
 
 exit_idle_alarm:
@@ -959,35 +944,22 @@ int __init msm_timer_init_time_sync(void (*timeout)(void))
 	return 0;
 }
 
+static DEFINE_CLOCK_DATA(cd);
 
-unsigned long long sched_clock(void)
+unsigned long long notrace sched_clock(void)
 {
-	static cycle_t last_ticks;
-	static unsigned long long last_ns;
-	static DEFINE_SPINLOCK(msm_timer_sched_clock_lock);
+	struct msm_clock *clock = &msm_clocks[MSM_GLOBAL_TIMER];
+	struct clocksource *cs = &clock->clocksource;
+	u32 cyc = cs->read(cs);
+	return cyc_to_sched_clock(&cd, cyc, (u32)~0);
+}
 
-	struct msm_clock *clock;
-	struct clocksource *cs;
-	cycle_t ticks, delta;
-	unsigned long irq_flags;
-
-	clock = &msm_clocks[MSM_GLOBAL_TIMER];
-	cs = &clock->clocksource;
-
-	ticks  = cs->read(cs);
-
-	spin_lock_irqsave(&msm_timer_sched_clock_lock, irq_flags);
-	delta = (ticks - last_ticks) & cs->mask;
-
-	if (delta < cs->mask/2) {
-		last_ticks += delta;
-		last_ns += clocksource_cyc2ns(delta, cs->mult, cs->shift);
-	}
-
-	ticks = last_ticks;
-	spin_unlock_irqrestore(&msm_timer_sched_clock_lock, irq_flags);
-
-	return last_ns;
+static void notrace msm_update_sched_clock(void)
+{
+	struct msm_clock *clock = &msm_clocks[MSM_GLOBAL_TIMER];
+	struct clocksource *cs = &clock->clocksource;
+	u32 cyc = cs->read(cs);
+	update_sched_clock(&cd, cyc, (u32)~0);
 }
 
 #ifdef CONFIG_ARCH_MSM_SCORPIONMP
@@ -999,6 +971,12 @@ int read_current_timer(unsigned long *timer_val)
 }
 #endif
 
+static void __init msm_sched_clock_init(void)
+{
+	struct msm_clock *clock = &msm_clocks[MSM_GLOBAL_TIMER];
+
+	init_sched_clock(&cd, msm_update_sched_clock, 32, clock->freq);
+}
 static void __init msm_timer_init(void)
 {
 	int i;
@@ -1049,13 +1027,11 @@ static void __init msm_timer_init(void)
 			printk(KERN_ERR "msm_timer_init: setup_irq "
 			       "failed for %s\n", cs->name);
 
-		get_irq_chip(clock->irq.irq)->mask(clock->irq.irq);
-
 		clockevents_register_device(ce);
 	}
+	msm_sched_clock_init();
 #ifdef CONFIG_ARCH_MSM_SCORPIONMP
 	writel(1, msm_clocks[MSM_CLOCK_DGT].regbase + TIMER_ENABLE);
-	dsb();
 	set_delay_fn(read_current_timer_delay_loop);
 #endif
 }
@@ -1064,20 +1040,18 @@ static void __init msm_timer_init(void)
 void local_timer_setup(struct clock_event_device *evt)
 {
 	unsigned long flags;
-	static bool first_boot = true;
 	struct msm_clock *clock = &msm_clocks[MSM_GLOBAL_TIMER];
 
 #ifdef CONFIG_ARCH_MSM8X60
 	writel(DGT_CLK_CTL_DIV_4, MSM_TMR_BASE + DGT_CLK_CTL);
 #endif
 
-	if (first_boot) {
+	if (!local_clock_event) {
 		writel(0, clock->regbase  + TIMER_ENABLE);
 		writel(1, clock->regbase + TIMER_CLEAR);
 		writel(0, clock->regbase + TIMER_COUNT_VAL);
 		writel(~0, clock->regbase + TIMER_MATCH_VAL);
 		__get_cpu_var(msm_clocks_percpu)[clock->index].alarm = ~0;
-		first_boot = false;
 	}
 	evt->irq = clock->irq.irq;
 	evt->name = "local_timer";
@@ -1095,7 +1069,6 @@ void local_timer_setup(struct clock_event_device *evt)
 	local_clock_event = evt;
 
 	local_irq_save(flags);
-	dsb();
 	gic_clear_spi_pending(clock->irq.irq);
 	get_irq_chip(clock->irq.irq)->unmask(clock->irq.irq);
 	local_irq_restore(flags);

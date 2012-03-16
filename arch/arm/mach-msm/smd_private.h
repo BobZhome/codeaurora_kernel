@@ -164,6 +164,13 @@ void smsm_print_sleep_info(uint32_t sleep_delay, uint32_t sleep_limit,
 void smsm_reset_modem(unsigned mode);
 void smsm_reset_modem_cont(void);
 void smd_sleep_exit(void);
+#ifdef CONFIG_MACH_LGE
+/* Make a api to not report a changed SMSM state to other processor
+ * blue.park@lge.com 2010-04-14
+ */
+int smsm_change_state_nonotify(uint32_t smsm_entry,
+		      uint32_t clear_mask, uint32_t set_mask);
+#endif
 
 #define SMEM_NUM_SMD_STREAM_CHANNELS        64
 #define SMEM_NUM_SMD_BLOCK_CHANNELS         64
@@ -248,6 +255,11 @@ enum {
 	SMEM_SMEM_LOG_POWER_IDX,
 	SMEM_SMEM_LOG_POWER_WRAP,
 	SMEM_SMEM_LOG_POWER_EVENTS,
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+	SMEM_LGE_ERR_DATA,
+	SMEM_LGE_ERR_MESSAGE,
+	SMEM_LGE_ERR_MEM_DUMP_REGION,
+#endif
 	SMEM_ERR_CRASH_LOG,
 	SMEM_ERR_F3_TRACE_LOG,
 	SMEM_SMD_BRIDGE_ALLOC_TABLE,

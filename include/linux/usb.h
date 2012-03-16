@@ -358,7 +358,7 @@ struct usb_bus {
  * do 31, so plus one evens out to four bytes.
  */
 
-#if defined(CONFIG_USB_PEHCI_HCD) || defined(CONFIG_USB_PEHCI_HCD_MODULE)
+#ifdef CONFIG_USB_PEHCI_HCD
 #define USB_OTG_SUSPEND		0x1
 #define USB_OTG_ENUMERATE	0x2
 #define USB_OTG_DISCONNECT	0x4
@@ -482,7 +482,7 @@ struct usb_device {
 	struct dentry *usbfs_dentry;
 #endif
 
-#if defined(CONFIG_USB_PEHCI_HCD) || defined(CONFIG_USB_PEHCI_HCD_MODULE)
+#ifdef CONFIG_USB_PEHCI_HCD
 	/*otg add ons */
 	u8 otgdevice;				/*device is otg type */
 

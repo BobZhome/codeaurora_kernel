@@ -154,6 +154,12 @@
 
 #define MSM_CAM_IOCTL_GET_CAMERA_INFO \
 	_IOR(MSM_CAM_IOCTL_MAGIC, 36, struct msm_camera_info *)
+	
+/* LGE_CHANGE [youngki.an@lge.com] 2010-05-18  LG_CAMERA_HIDDEN_MENU */
+#if 1//def LG_CAMERA_HIDDEN_MENU
+#define MSM_CAM_IOCTL_SENSOR_ALWAYS_ON_TEST _IOW(MSM_CAM_IOCTL_MAGIC, 37, uint32_t *)
+#endif
+	
 
 #define MSM_CAMERA_LED_OFF  0
 #define MSM_CAMERA_LED_LOW  1
@@ -484,6 +490,22 @@ struct msm_snapshot_pp_status {
 #define CFG_SEND_WB_INFO    28
 #define CFG_MAX 			29
 
+/* LGE_CHANGE_S [junyeong.han@lge.com] Add CFG values for auto focus */
+/* 2010-05-02: Add auto-focus values */
+/* 2010-05-05: Add setting iso values */
+/* 2010-05-14: Add setting scene values */
+#if defined (CONFIG_ISX005)
+#define CFG_START_AF_FOCUS	101
+#define CFG_CHECK_AF_DONE	102
+#define CFG_CHECK_AF_CANCEL	103
+#define CFG_AF_LOCKED		104
+#define CFG_AF_UNLOCKED		105
+
+#define CFG_SET_ISO			201
+#define CFG_SET_SCENE		202
+#endif
+/* LGE_CHANGE_E [junyeong.han@lge.com] */
+
 #define MOVE_NEAR	0
 #define MOVE_FAR	1
 
@@ -506,7 +528,18 @@ struct msm_snapshot_pp_status {
 #define CAMERA_EFFECT_WHITEBOARD	6
 #define CAMERA_EFFECT_BLACKBOARD	7
 #define CAMERA_EFFECT_AQUA		8
+
+/* LGE_CHANGE_S [junyeong.han@lge.com] Add CAMERA_EFFECT values */
+/* 2010-05-13: Add CAMERA_EFFECT values */
+#if defined (CONFIG_ISX005)
+#define CAMERA_EFFECT_NEGATIVE_SEPIA	9
+#define CAMERA_EFFECT_BLUE				10
+#define CAMERA_EFFECT_PASTEL			11
+#define CAMERA_EFFECT_MAX				12
+#else	/* 5330 origin */
 #define CAMERA_EFFECT_MAX		9
+#endif
+/* LGE_CHANGE_E [junyeong.han@lge.com] */
 
 struct sensor_pict_fps {
 	uint16_t prevfps;
@@ -586,6 +619,26 @@ struct flash_ctrl_data {
 		struct strobe_flash_ctrl_data strobe_ctrl;
 	} ctrl_data;
 };
+// LGE ejoon.kim@lge.com mode add
+#define CAMERA_YUV_WB_AUTO						1
+#define CAMERA_YUV_WB_INCANDESCENT			2
+#define CAMERA_YUV_WB_DAYLIGHT				3
+#define CAMERA_YUV_WB_FLUORESCENT			4
+#define CAMERA_YUV_WB_CLOUDY_DAYLIGHT		5
+
+#define CAMERA_YUV_ISO_AUTO		1
+#define CAMERA_YUV_ISO_800			2
+#define CAMERA_YUV_ISO_400			3
+#define CAMERA_YUV_ISO_200			4
+#define CAMERA_YUV_ISO_100			5
+
+#define CAMERA_SCENEMODE_AUTO 				1
+#define CAMERA_SCENEMODES_PORTRAIT 			2
+#define CAMERA_SCENEMODES_LANDSCAPE 		3
+#define CAMERA_SCENEMODES_SPORTS 			4
+#define CAMERA_SCENEMODES_NIGHT 				5
+#define CAMERA_SCENEMODES_SUNSET 			6
+// LGE End
 
 #define GET_NAME			0
 #define GET_PREVIEW_LINE_PER_FRAME	1

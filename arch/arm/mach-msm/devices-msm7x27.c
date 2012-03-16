@@ -62,6 +62,18 @@ static struct resource resources_uart2[] = {
 	},
 };
 
+static struct resource resources_uart3[] = {
+	{
+		.start	= INT_UART3,
+		.end	= INT_UART3,
+		.flags	= IORESOURCE_IRQ,
+	},
+	{
+		.start	= MSM_UART3_PHYS,
+		.end	= MSM_UART3_PHYS + MSM_UART3_SIZE - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+};
 struct platform_device msm_device_uart1 = {
 	.name	= "msm_serial",
 	.id	= 0,
@@ -76,6 +88,12 @@ struct platform_device msm_device_uart2 = {
 	.resource	= resources_uart2,
 };
 
+struct platform_device msm_device_uart3 = {
+	.name	= "msm_serial",
+	.id	= 2,
+	.num_resources	= ARRAY_SIZE(resources_uart3),
+	.resource	= resources_uart3,
+};
 #define MSM_UART1DM_PHYS      0xA0200000
 #define MSM_UART2DM_PHYS      0xA0300000
 static struct resource msm_uart1_dm_resources[] = {
@@ -373,19 +391,9 @@ struct platform_device msm_device_smd = {
 	.id	= -1,
 };
 
-struct resource msm_dmov_resource[] = {
-	{
-		.start = INT_ADM_AARM,
-		.end = (resource_size_t)MSM_DMOV_BASE,
-		.flags = IORESOURCE_IRQ,
-	},
-};
-
 struct platform_device msm_device_dmov = {
 	.name	= "msm_dmov",
 	.id	= -1,
-	.resource = msm_dmov_resource,
-	.num_resources = ARRAY_SIZE(msm_dmov_resource),
 };
 
 #define MSM_SDC1_BASE         0xA0400000
@@ -782,6 +790,11 @@ struct clk_lookup msm_clocks_7x27[] = {
 	CLK_PCOM("tsif_pclk",	TSIF_P_CLK,	NULL, 0),
 	CLK_PCOM("uart_clk",	UART1_CLK,	"msm_serial.0", OFF),
 	CLK_PCOM("uart_clk",	UART2_CLK,	"msm_serial.1", 0),
+#if defined(CONFIG_MACH_LGE)
+	CLK_PCOM("uart_clk",	UART3_CLK,	"msm_serial.2", 0),
+#else
+	CLK_PCOM("uart_clk",	UART3_CLK,	"msm_serial.2", OFF),
+#endif
 	CLK_PCOM("uartdm_clk",	UART1DM_CLK,	"msm_serial_hs.0", OFF),
 	CLK_PCOM("uartdm_clk",	UART2DM_CLK,	"msm_serial_hs.1", 0),
 	CLK_PCOM("usb_hs_clk",	USB_HS_CLK,	NULL, OFF),

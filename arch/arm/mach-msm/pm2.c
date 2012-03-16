@@ -15,7 +15,6 @@
  * GNU General Public License for more details.
  *
  */
-
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/clk.h>
@@ -29,9 +28,11 @@
 #include <linux/uaccess.h>
 #include <linux/io.h>
 #include <linux/memory.h>
+#include <linux/console.h>
 #ifdef CONFIG_HAS_WAKELOCK
 #include <linux/wakelock.h>
 #endif
+#include <asm/unistd.h>
 #include <mach/msm_iomap.h>
 #include <mach/system.h>
 #ifdef CONFIG_CPU_V7
@@ -43,6 +44,10 @@
 #endif
 #ifdef CONFIG_VFP
 #include <asm/vfp.h>
+#endif
+
+#ifdef CONFIG_MACH_LGE
+#include <mach/board_lge.h>
 #endif
 
 #ifdef CONFIG_MSM_MEMORY_LOW_POWER_MODE_SUSPEND_DEEP_POWER_DOWN
@@ -403,20 +408,15 @@ static void msm_pm_config_hw_before_power_down(void)
 {
 #if defined(CONFIG_ARCH_MSM7X30)
 	writel(1, APPS_PWRDOWN);
-	dsb();
 	writel(4, APPS_SECOP);
 #elif defined(CONFIG_ARCH_MSM7X27)
 	writel(0x1f, APPS_CLK_SLEEP_EN);
-	dsb();
 	writel(1, APPS_PWRDOWN);
 #else
 	writel(0x1f, APPS_CLK_SLEEP_EN);
-	dsb();
 	writel(1, APPS_PWRDOWN);
-	dsb();
 	writel(0, APPS_STANDBY_CTL);
 #endif
-	dsb();
 }
 
 /*
@@ -426,15 +426,11 @@ static void msm_pm_config_hw_after_power_up(void)
 {
 #if defined(CONFIG_ARCH_MSM7X30)
 	writel(0, APPS_SECOP);
-	dsb();
 	writel(0, APPS_PWRDOWN);
-	dsb();
 	msm_spm_reinit();
 #else
 	writel(0, APPS_PWRDOWN);
-	dsb();
 	writel(0, APPS_CLK_SLEEP_EN);
-	dsb();
 #endif
 }
 
@@ -448,7 +444,6 @@ static void msm_pm_config_hw_before_swfi(void)
 #elif defined(CONFIG_ARCH_MSM7X27)
 	writel(0x0f, APPS_CLK_SLEEP_EN);
 #endif
-	dsb();
 }
 
 /*
@@ -1744,9 +1739,66 @@ static struct platform_suspend_ops msm_pm_ops = {
 
 static uint32_t restart_reason = 0x776655AA;
 
+#ifdef CONFIG_MACH_LGE
+/* LGE_CHANGE
+ * flush console before reboot
+ * from google's mahimahi kernel
+ * 2010-05-04, cleaneye.kim@lge.com
+ */
+
+static bool console_flushed;
+
+void msm_pm_flush_console(void)
+{
+	if (console_flushed)
+		return;
+	console_flushed = true;
+
+	printk("\n");
+	printk(KERN_EMERG "Restarting %s\n", linux_banner);
+	if (!try_acquire_console_sem()) {
+		release_console_sem();
+		return;
+	}
+
+	mdelay(50);
+
+	local_irq_disable();
+	if (try_acquire_console_sem())
+		printk(KERN_EMERG "msm_restart: Console was locked! Busting\n");
+	else
+		printk(KERN_EMERG "msm_restart: Console was locked!\n");
+	release_console_sem();
+}
+#endif
+
+// LGE_CHANGE [dojip.kim@lge.com] 2010-08-04, clean the ram console when normal shutdown
+#if defined(CONFIG_LGE_RAM_CONSOLE_CLEAN)
+extern void ram_console_clean_buffer(void);
+#endif
+
 static void msm_pm_power_off(void)
 {
+	//int ret =0;
+	//const char *pathname = "/proc/last_kmsg";
+	// LGE_CHANGE [dojip.kim@lge.com] 2010-08-04, clean the ram console when normal shutdown
+#if defined(CONFIG_LGE_RAM_CONSOLE_CLEAN)
+	//printk(KERN_INFO"%s: \n:CONFIG_LGE_RAM_CONSOLE_CLEAN",__func__);
+	ram_console_clean_buffer();
+
+	//ret= __NR_unlink(pathname);
+
+#endif
+#ifdef CONFIG_MACH_LGE
+	/* To prevent Phone freezing during power off
+	 * blue.park@lge.com 2010-04-14 <To prevent Phone freezing during power off>
+	 */
+	smsm_change_state_nonotify(SMSM_APPS_STATE,
+						  0, SMSM_SYSTEM_POWER_DOWN);
+#endif
+
 	msm_rpcrouter_close();
+	printk(KERN_INFO"%s: \n",__func__);
 	msm_proc_comm(PCOM_POWER_DOWN, 0, 0);
 	for (;;)
 		;
@@ -1754,6 +1806,36 @@ static void msm_pm_power_off(void)
 
 static void msm_pm_restart(char str, const char *cmd)
 {
+#ifdef CONFIG_MACH_LGE
+	/* LGE_CHANGE
+	 * flush console before reboot
+	 * from google's mahimahi kernel
+	 * 2010-05-04, cleaneye.kim@lge.com
+	 */
+	 
+    unsigned long irqflags;
+	static DEFINE_SPINLOCK(state_lock);
+	msm_pm_flush_console();
+	if (restart_reason == 0x776655BB) {
+		void *copy_addr;
+		unsigned int *rc_buffer;
+
+		copy_addr = lge_get_fb_copy_virt_addr();
+		*((unsigned *)copy_addr) = restart_reason;
+
+		rc_buffer = (unsigned int *)get_ram_console_buffer();
+		*rc_buffer = 0x0;
+
+	    spin_lock_irqsave(&state_lock, irqflags);
+		smsm_reset_modem(SMSM_APPS_SHUTDOWN);
+		smsm_reset_modem(SMSM_SYSTEM_REBOOT);
+
+		while (1)
+			;
+	}
+	
+#endif
+
 	msm_rpcrouter_close();
 	msm_proc_comm(PCOM_RESET_CHIP, &restart_reason, 0);
 
@@ -1775,6 +1857,10 @@ static int msm_reboot_call
 		} else if (!strncmp(cmd, "oem-", 4)) {
 			unsigned code = simple_strtoul(cmd + 4, 0, 16) & 0xff;
 			restart_reason = 0x6f656d00 | code;
+	//	} else if (!strncmp(cmd, "", 1)) {
+	//		restart_reason = 0x776655AA;
+	//	} else if (!strncmp(cmd, "charge_reset", 12)) {
+	//		restart_reason = 0x776655BB;
 		} else {
 			restart_reason = 0x77665501;
 		}
@@ -1786,6 +1872,14 @@ static struct notifier_block msm_reboot_notifier = {
 	.notifier_call = msm_reboot_call,
 };
 
+#if defined(CONFIG_MACH_LGE)
+void lge_set_reboot_reason(unsigned int reason)
+{
+	restart_reason = reason;
+
+	return;
+}
+#endif
 
 /******************************************************************************
  *
@@ -1807,7 +1901,6 @@ static int __init msm_pm_init(void)
 #ifdef CONFIG_CPU_V7
 	pgd_t *pc_pgd;
 	pmd_t *pmd;
-	unsigned long pmdval;
 
 	/* Page table for cores to come back up safely. */
 	pc_pgd = pgd_alloc(&init_mm);
@@ -1816,18 +1909,8 @@ static int __init msm_pm_init(void)
 	pmd = pmd_offset(pc_pgd +
 			 pgd_index(virt_to_phys(msm_pm_collapse_exit)),
 			 virt_to_phys(msm_pm_collapse_exit));
-	pmdval = (virt_to_phys(msm_pm_collapse_exit) & PGDIR_MASK) |
-		     PMD_TYPE_SECT | PMD_SECT_AP_WRITE;
-	pmd[0] = __pmd(pmdval);
-	pmd[1] = __pmd(pmdval + (1 << (PGDIR_SHIFT - 1)));
-
-	/* It is remotely possible that the code in msm_pm_collapse_exit()
-	 * which turns on the MMU with this mapping is in the
-	 * next even-numbered megabyte beyond the
-	 * start of msm_pm_collapse_exit().
-	 * Map this megabyte in as well.
-	 */
-	pmd[2] = __pmd(pmdval + (2 << (PGDIR_SHIFT - 1)));
+	*pmd = __pmd((virt_to_phys(msm_pm_collapse_exit) & PGDIR_MASK) |
+		     PMD_TYPE_SECT | PMD_SECT_AP_WRITE);
 	flush_pmd_entry(pmd);
 	msm_pm_pc_pgd = virt_to_phys(pc_pgd);
 #endif

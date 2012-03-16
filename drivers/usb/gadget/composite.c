@@ -46,6 +46,19 @@ static struct usb_composite_driver *composite;
  * published in the device descriptor, either numbers or strings or both.
  * String parameters are in UTF-8 (superset of ASCII's 7 bit characters).
  */
+ 
+#ifdef CONFIG_USB_GADGET_LG_MTP_DRIVER
+static const char mtp_descriptor_string[18] = 
+{ 
+	18, USB_DT_STRING, 'M', 0, 'S', 0, 'F', 0, 'T', 0, '1', 0, '0', 0, '0', 0, 0xFE, 0 
+};
+
+static const u8 mtp_vendor_descriptor[40] = 
+{ 
+	40, 0, 0, 0, 0, 1, 4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 'M', 'T', 'P', 0, 0, 0, 0, 0, 0x30, 0x34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
+};
+extern int mtp_enable_flag;
+#endif /* CONFIG_USB_GADGET_LG_MTP_DRIVER */
 
 static ushort idVendor;
 module_param(idVendor, ushort, 0);
@@ -112,7 +125,10 @@ void usb_composite_force_reset(struct usb_composite_dev *cdev)
 
 	spin_lock_irqsave(&cdev->lock, flags);
 	/* force reenumeration */
-	if (cdev && cdev->gadget && cdev->gadget->speed != USB_SPEED_UNKNOWN) {
+	if (cdev && cdev->gadget &&
+			cdev->gadget->speed != USB_SPEED_UNKNOWN) {
+		/* avoid sending a disconnect switch event until after we disconnect */
+		cdev->mute_switch = 1;
 		spin_unlock_irqrestore(&cdev->lock, flags);
 
 		usb_gadget_disconnect(cdev->gadget);
@@ -808,14 +824,7 @@ composite_setup(struct usb_gadget *gadget, const struct usb_ctrlrequest *ctrl)
 	u8				endp;
 	int tmp = intf;
 	int id = 0;
-	unsigned long			flags;
 
-	spin_lock_irqsave(&cdev->lock, flags);
-	if (!cdev->connected) {
-		cdev->connected = 1;
-		schedule_work(&cdev->switch_work);
-	}
-	spin_unlock_irqrestore(&cdev->lock, flags);
 
 	/* partial re-init of the response message; the function or the
 	 * gadget might need to intercept e.g. a control-OUT completion
@@ -857,6 +866,17 @@ composite_setup(struct usb_gadget *gadget, const struct usb_ctrlrequest *ctrl)
 				value = min(w_length, (u16) value);
 			break;
 		case USB_DT_STRING:
+#ifdef CONFIG_USB_GADGET_LG_MTP_DRIVER
+            if ((mtp_enable_flag == 1) && ((w_value&0xff) == 0xEE)) 
+            {
+                DBG(cdev, "### MTP DT STRING ###\n");
+                value = sizeof(mtp_descriptor_string);
+                memcpy(req->buf, mtp_descriptor_string, value);
+                if (value >= 0)
+                    value = min (w_length, (u16) value);
+                break;
+            }
+#endif
 			value = get_string(cdev, req->buf,
 					w_index, w_value & 0xff);
 
@@ -936,6 +956,35 @@ composite_setup(struct usb_gadget *gadget, const struct usb_ctrlrequest *ctrl)
 		*((u8 *)req->buf) = value;
 		value = min(w_length, (u16) 1);
 		break;
+#ifdef CONFIG_USB_GADGET_LG_MTP_DRIVER
+    case 0xfe: /* MTP request */
+          if(mtp_enable_flag == 1)
+          {
+          if (ctrl->bRequestType == (USB_DIR_IN|USB_TYPE_CLASS)) 
+          {
+            DBG (cdev, "### MTP 0xFE CLASS ###\n");
+            *(u8 *)req->buf = 0;
+            value = min (w_length, (u16) 1);
+            break;
+          }
+        
+          if (ctrl->bRequestType == (USB_DIR_IN|USB_TYPE_VENDOR)) 
+          {
+            DBG (cdev, "### MTP 0xFE VENDOR ###\n");
+            value = sizeof(mtp_vendor_descriptor);
+            memcpy(req->buf, mtp_vendor_descriptor, value);
+            if (value >= 0)
+                value = min (w_length, (u16) value);
+            break;
+          }
+          value = w_length;
+
+			break;
+		}            
+		goto unknown;
+/* LGE_CHANGE_E [adwardk.kim@lge.com] 2010-08-13 */          			
+
+#endif//CONFIG_USB_GADGET_LG_MTP_DRIVER
 	default:
 unknown:
 		VDBG(cdev,
@@ -1047,8 +1096,10 @@ static void composite_disconnect(struct usb_gadget *gadget)
 	if (cdev->config)
 		reset_config(cdev);
 
-	cdev->connected = 0;
-	schedule_work(&cdev->switch_work);
+	if (cdev->mute_switch)
+		cdev->mute_switch = 0;
+	else
+		schedule_work(&cdev->switch_work);
 	spin_unlock_irqrestore(&cdev->lock, flags);
 }
 
@@ -1114,8 +1165,8 @@ composite_unbind(struct usb_gadget *gadget)
 		kfree(cdev->req->buf);
 		usb_ep_free_request(gadget->ep0, cdev->req);
 	}
-	switch_dev_unregister(&cdev->sw_connected);
-	switch_dev_unregister(&cdev->sw_config);
+
+	switch_dev_unregister(&cdev->sdev);
 	kfree(cdev);
 	set_gadget_data(gadget, NULL);
 	device_remove_file(&gadget->dev, &dev_attr_suspended);
@@ -1150,22 +1201,11 @@ composite_switch_work(struct work_struct *data)
 	struct usb_composite_dev	*cdev =
 		container_of(data, struct usb_composite_dev, switch_work);
 	struct usb_configuration *config = cdev->config;
-	int connected;
-	unsigned long flags;
-
-	spin_lock_irqsave(&cdev->lock, flags);
-	if (cdev->connected != cdev->sw_connected.state) {
-		connected = cdev->connected;
-		spin_unlock_irqrestore(&cdev->lock, flags);
-		switch_set_state(&cdev->sw_connected, connected);
-	} else {
-		spin_unlock_irqrestore(&cdev->lock, flags);
-	}
 
 	if (config)
-		switch_set_state(&cdev->sw_config, config->bConfigurationValue);
+		switch_set_state(&cdev->sdev, config->bConfigurationValue);
 	else
-		switch_set_state(&cdev->sw_config, 0);
+		switch_set_state(&cdev->sdev, 0);
 }
 
 static int composite_bind(struct usb_gadget *gadget)
@@ -1219,12 +1259,8 @@ static int composite_bind(struct usb_gadget *gadget)
 	if (status < 0)
 		goto fail;
 
-	cdev->sw_connected.name = "usb_connected";
-	status = switch_dev_register(&cdev->sw_connected);
-	if (status < 0)
-		goto fail;
-	cdev->sw_config.name = "usb_configuration";
-	status = switch_dev_register(&cdev->sw_config);
+	cdev->sdev.name = "usb_configuration";
+	status = switch_dev_register(&cdev->sdev);
 	if (status < 0)
 		goto fail;
 	INIT_WORK(&cdev->switch_work, composite_switch_work);

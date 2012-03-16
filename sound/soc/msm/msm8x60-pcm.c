@@ -56,11 +56,11 @@ static struct snd_pcm_hardware msm_pcm_hardware = {
 	.rate_max =             48000,
 	.channels_min =         1,
 	.channels_max =         2,
-	.buffer_bytes_max =     960 * 10,
-	.period_bytes_min =     960 * 5,
-	.period_bytes_max =     960 * 5,
-	.periods_min =          2,
-	.periods_max =          2,
+	.buffer_bytes_max =     960 * 8,
+	.period_bytes_min =	960,
+	.period_bytes_max =     960,
+	.periods_min =          8,
+	.periods_max =          8,
 	.fifo_size =            0,
 };
 
@@ -154,6 +154,8 @@ static void event_handler(uint32_t opcode,
 	struct snd_pcm_substream *substream = prtd->substream;
 	uint32_t *ptrmem = (uint32_t *)payload;
 	int i = 0;
+	uint32_t idx = 0;
+	uint32_t size = 0;
 
 	pr_debug("%s\n", __func__);
 	switch (opcode) {
@@ -169,10 +171,14 @@ static void event_handler(uint32_t opcode,
 			break;
 		if (!prtd->mmap_flag)
 			break;
-		pr_debug("%s:writing %d bytes of buffer to dsp 2\n",
-				__func__, prtd->pcm_count);
-		q6asm_write_nolock(prtd->audio_client,
-			prtd->pcm_count, 0, 0, NO_TIMESTAMP);
+		if (q6asm_is_cpu_buf_avail(IN,
+				prtd->audio_client,
+				&size, &idx)) {
+			pr_debug("%s:writing %d bytes of buffer to dsp 2\n",
+					__func__, prtd->pcm_count);
+			q6asm_write(prtd->audio_client,
+				prtd->pcm_count, 0, 0, NO_TIMESTAMP);
+		}
 		break;
 	}
 	case ASM_DATA_CMDRSP_EOS:
@@ -194,8 +200,11 @@ static void event_handler(uint32_t opcode,
 		if (atomic_read(&prtd->in_count) <= prtd->periods)
 			atomic_inc(&prtd->in_count);
 		wake_up(&the_locks.read_wait);
-		if (prtd->mmap_flag)
-			q6asm_read_nolock(prtd->audio_client);
+		if (prtd->mmap_flag
+			&& q6asm_is_cpu_buf_avail(OUT,
+				prtd->audio_client,
+				&size, &idx))
+			q6asm_read(prtd->audio_client);
 		break;
 	}
 	case APR_BASIC_RSP_RESULT: {
@@ -212,7 +221,7 @@ static void event_handler(uint32_t opcode,
 					" of buffer to dsp\n",
 					__func__,
 					prtd->pcm_count);
-				q6asm_write_nolock(prtd->audio_client,
+				q6asm_write(prtd->audio_client,
 					prtd->pcm_count,
 					0, 0, NO_TIMESTAMP);
 			} else {
@@ -221,7 +230,7 @@ static void event_handler(uint32_t opcode,
 						 " of buffer to dsp\n",
 						__func__,
 						prtd->pcm_count);
-					q6asm_write_nolock(prtd->audio_client,
+					q6asm_write(prtd->audio_client,
 						prtd->pcm_count,
 						0, 0, NO_TIMESTAMP);
 					atomic_dec(&prtd->out_needed);
@@ -308,7 +317,7 @@ static int msm_pcm_capture_prepare(struct snd_pcm_substream *substream)
 		pr_debug("%s: cmd cfg pcm was block failed", __func__);
 
 	for (i = 0; i < runtime->periods; i++)
-		q6asm_read_nolock(prtd->audio_client);
+		q6asm_read(prtd->audio_client);
 	prtd->periods = runtime->periods;
 	pr_debug("prtd->session_id = %d, copp_id= %d",
 			prtd->session_id,
@@ -502,7 +511,7 @@ static int msm_pcm_playback_copy(struct snd_pcm_substream *substream, int a,
 		if (atomic_read(&prtd->start)) {
 			pr_debug("%s:writing %d bytes of buffer to dsp\n",
 					__func__, xfer);
-			ret = q6asm_write_nolock(prtd->audio_client, xfer,
+			ret = q6asm_write(prtd->audio_client, xfer,
 						0, 0, NO_TIMESTAMP);
 			if (ret < 0) {
 				ret = -EFAULT;
@@ -605,7 +614,7 @@ static int msm_pcm_capture_copy(struct snd_pcm_substream *substream,
 		memset(&in_frame_info[idx], 0,
 			sizeof(uint32_t) * 2);
 		atomic_dec(&prtd->in_count);
-		ret = q6asm_read_nolock(prtd->audio_client);
+		ret = q6asm_read(prtd->audio_client);
 		if (ret < 0) {
 			pr_err("q6asm read failed\n");
 			ret = -EFAULT;

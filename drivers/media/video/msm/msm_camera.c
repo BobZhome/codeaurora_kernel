@@ -55,6 +55,12 @@ static dev_t msm_devno;
 static LIST_HEAD(msm_sensors);
 struct  msm_control_device *g_v4l2_control_device;
 int g_v4l2_opencnt;
+/* LGE_CHANGE_S [youngki.an@lge.com] 2010-05-18 */
+#if 1//def LG_CAMERA_HIDDEN_MENU
+bool sensorAlwaysOnTest = false;
+#endif
+/* LGE_CHANGE_E [youngki.an@lge.com] 2010-05-18 */
+
 static int camera_node;
 static enum msm_camera_type camera_type[MSM_MAX_CAMERA_SENSORS];
 static uint32_t sensor_mount_angle[MSM_MAX_CAMERA_SENSORS];
@@ -2260,6 +2266,30 @@ static long msm_ioctl_config(struct file *filep, unsigned int cmd,
 					sdata->flash_data, led_state);
 		break;
 	}
+    /* LGE_CHANGE_S [youngki.an@lge.com] 2010-05-18 */
+#if 1//def LG_CAMERA_HIDDEN_MENU
+	case MSM_CAM_IOCTL_SENSOR_ALWAYS_ON_TEST:
+		{
+			uint32_t sensor_mode;
+			CDBG("MSM_CAM_IOCTL_SENSOR_ALWAYSON_TEST");
+			if(copy_from_user(&sensor_mode,argp, sizeof(sensor_mode))) {
+				printk("======= msm_ioctl_config sensor_mode is %d =======", sensor_mode);
+				ERR_COPY_FROM_USER();
+				rc = -EFAULT;
+			} else {
+				CDBG("MSM_CAM_IOCTL_SENSOR_ALWAYSON_TEST:%d", sensor_mode);
+				printk("======= msm_ioctl_config sensor_mode is %d =======", sensor_mode);
+				if(sensor_mode ==1)
+					sensorAlwaysOnTest = true;
+				else
+					sensorAlwaysOnTest = false;
+				rc = 0;
+			}
+			
+		}
+		break;
+#endif
+/* LGE_CHANGE_E [youngki.an@lge.com] 2010-05-18 */
 
 	case MSM_CAM_IOCTL_STROBE_FLASH_CFG: {
 		uint32_t flash_type;
@@ -2293,7 +2323,8 @@ static long msm_ioctl_config(struct file *filep, unsigned int cmd,
 				flash_recharge_duration);
 		break;
 	}
-
+/* FIXME : block for compile temporaraily - taehung.kim@lge.com */
+	#if 0
 	case MSM_CAM_IOCTL_FLASH_CTRL: {
 		struct flash_ctrl_data flash_info;
 		if (copy_from_user(&flash_info, argp, sizeof(flash_info))) {
@@ -2304,7 +2335,7 @@ static long msm_ioctl_config(struct file *filep, unsigned int cmd,
 
 		break;
 	}
-
+	#endif
 	case MSM_CAM_IOCTL_ERROR_CONFIG:
 		rc = msm_error_config(pmsm->sync, argp);
 		break;
@@ -2410,6 +2441,16 @@ static int __msm_release(struct msm_sync *sync)
 	struct hlist_node *n;
 
 	mutex_lock(&sync->lock);
+#if defined (CONFIG_MACH_LGE)
+/* [junyeong.han@lge.com] 2010-08-09
+ * When opencnt is 0, just return 0.
+ * below code has potential risk(run release twise),
+ * when opencnt value is 0 */
+	if (!sync->opencnt) {
+		mutex_unlock(&sync->lock);
+		return 0;
+	}
+#endif
 	if (sync->opencnt)
 		sync->opencnt--;
 	pr_info("%s, open count =%d\n", __func__, sync->opencnt);
@@ -2448,7 +2489,6 @@ static int __msm_release(struct msm_sync *sync)
 			kfree(region);
 		}
 		msm_queue_drain(&sync->pict_q, list_pict);
-		msm_queue_drain(&sync->event_q, list_config);
 
 		wake_unlock(&sync->wake_lock);
 		sync->apps_id = NULL;
@@ -2947,7 +2987,6 @@ static int __msm_open(struct msm_sync *sync, const char *const apps_id,
 			if (rc < 0) {
 				pr_err("%s: sensor init failed: %d\n",
 					__func__, rc);
-				msm_camio_sensor_clk_off(sync->pdev);
 				goto msm_open_done;
 			}
 			rc = sync->vfefn.vfe_init(&msm_vfe_s,
@@ -2955,8 +2994,6 @@ static int __msm_open(struct msm_sync *sync, const char *const apps_id,
 			if (rc < 0) {
 				pr_err("%s: vfe_init failed at %d\n",
 					__func__, rc);
-				sync->sctrl.s_release();
-				msm_camio_sensor_clk_off(sync->pdev);
 				goto msm_open_done;
 			}
 		} else {

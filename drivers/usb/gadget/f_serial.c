@@ -81,7 +81,16 @@ static inline struct f_gser *port_to_gser(struct gserial *p)
 	return container_of(p, struct f_gser, port);
 }
 #define GS_LOG2_NOTIFY_INTERVAL		5	/* 1 << 5 == 32 msec */
+
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_NMEA_FIX
+/* LGE_CHANGE
+ * NMEA function fixup for LG Android USB
+ * 2011-01-12, hyunhui.park@lge.com
+ */
+#define GS_NOTIFY_MAXPACKET		16
+#else
 #define GS_NOTIFY_MAXPACKET		10	/* notification + 2 bytes */
+#endif
 #endif
 /*-------------------------------------------------------------------------*/
 
@@ -96,9 +105,19 @@ static struct usb_interface_descriptor gser_interface_desc = {
 #else
 	.bNumEndpoints =	2,
 #endif
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_NMEA_FIX
+	/* LGE_CHANGE
+	 * NMEA function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
+	.bInterfaceClass =	USB_CLASS_VENDOR_SPEC,
+	.bInterfaceSubClass =	USB_CLASS_VENDOR_SPEC,
+	.bInterfaceProtocol =	USB_CLASS_VENDOR_SPEC,
+#else
 	.bInterfaceClass =	USB_CLASS_VENDOR_SPEC,
 	.bInterfaceSubClass =	0,
 	.bInterfaceProtocol =	0,
+#endif
 	/* .iInterface = DYNAMIC */
 };
 #ifdef CONFIG_MODEM_SUPPORT
@@ -159,6 +178,19 @@ static struct usb_endpoint_descriptor gser_fs_out_desc = {
 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
 };
 
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_NMEA_FIX
+/* LGE_CHANGE
+ * NMEA function fixup for LG Android USB
+ * 2011-01-12, hyunhui.park@lge.com
+ */
+static struct usb_descriptor_header *gser_fs_function[] = {
+	(struct usb_descriptor_header *) &gser_interface_desc,
+	(struct usb_descriptor_header *) &gser_fs_in_desc,
+	(struct usb_descriptor_header *) &gser_fs_out_desc,
+	(struct usb_descriptor_header *) &gser_fs_notify_desc,
+	NULL,
+};
+#else /* below is original */
 static struct usb_descriptor_header *gser_fs_function[] = {
 	(struct usb_descriptor_header *) &gser_interface_desc,
 #ifdef CONFIG_MODEM_SUPPORT
@@ -172,6 +204,7 @@ static struct usb_descriptor_header *gser_fs_function[] = {
 	(struct usb_descriptor_header *) &gser_fs_out_desc,
 	NULL,
 };
+#endif
 
 /* high speed support: */
 #ifdef CONFIG_MODEM_SUPPORT
@@ -199,8 +232,22 @@ static struct usb_endpoint_descriptor gser_hs_out_desc = {
 	.wMaxPacketSize =	__constant_cpu_to_le16(512),
 };
 
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_NMEA_FIX
+/* LGE_CHANGE
+ * NMEA function fixup for LG Android USB
+ * 2011-01-12, hyunhui.park@lge.com
+ */
 static struct usb_descriptor_header *gser_hs_function[] = {
 	(struct usb_descriptor_header *) &gser_interface_desc,
+	(struct usb_descriptor_header *) &gser_hs_in_desc,
+	(struct usb_descriptor_header *) &gser_hs_out_desc,
+	(struct usb_descriptor_header *) &gser_hs_notify_desc,
+	NULL,
+};
+#else /* below is original */
+static struct usb_descriptor_header *gser_hs_function[] = {
+	(struct usb_descriptor_header *) &gser_interface_desc,
+
 #ifdef CONFIG_MODEM_SUPPORT
 	(struct usb_descriptor_header *) &gser_header_desc,
 	(struct usb_descriptor_header *) &gser_call_mgmt_descriptor,
@@ -212,6 +259,7 @@ static struct usb_descriptor_header *gser_hs_function[] = {
 	(struct usb_descriptor_header *) &gser_hs_out_desc,
 	NULL,
 };
+#endif
 
 /* string descriptors: */
 
@@ -379,16 +427,41 @@ static int gser_notify(struct f_gser *gser, u8 type, u16 value,
 	struct usb_ep			*ep = gser->notify;
 	struct usb_request		*req;
 	struct usb_cdc_notification	*notify;
+#ifndef CONFIG_USB_SUPPORT_LGE_ANDROID_NMEA_FIX
+	/* LGE_CHANGE
+	 * NMEA function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
 	const unsigned			len = sizeof(*notify) + length;
+#endif
 	void				*buf;
 	int				status;
 	struct usb_composite_dev *cdev = gser->port.func.config->cdev;
+
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_NMEA_FIX
+	/* LGE_CHANGE
+	 * NMEA function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
+	unsigned char noti_buf[GS_NOTIFY_MAXPACKET];
+
+	memset(noti_buf, 0, GS_NOTIFY_MAXPACKET);
+#endif
 
 	req = gser->notify_req;
 	gser->notify_req = NULL;
 	gser->pending = false;
 
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_NMEA_FIX
+	/* LGE_CHANGE
+	 * NMEA function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
+	req->length = GS_NOTIFY_MAXPACKET;
+#else
 	req->length = len;
+#endif
+
 	notify = req->buf;
 	buf = notify + 1;
 
@@ -398,7 +471,17 @@ static int gser_notify(struct f_gser *gser, u8 type, u16 value,
 	notify->wValue = cpu_to_le16(value);
 	notify->wIndex = cpu_to_le16(gser->data_id);
 	notify->wLength = cpu_to_le16(length);
+
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_NMEA_FIX
+	/* LGE_CHANGE
+	 * NMEA function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
+	memcpy(noti_buf, data, length);
+	memcpy(buf, noti_buf, GS_NOTIFY_MAXPACKET);
+#else
 	memcpy(buf, data, length);
+#endif
 
 	status = usb_ep_queue(ep, req, GFP_ATOMIC);
 	if (status < 0) {

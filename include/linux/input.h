@@ -376,7 +376,8 @@ struct input_absinfo {
 #define KEY_DISPLAY_OFF		245	/* display device to off state */
 
 #define KEY_WIMAX		246
-#define KEY_RFKILL		247	/* Key that controls all radios */
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-05-20, add KEY_FOCUS */
+#define KEY_FOCUS		247
 
 /* Code 255 is reserved for special needs of AT keyboard driver */
 
@@ -643,6 +644,9 @@ struct input_absinfo {
 
 /* We avoid low common keys in module aliases so they don't get huge. */
 #define KEY_MIN_INTERESTING	KEY_MUTE
+/* REVISIT: keys for camera related functions */
+#define KEY_CAMERA_FOCUS	0x210
+#define KEY_CAMERA_SNAPSHOT	0x2fe
 #define KEY_MAX			0x2ff
 #define KEY_CNT			(KEY_MAX+1)
 

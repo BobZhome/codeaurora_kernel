@@ -31,7 +31,6 @@
 #include <linux/suspend.h>
 #include <linux/tick.h>
 #include <linux/uaccess.h>
-#include <linux/wakelock.h>
 #include <mach/msm_iomap.h>
 #include <mach/system.h>
 #include <asm/cacheflush.h>
@@ -43,7 +42,6 @@
 #endif
 
 #include "acpuclock.h"
-#include "clock.h"
 #include "avs.h"
 #include "cpuidle.h"
 #include "idle.h"
@@ -596,6 +594,7 @@ EXPORT_SYMBOL(msm_pm_set_max_sleep_time);
 struct msm_pm_device {
 	unsigned int cpu;
 #ifdef CONFIG_HOTPLUG_CPU
+	unsigned long saved_acpu_rate;
 	struct completion cpu_killed;
 	unsigned int warm_boot;
 #endif
@@ -683,12 +682,7 @@ static void msm_pm_power_collapse(bool from_idle)
 
 	avsdscr_setting = avs_get_avsdscr();
 	avs_disable();
-
-	if (cpu_online(dev->cpu))
-		saved_acpuclk_rate = acpuclk_power_collapse();
-	else
-		saved_acpuclk_rate = 0;
-
+	saved_acpuclk_rate = acpuclk_power_collapse();
 	if (MSM_PM_DEBUG_CLOCK & msm_pm_debug_mask)
 		pr_info("CPU%u: %s: change clock rate (old rate = %lu)\n",
 			dev->cpu, __func__, saved_acpuclk_rate);
@@ -757,12 +751,6 @@ int msm_pm_idle_prepare(struct cpuidle_device *dev)
 				allow = false;
 				break;
 			}
-#ifdef CONFIG_HAS_WAKELOCK
-			if (has_wake_lock(WAKE_LOCK_IDLE)) {
-				allow = false;
-				break;
-			}
-#endif
 			/* fall through */
 
 		case MSM_PM_SLEEP_MODE_POWER_COLLAPSE_STANDALONE:
@@ -934,8 +922,6 @@ static int msm_pm_enter(suspend_state_t state)
 		if (MSM_PM_DEBUG_SUSPEND & msm_pm_debug_mask)
 			pr_info("%s: power collapse\n", __func__);
 
-		clock_debug_print_enabled();
-
 #ifdef CONFIG_MSM_SLEEP_TIME_OVERRIDE
 		if (msm_pm_sleep_time_override > 0) {
 			int64_t ns = NSEC_PER_SEC *
@@ -1044,8 +1030,12 @@ void platform_cpu_die(unsigned int cpu)
 	flush_cache_all();
 
 	for (;;) {
-		if (allow[MSM_PM_SLEEP_MODE_POWER_COLLAPSE])
+		if (allow[MSM_PM_SLEEP_MODE_POWER_COLLAPSE]) {
+			struct msm_pm_device *dev =
+				&__get_cpu_var(msm_pm_devices);
+			dev->saved_acpu_rate = acpuclk_get_rate(cpu);
 			msm_pm_power_collapse(false);
+		}
 		else if (allow[MSM_PM_SLEEP_MODE_POWER_COLLAPSE_STANDALONE])
 			msm_pm_power_collapse_standalone(false);
 		else if (allow[MSM_PM_SLEEP_MODE_WAIT_FOR_INTERRUPT])
@@ -1073,6 +1063,16 @@ int msm_pm_platform_secondary_init(unsigned int cpu)
 #ifdef CONFIG_VFP
 	vfp_reinit();
 #endif
+
+	if (dev->saved_acpu_rate) {
+		ret = acpuclk_set_rate(dev->cpu,
+				dev->saved_acpu_rate,
+				SETRATE_PC);
+		if (ret)
+			pr_err("CPU%u: %s: failed clock rate restore(%lu)\n",
+			dev->cpu, __func__, dev->saved_acpu_rate);
+		dev->saved_acpu_rate = 0;
+	}
 	ret = msm_spm_set_low_power_mode(MSM_SPM_MODE_CLOCK_GATING, false);
 
 	return ret;
@@ -1087,7 +1087,6 @@ static int __init msm_pm_init(void)
 {
 	pgd_t *pc_pgd;
 	pmd_t *pmd;
-	unsigned long pmdval;
 	unsigned int irq;
 	unsigned int cpu;
 #ifdef CONFIG_MSM_IDLE_STATS
@@ -1103,18 +1102,8 @@ static int __init msm_pm_init(void)
 	pmd = pmd_offset(pc_pgd +
 			 pgd_index(virt_to_phys(msm_pm_collapse_exit)),
 			 virt_to_phys(msm_pm_collapse_exit));
-	pmdval = (virt_to_phys(msm_pm_collapse_exit) & PGDIR_MASK) |
-		     PMD_TYPE_SECT | PMD_SECT_AP_WRITE;
-	pmd[0] = __pmd(pmdval);
-	pmd[1] = __pmd(pmdval + (1 << (PGDIR_SHIFT - 1)));
-
-	/* It is remotely possible that the code in msm_pm_collapse_exit()
-	 * which turns on the MMU with this mapping is in the
-	 * next even-numbered megabyte beyond the
-	 * start of msm_pm_collapse_exit().
-	 * Map this megabyte in as well.
-	 */
-	pmd[2] = __pmd(pmdval + (2 << (PGDIR_SHIFT - 1)));
+	*pmd = __pmd((virt_to_phys(msm_pm_collapse_exit) & PGDIR_MASK) |
+		     PMD_TYPE_SECT | PMD_SECT_AP_WRITE);
 	flush_pmd_entry(pmd);
 	msm_pm_pc_pgd = virt_to_phys(pc_pgd);
 

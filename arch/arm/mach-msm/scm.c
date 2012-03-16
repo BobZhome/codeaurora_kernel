@@ -279,6 +279,38 @@ u32 scm_get_version(void)
 }
 EXPORT_SYMBOL(scm_get_version);
 
+#ifdef CONFIG_MACH_LGE
+/* Make a api to not report a changed SMSM state to other processor
+ * blue.park@lge.com 2010-04-14
+ */
+int smsm_change_state_nonotify(uint32_t smsm_entry,
+		      uint32_t clear_mask, uint32_t set_mask)
+{
+	unsigned long flags;
+	uint32_t  old_state, new_state;
+
+	if (smsm_entry >= SMSM_NUM_ENTRIES) {
+		pr_err("smsm_change_state: Invalid entry %d",
+		       smsm_entry);
+		return -EINVAL;
+	}
+
+	if (!smsm_info.state) {
+		pr_err("smsm_change_state <SM NO STATE>\n");
+		return -EIO;
+	}
+	spin_lock_irqsave(&smem_lock, flags);
+
+	old_state = readl(SMSM_STATE_ADDR(smsm_entry));
+	new_state = (old_state & ~clear_mask) | set_mask;
+	writel(new_state, SMSM_STATE_ADDR(smsm_entry));
+	SMSM_DBG("smsm_change_state %x\n", new_state);
+	
+	spin_unlock_irqrestore(&smem_lock, flags);
+
+	return 0;
+}
+#endif
 static int __init scm_init(void)
 {
 	u32 version = scm_get_version();

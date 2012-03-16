@@ -91,10 +91,7 @@ void set_rate_mnd(struct clk_local *clk, struct clk_freq_tbl *nf)
 
 void set_rate_nop(struct clk_local *clk, struct clk_freq_tbl *nf)
 {
-	/* Nothing to do for fixed-rate or integer-divider clocks. Any settings
-	 * in NS registers are applied in the enable path, since power can be
-	 * saved by leaving an un-clocked or slowly-clocked source selected
-	 * until the clock is enabled. */
+	/* Nothing to do for fixed-rate clocks. */
 }
 
 /*

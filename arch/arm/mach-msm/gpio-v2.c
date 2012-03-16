@@ -166,16 +166,12 @@ static inline void clr_gpio_bits(unsigned n, void __iomem *reg)
 
 static int msm_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
-	int rc;
-	rc = readl(GPIO_IN_OUT(offset)) & BIT(GPIO_IN_BIT);
-	dsb();
-	return rc;
+	return readl(GPIO_IN_OUT(offset)) & BIT(GPIO_IN_BIT);
 }
 
 static void msm_gpio_set(struct gpio_chip *chip, unsigned offset, int val)
 {
 	writel(val ? BIT(GPIO_OUT_BIT) : 0, GPIO_IN_OUT(offset));
-	dsb();
 }
 
 static int msm_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
@@ -184,7 +180,6 @@ static int msm_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
 
 	spin_lock_irqsave(&tlmm_lock, irq_flags);
 	clr_gpio_bits(BIT(GPIO_OE_BIT), GPIO_CONFIG(offset));
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irq_flags);
 	return 0;
 }
@@ -198,7 +193,6 @@ static int msm_gpio_direction_output(struct gpio_chip *chip,
 	spin_lock_irqsave(&tlmm_lock, irq_flags);
 	msm_gpio_set(chip, offset, val);
 	set_gpio_bits(BIT(GPIO_OE_BIT), GPIO_CONFIG(offset));
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irq_flags);
 	return 0;
 }
@@ -295,7 +289,6 @@ static void msm_gpio_irq_ack(unsigned int irq)
 	writel(BIT(INTR_STATUS_BIT), GPIO_INTR_STATUS(gpio));
 	if (test_bit(gpio, msm_gpio.dual_edge_irqs))
 		msm_gpio_update_dual_edge_pos(gpio);
-	dsb();
 }
 
 static void msm_gpio_irq_mask(unsigned int irq)
@@ -307,7 +300,6 @@ static void msm_gpio_irq_mask(unsigned int irq)
 	writel(TARGET_PROC_NONE, GPIO_INTR_CFG_SU(gpio));
 	clr_gpio_bits(INTR_RAW_STATUS_EN | INTR_ENABLE, GPIO_INTR_CFG(gpio));
 	__clear_bit(gpio, msm_gpio.enabled_irqs);
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irq_flags);
 
 	msm_mpm_enable_irq(irq, 0);
@@ -322,15 +314,9 @@ static void msm_gpio_irq_unmask(unsigned int irq)
 	__set_bit(gpio, msm_gpio.enabled_irqs);
 	set_gpio_bits(INTR_RAW_STATUS_EN | INTR_ENABLE, GPIO_INTR_CFG(gpio));
 	writel(TARGET_PROC_SCORPION, GPIO_INTR_CFG_SU(gpio));
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irq_flags);
 
 	msm_mpm_enable_irq(irq, 1);
-}
-
-static void msm_gpio_irq_disable(unsigned int irq)
-{
-	msm_mpm_enable_irq(irq, 0);
 }
 
 static int msm_gpio_irq_set_type(unsigned int irq, unsigned int flow_type)
@@ -366,7 +352,6 @@ static int msm_gpio_irq_set_type(unsigned int irq, unsigned int flow_type)
 	if ((flow_type & IRQ_TYPE_EDGE_BOTH) == IRQ_TYPE_EDGE_BOTH)
 		msm_gpio_update_dual_edge_pos(gpio);
 
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irq_flags);
 	msm_mpm_set_irq_type(irq, flow_type);
 
@@ -397,6 +382,8 @@ static int msm_gpio_irq_set_wake(unsigned int irq, unsigned int on)
 {
 	int gpio = msm_irq_to_gpio(&msm_gpio.gpio_chip, irq);
 
+	WARN(on, "TLMM summary wont wakeup in XO shutdown, use a direct line");
+
 	if (on) {
 		if (bitmap_empty(msm_gpio.wake_irqs, NR_MSM_GPIOS))
 			set_irq_wake(TLMM_SCSS_SUMMARY_IRQ, 1);
@@ -418,7 +405,6 @@ static struct irq_chip msm_gpio_irq_chip = {
 	.ack		= msm_gpio_irq_ack,
 	.set_type	= msm_gpio_irq_set_type,
 	.set_wake	= msm_gpio_irq_set_wake,
-	.disable	= msm_gpio_irq_disable,
 };
 
 static int __devinit msm_gpio_probe(struct platform_device *dev)
@@ -469,7 +455,6 @@ static int msm_gpio_suspend_noirq(struct device *dev)
 		if (!test_bit(i, msm_gpio.wake_irqs))
 			writel(TARGET_PROC_NONE, GPIO_INTR_CFG_SU(i));
 	}
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irq_flags);
 	return 0;
 }
@@ -499,7 +484,6 @@ static int msm_gpio_resume_noirq(struct device *dev)
 	spin_lock_irqsave(&tlmm_lock, irq_flags);
 	for_each_set_bit(i, msm_gpio.enabled_irqs, NR_MSM_GPIOS)
 		writel(TARGET_PROC_SCORPION, GPIO_INTR_CFG_SU(i));
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irq_flags);
 	return 0;
 }
@@ -565,7 +549,6 @@ static void msm_tlmm_set_field(const struct tlmm_field_cfg *configs,
 	reg_val &= ~(mask << configs[id].off);
 	reg_val |= (val & mask) << configs[id].off;
 	writel(reg_val, reg);
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irqflags);
 }
 
@@ -594,7 +577,6 @@ int gpio_tlmm_config(unsigned config, unsigned disable)
 		((GPIO_FUNC(config) << 2) & (0xf << 2)) |
 		((GPIO_PULL(config) & 0x3));
 	writel(flags, GPIO_CONFIG(gpio));
-	dsb();
 
 	return 0;
 }
@@ -624,7 +606,6 @@ int msm_gpio_install_direct_irq(unsigned gpio, unsigned irq,
 		bits |= DC_POLARITY_HI;
 	writel(bits, DIR_CONN_INTR_CFG_SU(irq));
 
-	dsb();
 	spin_unlock_irqrestore(&tlmm_lock, irq_flags);
 
 	return 0;

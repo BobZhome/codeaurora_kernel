@@ -150,7 +150,6 @@ struct kgsl_platform_data {
 	unsigned int nap_allowed;
 	unsigned int pt_va_size;
 	unsigned int pt_max_count;
-	bool pwrrail_first;
 };
 
 #endif
