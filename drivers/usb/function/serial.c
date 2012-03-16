@@ -500,6 +500,7 @@ static void gs_init_header_desc(struct gs_dev *dev)
 	int index_desc = 0 ;
 
 	index_desc = 0;
+
 	if(!strcmp(dev->func->name,"modem")){
 		dev->gs_highspeed_header[index_desc++] =
 			(struct usb_descriptor_header *)&dev->gs_com_ifc_desc;
@@ -534,6 +535,7 @@ static void gs_init_header_desc(struct gs_dev *dev)
 	}
 
 	index_desc = 0;
+
 	if(!strcmp(dev->func->name,"modem")){
 		dev->gs_fullspeed_header[index_desc++] =
 			(struct usb_descriptor_header *)&dev->gs_com_ifc_desc;

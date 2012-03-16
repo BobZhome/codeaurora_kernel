@@ -72,6 +72,18 @@ static struct msm_panel_common_pdata mdp_pdata = {
 
 static void __init msm_fb_add_devices(void)
 {
+<<<<<<< HEAD
+=======
+	/* 
+	------------------------------------
+	   |  Rev C     |  Rev 1.0
+	------------------------------------
+	VREG_GP1 | always off | +2.8V_LCD 
+	------------------------------------
+	VREG_GP2 | +2.8V_LCD  | +1.8V_HPVDD
+	------------------------------------
+	*/
+>>>>>>> vendor-ls670-froyo
 	if(lge_bd_rev >= 8) /* >= Rev 1.0 */
 		strcpy(msm_fb_vreg[1], "gp1");
 	
@@ -88,6 +100,10 @@ static int mddi_novatek_pmic_backlight(int level)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 static struct msm_panel_novatek_pdata mddi_novatek_panel_data = {
 	.gpio = 102,				/* lcd reset_n */
 	.pmic_backlight = mddi_novatek_pmic_backlight,
@@ -112,6 +128,10 @@ static int mddi_hitachi_pmic_backlight(int level)
 }
 
 #if 1
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	static struct msm_panel_hitachi_pdata mddi_hitachi_panel_data = {
 		.gpio = 102,				/* lcd reset_n */
 		.pmic_backlight = mddi_hitachi_pmic_backlight,

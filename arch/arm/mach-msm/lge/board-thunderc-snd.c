@@ -36,6 +36,10 @@ static struct snd_endpoint snd_endpoints_list[] = {
 	SND(SPEAKER_IN_CALL,28),
 	SND(CURRENT,30)
 #else
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 	SND(HANDSET, 5),
 	SND(HEADSET_LOOPBACK, 1),
 	SND(HEADSET, 2),
@@ -57,6 +61,10 @@ static struct snd_endpoint snd_endpoints_list[] = {
 	SND(BT_VR, 22),	
 	SND(CURRENT, 29),
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #endif
 };
 #undef SND
@@ -73,7 +81,11 @@ struct platform_device msm_device_snd = {
 		.platform_data = &msm_device_snd_endpoints
 	},
 };
+<<<<<<< HEAD
 /* It is related that CASE 284824 which vdec_open failed */
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if 1
 #define DEC0_FORMAT ((1<<MSM_ADSP_CODEC_AAC)|(1<<MSM_ADSP_CODEC_WMA)| \
 	(1<<MSM_ADSP_CODEC_WMAPRO)|(1<<MSM_ADSP_CODEC_AMRWB)| \

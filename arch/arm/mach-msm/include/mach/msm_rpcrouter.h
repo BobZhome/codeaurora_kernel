@@ -54,7 +54,7 @@ typedef uint8_t   AT_STR_t;
 #define MAX_STRING_RET (ABSOLUTE_STRING_LENGTH/sizeof(AT_STR_t))
 
 typedef uint8_t AT_SEND_BUFFER_t;
-#define MAX_SEND_LOOP_NUM  8 // 4
+#define MAX_SEND_LOOP_NUM  8 // 4 => 8 
 #define ABSOLUTE_SEND_SIZE  256
 #define MAX_SEND_SIZE_BUFFER (ABSOLUTE_SEND_SIZE/sizeof(AT_SEND_BUFFER_t))
 #define LIMIT_MAX_SEND_SIZE_BUFFER (MAX_SEND_SIZE_BUFFER*MAX_SEND_LOOP_NUM)
@@ -115,7 +115,6 @@ typedef struct
 #define RPC_RETURN_RESULT_OK     8
 #define RPC_RETURN_RESULT_MIDDLE_OK     9
 #endif /*LG_FW_ATS_ETA_MTC*/
-
 
 	/*
 	 * Following data is dependant on accept_stat

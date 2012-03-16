@@ -59,6 +59,7 @@ struct msm_camera_device_platform_data {
 	struct msm_camera_io_ext ioext;
 };
 #endif
+
 enum msm_camera_csi_data_format {
 	CSI_8BIT,
 	CSI_10BIT,

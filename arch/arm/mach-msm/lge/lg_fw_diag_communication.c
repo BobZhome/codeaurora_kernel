@@ -11,6 +11,14 @@
  * GNU General Public License for more details.
  *
  */
+<<<<<<< HEAD
+=======
+/*
+ *
+ * kiwone creates this file for audio test mode, 
+ * and the use of another function to send framework.
+ */
+>>>>>>> vendor-ls670-froyo
 
 #include <linux/module.h>
 #include <linux/kernel.h>

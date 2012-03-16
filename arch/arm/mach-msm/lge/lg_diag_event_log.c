@@ -19,6 +19,10 @@
  *  along with this program; if not, you can find it at http://www.fsf.org
  */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #include <linux/platform_device.h>
 #include <linux/input.h>
 
@@ -30,6 +34,10 @@ extern uint8_t lgf_factor_key_test_rsp(char);
 
 int diag_log_status = 0;
 
+<<<<<<< HEAD
+=======
+/* key list */
+>>>>>>> vendor-ls670-froyo
 int diag_key_list[]= {
 	/* thunder keypad key */
 	KEY_MENU,
@@ -51,6 +59,16 @@ static int diag_event_log_connect(struct input_handler *handler,struct input_dev
 	struct input_handle *handle;
 	printk(" connect () %s \n\n",dev->name);
 
+<<<<<<< HEAD
+=======
+	/*
+	for (i = 0 ; i < ARRAY_SIZE(diag_key_list); i++){
+		if (!test_bit(diag_key_list[i], dev->keybit))
+			continue;
+	}
+	*/
+	
+>>>>>>> vendor-ls670-froyo
 	handle = kzalloc(sizeof(*handle), GFP_KERNEL);
 	if(!handle)
 		return -ENOMEM;

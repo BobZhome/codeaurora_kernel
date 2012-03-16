@@ -136,6 +136,7 @@ struct usb_composition usb_func_composition[] = {
 		    
 	{
 		.product_id = 0x6003,
+<<<<<<< HEAD
 		.functions = 0x0F 	/* 001111  Modem,diag,NMEA,Mass */
 	},
 	
@@ -169,6 +170,20 @@ struct usb_composition usb_func_composition[] = {
 		.functions = 0x18	/* 011000      Mass,ADB */
 
 	},
+=======
+		.functions = 0x0F 	/* 001111  Modem,diag,NMEA,Mass*/
+	},
+	
+	{
+		.product_id = 0x618E,
+		.functions = 0x1F	/* 011111      Modem,diag,NMEA,Mass,ADB */
+	},
+	{
+		
+		.product_id = 0x61CC,
+		.functions = 0x08	/* 001000      Mass */
+	},
+>>>>>>> vendor-ls670-froyo
 };
 #endif
 
@@ -178,6 +193,10 @@ struct msm_hsusb_platform_data msm_hsusb_pdata = {
 	.phy_info = (USB_PHY_INTEGRATED | USB_PHY_MODEL_65NM),
 	.vendor_id = 0x1004,
 	.product_name = "LG Android USB Device",
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT
 	.serial_number = "LGANDROIDLS670",
 #else
@@ -226,7 +245,11 @@ static struct platform_device *devices[] __initdata = {
 	&msm_device_snd,
 	&msm_device_adspdec,
 	&lg_fw_diagcmd_device,
+<<<<<<< HEAD
 	&lg_diag_cmd_device,
+=======
+	&lg_diag_cmd_device,	
+>>>>>>> vendor-ls670-froyo
 	&testmode_device,
 };
 
@@ -247,6 +270,10 @@ static struct msm_acpu_clock_platform_data msm7x2x_clock_data = {
 void msm_serial_debug_init(unsigned int base, int irq,
 			   struct device *clk_device, int signal_irq);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 unsigned pmem_fb_size = 0x96000;
 
 unsigned pmem_adsp_size = 0xAE4000;

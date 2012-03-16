@@ -78,16 +78,26 @@
 
 #if defined(CONFIG_USB_SUPPORT_LGDRIVER)
 static int pid = 0x618E;   /* Diag + Modem + NMEA + Mass storage + ADB*/ 
+<<<<<<< HEAD
 static int ums_pid = 0x61CE;   /* Mass storage */ 
+=======
+static int ums_pid = 0x61CC;   /* Mass storage */ 
+>>>>>>> vendor-ls670-froyo
 #else	/* origin */
 static int pid = 0x9018;
 #endif
 
 static int usb_chg_type = 0;
 static int usb_maxpower = 0;
+<<<<<<< HEAD
 #if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
 static int ADB_state = 0; 
 static int MODEM_state = 1; // enabled as default
+=======
+
+#if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+static int ADB_state = 0; 
+>>>>>>> vendor-ls670-froyo
 #endif
 
 
@@ -142,6 +152,10 @@ static void usb_chg_stop(struct work_struct *w);
 
 #if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB) || \
 	defined(CONFIG_USB_SUPPORT_LGE_SERIAL_FROM_ARM9_MEID)
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 extern int msm_chg_LG_cable_type(void);
 extern void msm_get_MEID_type(char *);
 #endif
@@ -164,6 +178,10 @@ extern void msm_get_MEID_type(char *);
 
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB) || \
 	defined(CONFIG_USB_SUPPORT_LGE_SERIAL_FROM_ARM9_MEID)
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #define LG_FACTORY_CABLE_TYPE 		3
 #define LG_FACTORY_CABLE_130K_TYPE 	10
 #define LT_ADB_CABLE 			0xff
@@ -284,6 +302,10 @@ static int ulpi_write(struct usb_info *ui, unsigned val, unsigned reg);
 static void ep0_setup_ack(struct usb_info *ui);
 #endif
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 static DEFINE_MUTEX(chg_usb_lock);
 
 struct usb_device_descriptor desc_device = {
@@ -328,6 +350,10 @@ static ssize_t print_switch_state(struct switch_dev *sdev, char *buf)
 	return sprintf(buf, "%s\n", (ui->online ? "online" : "offline"));
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #define USB_WALLCHARGER_CHG_CURRENT 2000
 static int usb_get_max_power(struct usb_info *ui)
 {
@@ -345,6 +371,10 @@ static int usb_get_max_power(struct usb_info *ui)
 	if (temp == USB_CHG_TYPE__INVALID)
 		return -ENODEV;
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if (temp == USB_CHG_TYPE__WALLCHARGER)
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		return LS670_TA_CHG_CURRENT;
@@ -353,6 +383,10 @@ static int usb_get_max_power(struct usb_info *ui)
 #endif
 
 	if (suspended || !configured)
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		return 10;
 #else
@@ -2005,6 +2039,10 @@ static int usb_hw_reset(struct usb_info *ui)
 	writel(ui->dma, USB_ENDPOINTLISTADDR);
 
 #if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 	if( msm_chg_LG_cable_type() == LG_FACTORY_CABLE_TYPE) {
 		unsigned tmp = 0; 
 
@@ -2070,13 +2108,18 @@ static void usb_reset(struct usb_info *ui)
 #endif
 
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
 	/* LG_FW khlee 2010.01.21 - If you are booting up cable is not connected,
 	 * Composite switching do not be operated, So we have to chaged it here */
 	//tempPID = ui->composition->product_id;
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if( nCableType == LG_FACTORY_CABLE_TYPE ||
 	    nCableType == LG_FACTORY_CABLE_130K_TYPE) // LT 
 		tempPID = LG_FACTORY_USB_PID;
 	else {
+<<<<<<< HEAD
 		if(ADB_state) {
 			if (0 == MODEM_state)
 				tempPID = 0x61A6;   // ADB enable
@@ -2089,6 +2132,12 @@ static void usb_reset(struct usb_info *ui)
 			else
 				tempPID = ums_pid;   // ADB disable
 		}
+=======
+		if(ADB_state)
+			tempPID = 0x618E;   // ADB enable
+		else
+			tempPID = ums_pid;   // ADB disable
+>>>>>>> vendor-ls670-froyo
 	}
 
 	if( tempPID != ui->composition->product_id)
@@ -2474,10 +2523,15 @@ void usb_function_enable(const char *function, int enable)
 
 
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
 	if (strncmp(function, "adb", 3) == 0)
 		ADB_state = enable;
 	else if (strncmp(function, "modem", 5) == 0)
 		MODEM_state = enable;
+=======
+	
+	ADB_state = enable;
+>>>>>>> vendor-ls670-froyo
 #endif
 	pr_info("%s: name = %s, enable = %d\n", __func__, function, enable);
 	
@@ -2510,12 +2564,17 @@ void usb_function_enable(const char *function, int enable)
 		return;
 	}
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if (pid == 0x6001) {
 		pid = 0x6000;
 		// LG_FW khlee : during the cablibration, 
 		// ADB enable signal can make the failure. 
 		return;     
 	}
+<<<<<<< HEAD
 	else if (1 == MODEM_state) {
 		pid = 0x618E;
 		
@@ -2529,6 +2588,12 @@ void usb_function_enable(const char *function, int enable)
 	
 	else if (pid == 0x6003) { 
 	//else {
+=======
+	else if (pid == 0x6002) {
+		pid = 0x618E;
+	}
+	else if (pid == 0x6003) {
+>>>>>>> vendor-ls670-froyo
 		pid = ums_pid;
 	}
 #endif
@@ -2563,7 +2628,13 @@ static int usb_vbus_is_on(struct usb_info *ui)
 {
 	unsigned tmp;
 
+<<<<<<< HEAD
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+=======
+	
+#if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+	
+>>>>>>> vendor-ls670-froyo
 	int cable_type;
 #if defined(CONFIG_USB_SUPPORT_LG_SMEM_CABLE_TYPE)
 	cable_type = lgwfw_smem_cable_type();
@@ -2688,9 +2759,17 @@ static void usb_do_work(struct work_struct *w)
 					 */
 					msm_hsusb_suspend_locks_acquire(ui, 1);
 
+<<<<<<< HEAD
 					mutex_lock(&chg_usb_lock);
 					msm_chg_usb_i_is_not_available();
 					msm_chg_usb_charger_disconnected();
+=======
+					
+					mutex_lock(&chg_usb_lock);
+					msm_chg_usb_i_is_not_available();
+					msm_chg_usb_charger_disconnected();
+					
+>>>>>>> vendor-ls670-froyo
 					mutex_unlock(&chg_usb_lock);
 
 				}
@@ -2706,6 +2785,10 @@ static void usb_do_work(struct work_struct *w)
 					msm_pm_app_enable_usb_ldo(0);
 				ui->state = USB_STATE_OFFLINE;
 #if defined(CONFIG_USB_SUPPORT_LGDRIVER)
+<<<<<<< HEAD
+=======
+				
+>>>>>>> vendor-ls670-froyo
 				switch_set_state(&ui->sdev, ui->online);
 				enable_irq(ui->irq);
 #else	/* origin */
@@ -2726,8 +2809,15 @@ static void usb_do_work(struct work_struct *w)
 				int maxpower = usb_get_max_power(ui);
 
 				if (maxpower > 0) {
+<<<<<<< HEAD
 					mutex_lock(&chg_usb_lock);
 					msm_chg_usb_i_is_available(maxpower);
+=======
+					
+					mutex_lock(&chg_usb_lock);
+					msm_chg_usb_i_is_available(maxpower);
+					
+>>>>>>> vendor-ls670-froyo
 					mutex_unlock(&chg_usb_lock);
 				}
 
@@ -2935,8 +3025,15 @@ static void usb_chg_stop(struct work_struct *w)
 	spin_unlock_irqrestore(&ui->lock, flags);
 
 	if (temp == USB_CHG_TYPE__SDP) {
+<<<<<<< HEAD
 		mutex_lock(&chg_usb_lock);
 		msm_chg_usb_i_is_not_available();
+=======
+		
+		mutex_lock(&chg_usb_lock);
+		msm_chg_usb_i_is_not_available();
+		
+>>>>>>> vendor-ls670-froyo
 		mutex_unlock(&chg_usb_lock);
 	}
 }
@@ -3170,11 +3267,19 @@ static void usb_debugfs_init(struct usb_info *ui)
 	debugfs_reset = debugfs_create_file("reset", 0222,
 				debugfs_dent, ui, &debug_reset_ops);
 	debugfs_cycle = debugfs_create_file("cycle", 0222,
+<<<<<<< HEAD
 				debugfs_dent, ui, &debug_cycle_ops);
 	debugfs_chg_type = debugfs_create_u32("chg_type", 0444,
 				debugfs_dent, &usb_chg_type);
 	debugfs_chg_type = debugfs_create_u32("maxpower", 0444,
 				debugfs_dent, &usb_maxpower);
+=======
+				debugfs_dent, ui, &debug_cycle_ops);	
+	debugfs_chg_type = debugfs_create_u32("chg_type", 0444,
+				debugfs_dent, &usb_chg_type);
+	debugfs_chg_type = debugfs_create_u32("maxpower", 0444,
+				debugfs_dent, &usb_maxpower);	
+>>>>>>> vendor-ls670-froyo
 }
 
 static void usb_debugfs_uninit(void)
@@ -3182,9 +3287,15 @@ static void usb_debugfs_uninit(void)
 	debugfs_remove(debugfs_status);
 	debugfs_remove(debugfs_reset);
 	debugfs_remove(debugfs_cycle);
+<<<<<<< HEAD
 	debugfs_remove(debugfs_dent);
 	debugfs_remove(debugfs_chg_type);
 	debugfs_remove(debugfs_maxpower);
+=======
+	debugfs_remove(debugfs_dent);	
+	debugfs_remove(debugfs_chg_type);
+	debugfs_remove(debugfs_maxpower);	
+>>>>>>> vendor-ls670-froyo
 }
 
 #else
@@ -3195,6 +3306,10 @@ static void usb_debugfs_uninit(void) {}
 static void usb_configure_device_descriptor(struct usb_info *ui)
 {
 #if defined(CONFIG_USB_SUPPORT_LGE_SERIAL_FROM_ARM9_MEID)
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	char meid[15];
 	/* MEID is constitued of 14 characters */
 	char df_serialno[15] ;
@@ -3206,24 +3321,40 @@ static void usb_configure_device_descriptor(struct usb_info *ui)
 
 #if defined(CONFIG_USB_SUPPORT_LGE_SERIAL_FROM_ARM9_MEID)
 	memset(df_serialno,0,15);
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	memset(meid, 0, 15);
 	//msm_get_MEID_type(df_serialno);
 	msm_get_MEID_type(meid);
 	strncpy(df_serialno, meid, 15);
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	ui->pdata->serial_number = df_serialno;
 
 	/* If it is null MEID, do not copy */
 	if (!strcmp(df_serialno,"00000000000000"))
 		ui->pdata->serial_number = NULL;
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if (msm_chg_LG_cable_type() == LT_ADB_CABLE) {
 		sprintf(df_serialno,"%s","LGE_ANDROID_DE");
 		ui->pdata->serial_number = df_serialno;
 	}
 #endif
 
+<<<<<<< HEAD
 #if(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+=======
+#if(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)	
+>>>>>>> vendor-ls670-froyo
 	if (ui->composition->product_id == LG_FACTORY_USB_PID) {
 		desc_device.idProduct = ui->composition->product_id;
 		ui->pdata->serial_number = NULL;
@@ -3248,11 +3379,14 @@ static void usb_configure_device_descriptor(struct usb_info *ui)
 		desc_device.bDeviceClass = 0x00;
 		desc_device.bDeviceSubClass = 0x00;
 	}
+<<<<<<< HEAD
 	else if (desc_device.idProduct == 0x61A6) {
 		desc_device.bDeviceClass = 0xEF;
 		desc_device.bDeviceSubClass = 0x02;
 		desc_device.bDeviceProtocol = 1;
 	}
+=======
+>>>>>>> vendor-ls670-froyo
 	else {                                   // debug enable & facotory driver
 		desc_device.bDeviceClass = 0x02;
 		desc_device.bDeviceSubClass = 0x02;
@@ -3309,6 +3443,10 @@ static ssize_t msm_hsusb_show_compswitch(struct device *dev,
 	if (ui->composition)
 		i = scnprintf(buf, PAGE_SIZE,
 #if defined(CONFIG_USB_SUPPORT_LGDRIVER)
+<<<<<<< HEAD
+=======
+		
+>>>>>>> vendor-ls670-froyo
 				"%x\n",
 #else	/* origin */
 				"composition product id = %x\n",
@@ -3384,9 +3522,15 @@ static ssize_t msm_hsusb_show_speed(struct device *dev,
 	return i;
 }
 
+<<<<<<< HEAD
 static DEVICE_ATTR(composition, 0666,
 		msm_hsusb_show_compswitch, msm_hsusb_store_compswitch);
 static DEVICE_ATTR(func_enable, 0666,
+=======
+static DEVICE_ATTR(composition, 0664,
+		msm_hsusb_show_compswitch, msm_hsusb_store_compswitch);
+static DEVICE_ATTR(func_enable, S_IWUSR,
+>>>>>>> vendor-ls670-froyo
 		NULL, msm_hsusb_store_func_enable);
 static DEVICE_ATTR(autoresume, 0222,
 		NULL, msm_hsusb_store_autoresume);
@@ -3420,6 +3564,10 @@ static ssize_t  show_##function(struct device *dev,			\
 									\
 static DEVICE_ATTR(function, S_IRUGO, show_##function, NULL);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined (CONFIG_USB_SUPPORT_LGDRIVER)
 msm_hsusb_func_attr(modem, 0);
 msm_hsusb_func_attr(diag, 1);
@@ -3458,6 +3606,10 @@ static struct attribute *msm_hsusb_func_attrs[] = {
 };
 #endif
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 static struct attribute_group msm_hsusb_func_attr_grp = {
 	.name  = "functions",
 	.attrs = msm_hsusb_func_attrs,
@@ -3519,6 +3671,10 @@ static int __init usb_probe(struct platform_device *pdev)
 	ui->pdata = pdev->dev.platform_data;
 
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	nCableType = msm_chg_LG_cable_type();
 	if( nCableType == LG_FACTORY_CABLE_TYPE ||
 	    nCableType == LG_FACTORY_CABLE_130K_TYPE)  //detect LT cable
@@ -3693,6 +3849,10 @@ static int __init usb_probe(struct platform_device *pdev)
 	ui->functions_map = ui->pdata->function_map;
 	ui->selfpowered = 0;
 	ui->remote_wakeup = 0;
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 	ui->maxpower = LS670_USB_CHG_CURRENT / 2;
 #else /* qualcomm or google */

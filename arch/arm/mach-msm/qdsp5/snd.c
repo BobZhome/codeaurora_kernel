@@ -57,7 +57,7 @@ static struct snd_ctxt the_snd;
 #define SND_AGC_CTL_PROC 30
 
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) 
-//#if (CONFIG_LGE_AUDIO_HIDDEN_MENU_TEST_PATCH)
+
 #define SND_SET_LOOPBACK_MODE_PROC 61
 #else
 #define SND_SET_LOOPBACK_MODE_PROC 61
@@ -78,7 +78,7 @@ static struct snd_ctxt the_snd;
 #endif
 
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) 
-//#if (CONFIG_LGE_AUDIO_HIDDEN_MENU_TEST_PATCH)
+
 #define SND_SET_CALL_ACOUSTIC_PATH_ONOFF_PROC 62
 #endif
 
@@ -135,7 +135,7 @@ struct snd_agc_ctl_msg {
 struct snd_endpoint *get_snd_endpoints(int *size);
 
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) 
-//#if (CONFIG_LGE_AUDIO_HIDDEN_MENU_TEST_PATCH)
+
 struct snd_set_loopback_param_rep {
 	struct rpc_reply_hdr hdr;
 	uint32_t get_mode;

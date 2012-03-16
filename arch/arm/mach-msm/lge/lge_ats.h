@@ -111,15 +111,25 @@
 #define ATCMD_MTC	  80 
 
 //songth - more drm command 
+<<<<<<< HEAD
 #define ATCMD_DRMINDEX		81
 
+=======
+#define ATCMD_DRMINDEX		81 
+
+//LGE_UPDATE_S 2009.07.07 [seypark@lge.com]
+>>>>>>> vendor-ls670-froyo
 #define ATCMD_FLIGHT		82
 #define ATCMD_LANG			83
 //LGE_UPDATE_E
 
 // yorong drm command
 #define ATCMD_DRMIMEI		84
+<<<<<<< HEAD
 #define ATCMD_POWERDOWN		85
+=======
+#define ATCMD_POWERDOWN		85  
+>>>>>>> vendor-ls670-froyo
 
 //////////////////////////////////////////////////////////////////
 // at_cmd value end

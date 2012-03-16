@@ -97,6 +97,10 @@ int  host_oob_irq = 0;
 }
 #endif /* defined(OOB_INTR_ONLY) */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 /* Customer function to control hw specific wlan gpios */
 void
@@ -106,6 +110,10 @@ dhd_customer_gpio_wlan_ctrl(int onoff, int irq_detect_ctrl)
 void
 dhd_customer_gpio_wlan_ctrl(int onoff)
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 {
 	switch (onoff) {
 		case WLAN_RESET_OFF:
@@ -115,6 +123,10 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 			bcm_wlan_power_off(2);
 #endif /* CUSTOMER_HW */
 			WL_ERROR(("=========== WLAN placed in RESET ========\n"));
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 			if (gpio_get_value(CONFIG_BCM4325_GPIO_WL_RESET)) {
 				if(irq_detect_ctrl)
@@ -122,6 +134,10 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 				gpio_set_value(CONFIG_BCM4325_GPIO_WL_RESET, 0);
 			}
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 		break;
 
 		case WLAN_RESET_ON:
@@ -131,6 +147,10 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 			bcm_wlan_power_on(2);
 #endif /* CUSTOMER_HW */
 			WL_ERROR(("=========== WLAN going back to live  ========\n"));
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 			if (!gpio_get_value(CONFIG_BCM4325_GPIO_WL_RESET)) { 
 				gpio_set_value(CONFIG_BCM4325_GPIO_WL_RESET, 1);
@@ -138,6 +158,10 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 					enable_irq(gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET));
 			}
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 		break;
 
 		case WLAN_POWER_OFF:
@@ -146,13 +170,23 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 #ifdef CUSTOMER_HW
 			bcm_wlan_power_off(1);
 #endif /* CUSTOMER_HW */
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 #ifdef CONFIG_BCM4325_GPIO_WL_REGON
 			if (!gpio_get_value(CONFIG_BCM4325_GPIO_BT_RESET)) {
 				gpio_set_value(CONFIG_BCM4325_GPIO_WL_REGON, 0);
 			}
 #endif /* CONFIG_BCM4325_GPIO_WL_REGON */
+<<<<<<< HEAD
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+=======
+
+#endif /* CONFIG_LGE_BCM432X_PATCH */
+
+>>>>>>> vendor-ls670-froyo
 		break;
 
 		case WLAN_POWER_ON:
@@ -161,17 +195,31 @@ dhd_customer_gpio_wlan_ctrl(int onoff)
 #ifdef CUSTOMER_HW
 			bcm_wlan_power_on(1);
 #endif /* CUSTOMER_HW */
+<<<<<<< HEAD
 #if defined(CONFIG_LGE_BCM432X_PATCH)
+=======
+
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+
+>>>>>>> vendor-ls670-froyo
 #ifdef CONFIG_BCM4325_GPIO_WL_REGON
 			if (!gpio_get_value(CONFIG_BCM4325_GPIO_WL_REGON)) { 
 				gpio_set_value(CONFIG_BCM4325_GPIO_WL_REGON, 1);
 				mdelay(150);
 			}
 #endif /* CONFIG_BCM4325_GPIO_WL_REGON */
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #else /* CONFIG_LGE_BCM432X_PATCH */
 			/* Lets customer power to get stable */
 			OSL_DELAY(500);
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 		break;
 	}
 }

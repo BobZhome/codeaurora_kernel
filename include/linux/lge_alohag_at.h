@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 struct atcmd_dev {
 //	const char	*name;
 	char	*name;
@@ -22,6 +26,10 @@ extern void update_atcmd_state(struct atcmd_dev *sdev, char *cmd, int state);
 extern struct atcmd_dev *atcmd_get_dev(void);
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 struct ats_mtc_key_log_type{
 	unsigned char log_id;
 	unsigned short log_len;

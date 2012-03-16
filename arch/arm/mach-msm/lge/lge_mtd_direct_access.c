@@ -23,16 +23,31 @@
 #include "lg_fw_diag_communication.h"
 
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
 #define MISC_PART_NUM 7
 #define MISC_PART_SIZE 4
 #define PERSIST_PART_NUM 8
 #define PERSIST_PART_SIZE 12
+=======
+//#define MISC_PART_NUM 6
+#define MISC_PART_NUM 7
+#define MISC_PART_SIZE 4
+//#define PERSIST_PART_NUM 7
+#define PERSIST_PART_NUM 8
+#define PERSIST_PART_SIZE 12
+//#define PAGE_NUM_PER_BLK 64
+//#define PAGE_SIZE_BYTE 2048
+>>>>>>> vendor-ls670-froyo
 #else
 #define MISC_PART_NUM	4
 #endif
 
 static struct mtd_info *mtd;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 void *lge_mtd_direct_access_addr;
 static unsigned char *global_buf;
 //static unsigned char global_buf[PAGE_NUM_PER_BLK*PAGE_SIZE_BYTE];
@@ -109,8 +124,11 @@ static int test_write_block(const char *val, struct kernel_param *kp)
 		test_string="FACT_RESET_6";
 	else if (3 == flag)
 		test_string="FACT_RESET_3";
+<<<<<<< HEAD
 	else if (7 == flag)
 		test_string="FACT_RESET_7";
+=======
+>>>>>>> vendor-ls670-froyo
 	else
 		return -1;
 
@@ -385,5 +403,9 @@ module_init(lge_mtd_direct_access_init);
 module_exit(lge_mtd_direct_access_exit);
 
 MODULE_DESCRIPTION("LGE mtd direct access apis");
+<<<<<<< HEAD
 MODULE_AUTHOR("SungEun Kim");
+=======
+MODULE_AUTHOR("SungEun Kim ");
+>>>>>>> vendor-ls670-froyo
 MODULE_LICENSE("GPL");

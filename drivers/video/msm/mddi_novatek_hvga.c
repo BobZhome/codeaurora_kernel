@@ -20,12 +20,20 @@
  */
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #include "msm_fb.h"
 #include "mddihost.h"
 #include "mddihosti.h"
 #include <asm/gpio.h>
 #include <mach/vreg.h>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #include <mach/board_lge.h>
 
 
@@ -41,6 +49,10 @@
 
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #define LCD_CONTROL_BLOCK_BASE	0x110000
 #define INTFLG		LCD_CONTROL_BLOCK_BASE|(0x18)
 #define INTMSK		LCD_CONTROL_BLOCK_BASE|(0x1c)
@@ -65,6 +77,11 @@ static uint16 mddi_novatek_vsync_attempts;
 extern int g_mddi_lcd_probe;
 #endif
 
+<<<<<<< HEAD
+=======
+
+//static struct msm_panel_common_pdata *mddi_novatek_pdata;
+>>>>>>> vendor-ls670-froyo
 static struct msm_panel_novatek_pdata *mddi_novatek_pdata;
 
 static int mddi_novatek_lcd_on(struct platform_device *pdev);
@@ -193,11 +210,21 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0x1B80, 1, {0x0050}}, // Set VCOMMH=3.5V
 	{0x1C80, 1, {0x0080}}, // VCOM Control
 	{0x9480, 1, {0x0017}}, // Set LTPS timing : 23 clks
+<<<<<<< HEAD
+=======
+  /* LGE_CHANGE [james.jang@lge.com] 2010-07-15, 33 -> 31 CLKS */
+	//{0x9580, 1, {0x0021}}, // Set LTPS timing : 33 clks
+>>>>>>> vendor-ls670-froyo
 	{0x9580, 1, {0x0017}}, // Set LTPS timing : 33 clks
 	{0x9680, 1, {0x0005}}, // Set LTPS timing : 5 clks
 	{0x9780, 1, {0x000C}}, // Set LTPS timing : 12 clks
 	{0x9880, 1, {0x0072}}, // Set LTPS timing : 114 clks
 	{0x9980, 1, {0x0012}}, // Set LTPS timing : 18 clks
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE [james.jang@lge.com] 2010-07-15 */
+	//{0x9A80, 1, {0x0088}}, // Set LTPS timing : 136 clks
+>>>>>>> vendor-ls670-froyo
 	{0x9A80, 1, {0x0084}}, // Set LTPS timing : 132 clks
 	{0x9B80, 1, {0x0001}}, // Set LTPS timing : 1 clks
 	{0x9C80, 1, {0x0005}}, // Set LTPS timing : 5 clks
@@ -208,7 +235,11 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0xA480, 1, {0x003F}}, // Set LTPS timing
 	{0xA680, 1, {0x0008}}, // Set LTPS timing
 	//{0x3600, 1, {0x0008}}, // Set RGB	
+<<<<<<< HEAD
 	#if defined(GAMMA_CURRENT)
+=======
+	#if defined(GAMMA_CURRENT) /* LGE_CHANGE [james.jang@lge.com] 2010-07-15, Gamma setting */
+>>>>>>> vendor-ls670-froyo
 	{0x2880, 1, {0x0009}}, // Set Gamma R
 	{0x2980, 1, {0x001E}}, // Set Gamma R
 	{0x2A80, 1, {0x0045}}, // Set Gamma R
@@ -873,9 +904,19 @@ static struct display_table mddi_novatek_initialize[] = {
 	//{0x1100, 1, {0x0000}}, // sleep out
 	//{REGFLAG_DELAY, 100, {}},
 #endif
+<<<<<<< HEAD
 	{0x5100, 1, {0x0000}}, // Output LEDPWM=0% Duty
 	{0x5300, 1, {0x002C}}, // Output LEDPWM=50% Duty
 
+=======
+	
+	//{0x5100, 1, {0x007F}}, // Output LEDPWM=50% Duty
+	{0x5100, 1, {0x0000}}, // Output LEDPWM=0% Duty
+	{0x5300, 1, {0x002C}}, // Output LEDPWM=50% Duty
+
+	
+	// set horizontal address 
+>>>>>>> vendor-ls670-froyo
 	{0x2a00, 1, {0x0000}}, // XSA
 	{0x2a01, 1, {0x0000}}, // XSA
 	{0x2a02, 1, {0x0000}}, // XEA
@@ -885,6 +926,10 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0x2b01, 1, {0x0000}}, // YSA
 	{0x2b02, 1, {0x0000}}, // YEA
 	{0x2b03, 1, {0x01df}}, // YEA, 480-1
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 
 	{0x3600, 1, {0x0008}}, // Set RGB
 	{0x3A00, 1, {0x0055}}, // Set RGB565
@@ -927,6 +972,10 @@ static void mddi_novatek_vsync_set_handler(msm_fb_vsync_handler_type handler,
 	boolean error = FALSE;
 	unsigned long flags;
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	printk("%s : handler = %x\n", 
 			__func__, (unsigned int)handler);
 
@@ -972,10 +1021,18 @@ static int mddi_novatek_lcd_on(struct platform_device *pdev)
 		is_lcd_on = TRUE;
 		return 0;
 	}
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if (system_state == SYSTEM_BOOTING && mddi_novatek_pdata->initialized) {
 		is_lcd_on = TRUE;
 	}
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT
 	ts_set_vreg(1);
 #endif
@@ -1144,6 +1201,11 @@ extern unsigned fb_height;
 
 static void mddi_novatek_lcd_panel_poweron(void)
 {
+<<<<<<< HEAD
+=======
+	
+	//struct msm_panel_common_pdata *pdata = mddi_novatek_pdata;
+>>>>>>> vendor-ls670-froyo
 	struct msm_panel_novatek_pdata *pdata = mddi_novatek_pdata;
 
 	EPRINTK("%s: started.\n", __func__);
@@ -1155,12 +1217,20 @@ static void mddi_novatek_lcd_panel_poweron(void)
 		gpio_set_value(pdata->gpio, 1);
 		mdelay(10);
 		gpio_set_value(pdata->gpio, 0);
+<<<<<<< HEAD
+=======
+		
+>>>>>>> vendor-ls670-froyo
 		mdelay(15); /* wait for more than 10ms */
 		gpio_set_value(pdata->gpio, 1);
 		mdelay(30); /* wait for more than 20ms */
 	}
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 static void mddi_novatek_lcd_panel_poweroff(void)
 {
 	struct msm_panel_novatek_pdata *pdata = mddi_novatek_pdata;

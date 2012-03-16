@@ -485,6 +485,10 @@ dhd_prot_dstats(dhd_pub_t *dhd)
 	return;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 #include <linux/fs.h>
 #include <linux/ctype.h>
@@ -571,6 +575,10 @@ assoc_listen=1
 bool PM_control = TRUE;
 bool roam_off_control = TRUE;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 static int dhd_preinit_proc(dhd_pub_t *dhd, int ifidx, char *name, char *value)
 {
 	int var_int;
@@ -593,6 +601,10 @@ static int dhd_preinit_proc(dhd_pub_t *dhd, int ifidx, char *name, char *value)
 				WLC_SET_ROAM_TRIGGER : WLC_SET_ROAM_DELTA, &x, sizeof(x));
 	} else if (!strcmp(name, "PM")) {
 		var_int = (int)simple_strtol(value, NULL, 0);
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 		if (var_int == 0) {
 			printk("[yoohoo] dhd_preinit_proc: do not control power save mode (%d)\n", var_int);
 			PM_control = FALSE;
@@ -601,8 +613,15 @@ static int dhd_preinit_proc(dhd_pub_t *dhd, int ifidx, char *name, char *value)
 			printk("[yoohoo] dhd_preinit_proc: docontrol power save mode (%d)\n", var_int);
 			PM_control = TRUE;			
 		}
+<<<<<<< HEAD
 		return dhdcdc_set_ioctl(dhd, ifidx, WLC_SET_PM,
 				&var_int, sizeof(var_int));
+=======
+
+		return dhdcdc_set_ioctl(dhd, ifidx, WLC_SET_PM,
+				&var_int, sizeof(var_int));
+
+>>>>>>> vendor-ls670-froyo
 	} else if(!strcmp(name,"cur_etheraddr")){
         struct ether_addr ea;
         char buf[32];
@@ -632,6 +651,10 @@ static int dhd_preinit_proc(dhd_pub_t *dhd, int ifidx, char *name, char *value)
             memcpy(dhd->mac.octet, (void *)&ea, ETHER_ADDR_LEN);
             return ret;
         }
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	} else {
 		uint iovlen;
 		char iovbuf[WLC_IOCTL_SMLEN];
@@ -641,6 +664,10 @@ static int dhd_preinit_proc(dhd_pub_t *dhd, int ifidx, char *name, char *value)
 
 		/* Setup timeout bcm_timeout from dhd driver 4.217.48 */
 		if(!strcmp(name, "roam_off")) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 			if (var_int == 1) {
 				printk("[yoohoo] dhd_preinit_proc: do not control roam_off (%d)\n", var_int);
 				roam_off_control = FALSE;				
@@ -650,6 +677,10 @@ static int dhd_preinit_proc(dhd_pub_t *dhd, int ifidx, char *name, char *value)
 				roam_off_control = TRUE;				
 			}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 			/* Setup timeout if Beacons are lost to report link down */
 			if (var_int) {
 				uint bcn_timeout = 3;
@@ -657,7 +688,11 @@ static int dhd_preinit_proc(dhd_pub_t *dhd, int ifidx, char *name, char *value)
 				dhdcdc_set_ioctl(dhd, 0, WLC_SET_VAR, iovbuf, sizeof(iovbuf));
 			}
 		}
+<<<<<<< HEAD
 		/* Setup timeout bcm_timeout from dhd driver 4.217.48 */
+=======
+		
+>>>>>>> vendor-ls670-froyo
 
 		iovlen = bcm_mkiovar(name, (char *)&var_int, sizeof(var_int),
 				iovbuf, sizeof(iovbuf));
@@ -722,7 +757,13 @@ out:
 	if (fp)
 		dhd_os_close_image(fp);
 	if (buf)
+<<<<<<< HEAD
 		MFREE(dhd->osh, buf, stat.size + 1);
+=======
+
+		MFREE(dhd->osh, buf, stat.size + 1);
+
+>>>>>>> vendor-ls670-froyo
 	return ret;
 
 err:
@@ -731,6 +772,10 @@ err:
 }
 #endif /* CONFIG_LGE_BCM432X_PATCH */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP) && defined(CONFIG_BRCM_LGE_WL_PKTFILTER)
 extern int dhdsdio_set_pktfilters(dhd_pub_t *dhd);
 #endif	/* defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP) && defined(CONFIG_BRCM_LGE_WL_PKTFILTER) */
@@ -741,13 +786,25 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	char eventmask[WL_EVENTING_MASK_LEN];
 	char iovbuf[WLC_IOCTL_SMLEN];	/*  Room for "event_msgs" + '\0' + bitvec  */
 	uint up = 0;
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	uint roamvar = 1;
 	uint power_mode = PM_FAST;
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
 	uint32 dongle_align = DHD_SDALIGN;
 	uint32 glom = 0;
 	int ret;
+=======
+
+	uint32 dongle_align = DHD_SDALIGN;
+	uint32 glom = 0;
+	int ret;
+
+>>>>>>> vendor-ls670-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	uint bcn_timeout = 3;
 #endif /* CONFIG_LGE_BCM432X_PATCH */
@@ -759,10 +816,18 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 		return BCME_NOTUP;
 	}
 	memcpy(dhd->mac.octet, iovbuf, ETHER_ADDR_LEN);
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 	dhd_preinit_config(dhd, 0);
 #endif /* CONFIG_LGE_BCM432X_PATCH */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 	/* Set Country code */
 	if (dhd->country_code[0] != 0) {
 		if (dhdcdc_set_ioctl(dhd, 0, WLC_SET_COUNTRY,
@@ -771,11 +836,19 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	/* Set PowerSave mode */
 	dhdcdc_set_ioctl(dhd, 0, WLC_SET_PM, (char *)&power_mode, sizeof(power_mode));
 #endif /* CONFIG_LGE_BCM432X_PATCH */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 	/* Match Host and Dongle rx alignment */
 	bcm_mkiovar("bus:txglomalign", (char *)&dongle_align, 4, iovbuf, sizeof(iovbuf));
 	dhdcdc_set_ioctl(dhd, 0, WLC_SET_VAR, iovbuf, sizeof(iovbuf));
@@ -783,6 +856,10 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	/* disable glom option per default */
 	bcm_mkiovar("bus:txglom", (char *)&glom, 4, iovbuf, sizeof(iovbuf));
 	dhdcdc_set_ioctl(dhd, 0, WLC_SET_VAR, iovbuf, sizeof(iovbuf));
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	/* Setup timeout if Beacons are lost to report link down */
 	if (roamvar) {
@@ -797,6 +874,10 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	dhdcdc_set_ioctl(dhd, 0, WLC_SET_VAR, iovbuf, sizeof(iovbuf));
 #endif /* CONFIG_LGE_BCM432X_PATCH */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 	/* Force STA UP */
 	dhdcdc_set_ioctl(dhd, 0, WLC_UP, (char *)&up, sizeof(up));
 
@@ -857,6 +938,10 @@ dhd_prot_stop(dhd_pub_t *dhd)
 	/* Nothing to do for CDC */
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH) && defined(CONFIG_BRCM_USE_DEEPSLEEP)
 extern dhd_pub_t * get_dhd_pub_from_dev(struct net_device *dev);
 int dhd_deep_sleep(struct net_device *dev, int flag)
@@ -907,3 +992,7 @@ int dhd_deep_sleep(struct net_device *dev, int flag)
 
 }
 #endif /* CONFIG_LGE_BCM432X_PATCH && CONFIG_BRCM_USE_DEEPSLEEP */
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo

@@ -44,6 +44,10 @@ static void mcs6000_early_suspend(struct early_suspend *h);
 static void mcs6000_late_resume(struct early_suspend *h);
 #endif
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined (CONFIG_LGE_DIAGTEST)
 extern void ats_eta_mtc_touch_logging (int pendown, int x, int y);
 #endif
@@ -97,7 +101,13 @@ struct mcs6000_ts_device {
 	int sda_gpio;
 	bool pendown;
 	int (*power)(unsigned char onoff);
+<<<<<<< HEAD
 	unsigned int count;
+=======
+	
+	unsigned int count;
+	
+>>>>>>> vendor-ls670-froyo
 	struct workqueue_struct *ts_wq;
 };
 
@@ -147,6 +157,10 @@ void Send_Touch( unsigned int x, unsigned int y)
 }
 EXPORT_SYMBOL(Send_Touch);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 static __inline void mcs6000_key_event_touch(int touch_reg,  int value,  struct mcs6000_ts_device *dev)
 {
 	unsigned int keycode;
@@ -241,6 +255,10 @@ static __inline void mcs6000_single_ts_event_release(struct mcs6000_ts_device *d
 
 #define to_delayed_work(_work)  container_of(_work, struct delayed_work, work)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 static unsigned int saved_count = -1;
 
 static void mcs6000_work(struct work_struct *work)
@@ -252,9 +270,16 @@ static void mcs6000_work(struct work_struct *work)
 	static unsigned int s_input_type = NON_TOUCHED_STATE;
 #endif
 	unsigned int input_type;
+<<<<<<< HEAD
 	unsigned char read_buf[READ_NUM];
 
 	//static int key_pressed = 0;
+=======
+	
+	unsigned char read_buf[READ_NUM];
+
+	
+>>>>>>> vendor-ls670-froyo
 	static int touch_pressed = 0;
 
 	struct mcs6000_ts_device *dev 
@@ -263,6 +288,10 @@ static void mcs6000_work(struct work_struct *work)
 	dev->pendown = !gpio_get_value(dev->intr_gpio);
 
 	if (dev->pendown && (saved_count != dev->count)) {
+<<<<<<< HEAD
+=======
+		
+>>>>>>> vendor-ls670-froyo
 
 		if (touch_pressed) {
 #ifdef LG_FW_MULTI_TOUCH
@@ -298,6 +327,10 @@ static void mcs6000_work(struct work_struct *work)
 	}
 
 	input_type = read_buf[0] & 0x0f;
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 
 	x1 = (read_buf[1] & 0xf0) << 4;
 	y1 = (read_buf[1] & 0x0f) << 8;
@@ -316,12 +349,20 @@ static void mcs6000_work(struct work_struct *work)
 #endif
 
 	if (dev->pendown) { /* touch pressed case */
+<<<<<<< HEAD
+=======
+		
+>>>>>>> vendor-ls670-froyo
 
 		if(input_type) {
 			touch_pressed = 1;
 
+<<<<<<< HEAD
 			/* exceptional routine for the touch case moving from key area to touch area of touch screen */
 
+=======
+			
+>>>>>>> vendor-ls670-froyo
 #ifdef LG_FW_MULTI_TOUCH
 			if(input_type == MULTI_POINT_TOUCH) {
 				mcs6000_multi_ts_event_touch(x1, y1, x2, y2, PRESSED, dev);
@@ -332,20 +373,32 @@ static void mcs6000_work(struct work_struct *work)
 			}
 			else if(input_type == SINGLE_POINT_TOUCH) {
 				mcs6000_multi_ts_event_touch(x1, y1, -1, -1, PRESSED, dev);
+<<<<<<< HEAD
 				s_input_type = SINGLE_POINT_TOUCH;				
+=======
+				s_input_type = SINGLE_POINT_TOUCH;			
+>>>>>>> vendor-ls670-froyo
 				pre_x1 = x1;
 				pre_y1 = y1;
 			}
 #else
 			if(input_type == SINGLE_POINT_TOUCH) {
+<<<<<<< HEAD
 				mcs6000_single_ts_event_touch(x1, y1, PRESSED, dev);
+=======
+				mcs6000_single_ts_event_touch(x1, y1, PRESSED, dev);				
+>>>>>>> vendor-ls670-froyo
 				pre_x1 = x1;
 				pre_y1 = y1;
 			}
 #endif				
 		}
 	} 
+<<<<<<< HEAD
 	else { /* touch released case */
+=======
+	else { 
+>>>>>>> vendor-ls670-froyo
 
 		if(touch_pressed) {
 #ifdef LG_FW_MULTI_TOUCH
@@ -358,6 +411,10 @@ static void mcs6000_work(struct work_struct *work)
 				DMSG("%s: single touch release... %d, %d\n", __FUNCTION__, x1, y1);
 				mcs6000_multi_ts_event_touch(x1, y1, -1, -1, RELEASED, dev);
 			}
+<<<<<<< HEAD
+=======
+			
+>>>>>>> vendor-ls670-froyo
 			touch_pressed = 0;
 #else
 			DMSG("%s: single release... %d, %d\n", __FUNCTION__, x1, y1);
@@ -367,6 +424,10 @@ static void mcs6000_work(struct work_struct *work)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined (CONFIG_LGE_DIAGTEST)
 	ats_eta_mtc_touch_logging(dev->pendown, x1, y1);
 	if(input_type == MULTI_POINT_TOUCH)
@@ -376,10 +437,18 @@ static void mcs6000_work(struct work_struct *work)
 
 touch_retry:
 	if (dev->pendown) {
+<<<<<<< HEAD
 		//schedule_delayed_work(&dev->work, msecs_to_jiffies(TS_POLLING_TIME));	
 		queue_delayed_work(dev->ts_wq, 
 				&dev->work,msecs_to_jiffies(TS_POLLING_TIME));
 	} 
+=======
+		
+		queue_delayed_work(dev->ts_wq, 
+				&dev->work,msecs_to_jiffies(TS_POLLING_TIME));
+	} 
+	
+>>>>>>> vendor-ls670-froyo
 }
 
 static irqreturn_t mcs6000_ts_irq_handler(int irq, void *handle)
@@ -387,8 +456,15 @@ static irqreturn_t mcs6000_ts_irq_handler(int irq, void *handle)
 	struct mcs6000_ts_device *dev = handle;
 
 	if (gpio_get_value(dev->intr_gpio) == 0) {
+<<<<<<< HEAD
 		dev->count++;
 		if (!dev->pendown) {
+=======
+		
+		dev->count++;
+		if (!dev->pendown) {
+			
+>>>>>>> vendor-ls670-froyo
 			queue_delayed_work(dev->ts_wq, 
 					&dev->work,msecs_to_jiffies(TS_POLLING_TIME));
 		}
@@ -422,6 +498,10 @@ void mcs6000_firmware_info(void)
 	dev = &mcs6000_ts_dev;
 	int try_cnt = 0;
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	do {
 		data = i2c_smbus_read_byte_data(dev->client, MCS6000_TS_FW_VERSION);
 		msleep(10);
@@ -613,6 +693,10 @@ static int mcs6000_ts_ioctl(struct inode *inode, struct file *flip,
 					mcs6000_firmware_info();
 					err = mcs6000_ts_dev.input_dev->id.version;
 					break;
+<<<<<<< HEAD
+=======
+				
+>>>>>>> vendor-ls670-froyo
 				case MCS6000_TS_IOCTL_HW_VER:
 					mcs6000_firmware_info();
 					err = mcs6000_ts_dev.input_dev->id.product;
@@ -796,6 +880,10 @@ static void mcs6000_late_resume(struct early_suspend * h)
 
 	if(is_downloading == 0) {
 		DMSG(KERN_INFO"%s: start! \n", __FUNCTION__);
+<<<<<<< HEAD
+=======
+	       
+>>>>>>> vendor-ls670-froyo
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT
 		enable_irq(dev->num_irq);
 #else
@@ -831,6 +919,10 @@ static struct i2c_driver mcs6000_i2c_ts_driver = {
 static int __devinit mcs6000_ts_init(void)
 {
 	int err = 0;
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	struct mcs6000_ts_device *dev = &mcs6000_ts_dev;
 
 	memset(&mcs6000_ts_dev, 0, sizeof(struct mcs6000_ts_device));
@@ -850,12 +942,20 @@ static int __devinit mcs6000_ts_init(void)
 	set_bit(EV_ABS, 	 mcs6000_ts_input->evbit);
 #ifdef LG_FW_MULTI_TOUCH
 	set_bit(ABS_MT_TOUCH_MAJOR, mcs6000_ts_input->absbit);
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	set_bit(ABS_MT_POSITION_X, mcs6000_ts_input->absbit);
 	set_bit(ABS_MT_POSITION_Y, mcs6000_ts_input->absbit);
 #else
 	set_bit(EV_KEY, 	 mcs6000_ts_input->evbit);
 	set_bit(BTN_TOUCH, mcs6000_ts_input->keybit);
 #endif
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 
 	err = input_register_device(mcs6000_ts_input);
 	if (err < 0) {
@@ -875,6 +975,10 @@ static int __devinit mcs6000_ts_init(void)
 		goto err_misc_register;
 	}
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	dev->ts_wq = create_singlethread_workqueue("ts_wq");
 	if (!dev->ts_wq) {
 		err = -ENOMEM;
@@ -898,12 +1002,20 @@ err_input_allocate:
 
 static void __exit mcs6000_ts_exit(void)
 {
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	struct mcs6000_ts_device *dev = &mcs6000_ts_dev;
 
 	i2c_del_driver(&mcs6000_i2c_ts_driver);
 	input_unregister_device(mcs6000_ts_input);
 	input_free_device(mcs6000_ts_input);
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if (dev->ts_wq)
 		destroy_workqueue(dev->ts_wq);
 

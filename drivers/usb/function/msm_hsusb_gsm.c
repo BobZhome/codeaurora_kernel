@@ -51,10 +51,18 @@
 #include <mach/board_lge.h>
 #endif /* CONFIG_MACH_LGE */
 
+<<<<<<< HEAD
+=======
+/* For HSUSB debugging */
+>>>>>>> vendor-ls670-froyo
 #define LGE_HSUSB_DEBUG_PRINT
 /* #undef HSUSB_DEBUG_PRINT */
 
 #if defined(CONFIG_USB_SUPPORT_LGDRIVER)
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 enum {
 	HSUSB_DEBUG_NORMAL   = 1U << 0,  /* Normal debug */
 	HSUSB_DEBUG_ISR_WQ   = 1U << 1,  /* Isr, wq 		*/
@@ -86,6 +94,10 @@ module_param_named(debug_mask, lge_hsusb_debug_mask, int,
 
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB_GSM) && \
 	defined(CONFIG_LGE_DETECT_PIF_PATCH)
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #define LG_PIF_DETECT 2
 #endif
 
@@ -1536,6 +1548,10 @@ static void handle_endpoint(struct usb_info *ui, unsigned bit)
 		req->busy = 0;
 		req->live = 0;
 
+<<<<<<< HEAD
+=======
+/* WBT Fix TD# 5131 */
+>>>>>>> vendor-ls670-froyo
 		if (req->dead){
 			do_free_req(ui, req);
 			continue;
@@ -3300,6 +3316,10 @@ static ssize_t  show_##function(struct device *dev,			\
 									\
 static DEVICE_ATTR(function, S_IRUGO, show_##function, NULL);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #if defined (CONFIG_USB_SUPPORT_LGDRIVER)
 msm_hsusb_func_attr(modem, 0);
 msm_hsusb_func_attr(diag, 1);

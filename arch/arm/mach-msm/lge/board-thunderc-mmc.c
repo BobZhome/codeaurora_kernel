@@ -1,6 +1,10 @@
 /* arch/arm/mach-msm/lge/board-thunderc-mmc.c
  * Copyright (C) 2010 LGE Corporation.
+<<<<<<< HEAD
  * Author: SungEun Kim
+=======
+ * Author: SungEun Kim 
+>>>>>>> vendor-ls670-froyo
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -245,6 +249,10 @@ static uint32_t msm_sdcc_setup_power(struct device *dv, unsigned int vdd)
 	}
 	set_bit(pdev->id, &vreg_sts);
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if (first_setup == 1) {
 		struct mmc_platform_data *pdata = pdev->dev.platform_data;
 		if (pdev->id == 1) {

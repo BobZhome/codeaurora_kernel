@@ -239,13 +239,11 @@ int diag_open(int num_req)
 	for (i = 0; i < num_req; i++) {
 		write_entry = diag_alloc_req_entry(ctxt->epin, 0, GFP_KERNEL);
 		if (write_entry) {
-			// shoud use the lock in using list
 			spin_lock_irqsave(&ctxt->dev_lock, flags);
 			write_entry->usb_req->complete = diag_write_complete;
 			write_entry->usb_req->device = (void *)ctxt;
 			list_add(&write_entry->re_entry,
 					&ctxt->dev_write_req_list);
-			// shoud use the lock in using list
 			spin_unlock_irqrestore(&ctxt->dev_lock, flags);
 		} else
 			goto write_error;

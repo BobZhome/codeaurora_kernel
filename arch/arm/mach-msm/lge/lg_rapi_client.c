@@ -1,7 +1,11 @@
 /* arch/arm/mach-msm/lge/lg_rapi_client.c
  *
  * Copyright (C) 2009 LGE, Inc.
+<<<<<<< HEAD
  * Created by khlee
+=======
+ * 
+>>>>>>> vendor-ls670-froyo
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -20,10 +24,18 @@
 #if defined(CONFIG_MACH_MSM7X27_ALOHAV)
 #include <mach/msm_battery_alohav.h>
 #elif defined(CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #include <mach/msm_battery_thunderc.h>
 #else
 #include <mach/msm_battery.h>
 #endif
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #include <mach/board_lge.h>
 #include <mach/lg_pcb_version.h>
 
@@ -82,11 +94,19 @@ int msm_chg_LG_cable_type(void)
 	struct oem_rapi_client_streaming_func_ret ret;
 	char output[LG_RAPI_CLIENT_MAX_OUT_BUFF_SIZE];
 	int retValue = 0;
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	int rc = -1;
 	int errCount = 0;
 
 	Open_check();
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	do {
 		arg.event = LG_FW_RAPI_CLIENT_EVENT_GET_LINE_TYPE;
 		arg.cb_func = NULL;
@@ -121,11 +141,19 @@ int msm_chg_LG_cable_type(void)
 
 	} while (rc < 0 && errCount++ < 3);
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT
 	if (lge_bd_rev < HW_PCB_REV_B && retValue == 10) // LT_130K
 		retValue = 0;
 #endif
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	printk("USB Cable type: %s(): %d\n", __func__, retValue);
 	return retValue;
 }
@@ -158,6 +186,10 @@ void send_to_arm9(void *pReq, void *pRsp)
 
 	oem_rapi_client_streaming_function(client, &arg, &ret);
 	memcpy(pRsp, ret.output, *ret.out_len);
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if (ret.output)
 		kfree(ret.output);
 	if (ret.out_len)
@@ -221,21 +253,40 @@ void battery_info_get(struct batt_info *resp_buf)
 		resp_buf->valid_batt_id = GET_U_INT32(&rsp_buf.valid_batt_id);
 		resp_buf->batt_therm = GET_U_INT32(&rsp_buf.batt_therm);
 		resp_buf->batt_temp = GET_INT32(&rsp_buf.batt_temp);
+<<<<<<< HEAD
+=======
+		
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		resp_buf->chg_current = GET_U_INT32(&rsp_buf.chg_current);
 		resp_buf->batt_thrm_state =
 		    GET_U_INT32(&rsp_buf.batt_thrm_state);
 #endif
+<<<<<<< HEAD
+=======
+		
+>>>>>>> vendor-ls670-froyo
 	} else {		/* In case error */
 		resp_buf->valid_batt_id = 1;	/* authenticated battery id */
 		resp_buf->batt_therm = 100;	/* 100 battery therm adc */
 		resp_buf->batt_temp = 30;	/* 30 degree celcius */
+<<<<<<< HEAD
+=======
+		
+>>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		resp_buf->chg_current = 0;
 		resp_buf->batt_thrm_state = 0;
 #endif
+<<<<<<< HEAD
 	}
 
+=======
+		
+	}
+
+	
+>>>>>>> vendor-ls670-froyo
 	if (ret.output)
 		kfree(ret.output);
 	if (ret.out_len)
@@ -266,6 +317,10 @@ void pseudo_batt_info_set(struct pseudo_batt_info_type *info)
 
 	oem_rapi_client_streaming_function(client, &arg, &ret);
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	if (ret.output)
 		kfree(ret.output);
 	if (ret.out_len)
@@ -441,6 +496,10 @@ int lg_get_hw_version(void)
 EXPORT_SYMBOL(lg_get_hw_version);
 #endif /* CONFIG_LGE_PCB_VERSION */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 #ifdef CONFIG_LGE_THERM_NO_STOP_CHARGING
 void set_charging_therm_no_stop_charging(int info)
 {
@@ -612,10 +671,18 @@ void remote_get_ftm_boot(int *info)
 	struct oem_rapi_client_streaming_func_ret ret;
 	int ret_val;
 	int resp_buf;
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	int errCount = 0;
 
 	Open_check();
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> vendor-ls670-froyo
 	do {
 		arg.event = LG_FW_GET_FTM_BOOT;
 		arg.cb_func = NULL;

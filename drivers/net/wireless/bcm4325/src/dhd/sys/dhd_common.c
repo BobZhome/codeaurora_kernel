@@ -45,6 +45,10 @@ char nv_path[MOD_PARAM_PATHLEN];
 char config_path[MOD_PARAM_PATHLEN] = "";
 #endif /* CONFIG_LGE_BCM432X_PATCH */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 /* Last connection success/failure status */
 uint32 dhd_conn_event;
 uint32 dhd_conn_status;
@@ -103,9 +107,17 @@ dhd_common_init(void)
 	 * first time that the driver is initialized vs subsequent initializations.
 	 */
 	dhd_msg_level = DHD_ERROR_VAL;
+<<<<<<< HEAD
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	fw_path[0] = '\0';
 	nv_path[0] = '\0';
+=======
+
+#if !defined(CONFIG_LGE_BCM432X_PATCH)
+	fw_path[0] = '\0';
+	nv_path[0] = '\0';
+
+>>>>>>> vendor-ls670-froyo
 #endif /* CONFIG_LGE_BCM432X_PATCH */
 }
 

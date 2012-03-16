@@ -29,6 +29,7 @@
 
 struct msm_pmic_leds_pdata *leds_pdata = 0;
 #endif
+
 #define MAX_KEYPAD_BL_LEVEL	255 /* 1: 10 mA */
 
 static void msm_keypad_bl_led_set(struct led_classdev *led_cdev,

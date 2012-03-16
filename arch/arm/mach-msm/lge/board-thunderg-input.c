@@ -143,6 +143,11 @@ int thunderg_matrix_info_wrapper(struct input_dev *input_dev,struct gpio_event_i
 static int thunderg_gpio_matrix_power(
                 const struct gpio_event_platform_data *pdata, bool on)
 {
+<<<<<<< HEAD
+=======
+	
+
+>>>>>>> vendor-ls670-froyo
 	return 0;
 }
 

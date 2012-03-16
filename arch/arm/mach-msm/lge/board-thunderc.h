@@ -1,6 +1,10 @@
 /* arch/arm/mach-msm/include/mach/board_thunderc.h
  * Copyright (C) 2009 LGE, Inc.
+<<<<<<< HEAD
  * Author: SungEun Kim
+=======
+ * Author: SungEun Kim 
+>>>>>>> vendor-ls670-froyo
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and

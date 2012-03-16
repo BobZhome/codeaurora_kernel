@@ -684,6 +684,7 @@ static int rpc_servers_thread(void *data)
 
 			break;
 		
+		// give Error result to ARM9 AT Command
 		case RPC_RETURN_RESULT_OK:
 		case RPC_RETURN_RESULT_ERROR:
 			{

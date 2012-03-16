@@ -118,6 +118,10 @@ static struct platform_device msm_bt_power_device = {
 	},		
 };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 static void __init bt_power_init(void)
 {
 	int pin, rc;

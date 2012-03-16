@@ -50,6 +50,11 @@
 
 
 #include "msm_sdcc.h"
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+#include <asm/gpio.h>
+//#define BRCM_WLAN_SLOT 2
+#define BRCM_WLAN_SLOT 100 // give 50MHz for test
+#endif
 
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 #include <asm/gpio.h>
@@ -1218,6 +1223,7 @@ static const struct mmc_host_ops msmsdcc_ops = {
 	.get_status = msmsdcc_get_status,
 };
 
+
 static void
 msmsdcc_check_status(unsigned long data)
 {
@@ -1355,6 +1361,7 @@ static void msmsdcc_early_suspend(struct early_suspend *h)
 	if ( host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET) )
 #endif
 	{
+
 	spin_lock_irqsave(&host->lock, flags);
 	host->polling_enabled = host->mmc->caps & MMC_CAP_NEEDS_POLL;
 	host->mmc->caps &= ~MMC_CAP_NEEDS_POLL;
@@ -1387,6 +1394,7 @@ static void msmsdcc_late_resume(struct early_suspend *h)
 		}
 		host->oldstat = status;
 	}
+
 	if (host->polling_enabled) {
 		spin_lock_irqsave(&host->lock, flags);
 		host->mmc->caps |= MMC_CAP_NEEDS_POLL;
@@ -1394,7 +1402,6 @@ static void msmsdcc_late_resume(struct early_suspend *h)
 		spin_unlock_irqrestore(&host->lock, flags);
 	}
 	}
-	//printk(KERN_ERR "msmsdcc_late_resume : END \n");
 };
 #endif
 
@@ -1524,6 +1531,7 @@ msmsdcc_probe(struct platform_device *pdev)
 	 */
 	mmc->ops = &msmsdcc_ops;
 	mmc->f_min = plat->msmsdcc_fmin;
+
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	mmc->f_max = plat->msmsdcc_fmax;
 #else
@@ -1760,6 +1768,7 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 	struct msmsdcc_host *host = mmc_priv(mmc);
 	int rc = 0;
 
+
 #ifdef CONFIG_MMC_AUTO_SUSPEND
 	if (test_and_set_bit(0, &host->suspended))
 		return 0;
@@ -1770,6 +1779,7 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 
 		if (!mmc->card || mmc->card->type != MMC_TYPE_SDIO)
 			rc = mmc_suspend_host(mmc, state);
+
 #if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
 		//else if (mmc->card && mmc->card->type == MMC_TYPE_SDIO) {
 		else if (host->plat->status_irq == gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET)) {
@@ -1781,6 +1791,7 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 				printk("[WiFi] %s: dhdpm.suspend=NULL \n",__FUNCTION__);*/
 		}
 #endif
+
 		if (!rc) {
 			writel(0, host->base + MMCIMASK0);
 
@@ -1791,13 +1802,16 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 				host->clks_on = 0;
 			}
 		}
+
 #if 0
 		if (host->plat->sdiowakeup_irq) // original			
 #else
 		if (host->plat->sdiowakeup_irq && host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET))
 #endif			
+
 			enable_irq(host->plat->sdiowakeup_irq);
 	}
+
 	return rc;
 }
 
@@ -1807,6 +1821,8 @@ msmsdcc_resume(struct platform_device *dev)
 	struct mmc_host *mmc = mmc_get_drvdata(dev);
 	struct msmsdcc_host *host = mmc_priv(mmc);
 	unsigned long flags;
+
+
 
 #ifdef CONFIG_MMC_AUTO_SUSPEND
 	if (!test_and_clear_bit(0, &host->suspended))
@@ -1851,6 +1867,7 @@ msmsdcc_resume(struct platform_device *dev)
 		}
 #endif	
 	}
+
 	return 0;
 }
 #else

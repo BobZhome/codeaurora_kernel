@@ -234,6 +234,7 @@ static void mdp_dma2_update_lcd(struct msm_fb_data_type *mfd)
 			sizeof(mddi_hitachi_2c) / 
 			sizeof(struct hitachi_display_table));
 #endif
+
 #elif CONFIG_FB_MSM_MDDI_NOVATEK_HVGA
 	display_table(mddi_novatek_position_table, 
 		sizeof(mddi_novatek_position_table) / 

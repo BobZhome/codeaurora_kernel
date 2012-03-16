@@ -2,9 +2,13 @@
  *
  * Copyright (C) 2007-2008 HTC Corporation.
  * Author: Hou-Kun Chen <houkun.chen@gmail.com>
+<<<<<<< HEAD
  *
  * rework by hyesung.shin on 2010-1-21, for <Sensor driver structure>
  *
+=======
+ 
+>>>>>>> vendor-ls670-froyo
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
  * may be copied, distributed, and modified under those terms.
@@ -73,13 +77,21 @@ static atomic_t mv_flag;
 static atomic_t p_flag;
 static int first_start = 0 ;
 
+<<<<<<< HEAD
 static int powerDownOrOff=0;
+=======
+static int powerDownOrOff=0; //For used current
+>>>>>>> vendor-ls670-froyo
 static int akm8973_set_vreg_check=  0;
 
 //static int failure_count = 0;
 
 static short akmd_delay = 0;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-ls670-froyo
 short pitch, roll;
 #if defined(CONFIG_PM)
 static atomic_t suspend_flag = ATOMIC_INIT(0);
