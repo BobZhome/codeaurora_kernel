@@ -81,6 +81,9 @@ static struct map_desc msm_io_desc[] __initdata = {
 		.length =   MSM_SHARED_RAM_SIZE,
 		.type =     MT_DEVICE,
 	},
+#if defined(CONFIG_MACH_LGE)
+	MSM_DEVICE(WEB),
+#endif
 };
 
 void __init msm_map_common_io(void)
@@ -128,9 +131,12 @@ static struct map_desc msm8x60_io_desc[] __initdata = {
 	MSM_DEVICE(QGIC_DIST),
 	MSM_DEVICE(QGIC_CPU),
 	MSM_DEVICE(TMR),
+	MSM_DEVICE(RPM_MPM),
 	MSM_DEVICE(ACC),
 	MSM_DEVICE(ACC0),
 	MSM_DEVICE(ACC1),
+	MSM_DEVICE(SAW0),
+	MSM_DEVICE(SAW1),
 	MSM_DEVICE(GCC),
 	MSM_DEVICE(TLMM),
 	MSM_DEVICE(DMOV_ADM0),
@@ -139,6 +145,7 @@ static struct map_desc msm8x60_io_desc[] __initdata = {
 	MSM_DEVICE(CLK_CTL),
 	MSM_DEVICE(MMSS_CLK_CTL),
 	MSM_DEVICE(LPASS_CLK_CTL),
+	MSM_DEVICE(SIC_NON_SECURE),
 	{
 		.virtual =  (unsigned long) MSM_SHARED_RAM_BASE,
 		.length =   MSM_SHARED_RAM_SIZE,

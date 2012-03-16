@@ -521,12 +521,16 @@ struct task_cputime {
 #define virt_exp	utime
 #define sched_exp	sum_exec_runtime
 
+#ifdef __SPLINT__
+#define INIT_CPUTIME	NULL
+#else
 #define INIT_CPUTIME	\
 	(struct task_cputime) {					\
 		.utime = cputime_zero,				\
 		.stime = cputime_zero,				\
 		.sum_exec_runtime = 0,				\
 	}
+#endif
 
 /*
  * Disable preemption until the scheduler is running.
@@ -1723,6 +1727,9 @@ static inline void put_task_struct(struct task_struct *t)
 extern cputime_t task_utime(struct task_struct *p);
 extern cputime_t task_stime(struct task_struct *p);
 extern cputime_t task_gtime(struct task_struct *p);
+
+extern int task_free_register(struct notifier_block *n);
+extern int task_free_unregister(struct notifier_block *n);
 
 /*
  * Per process flags

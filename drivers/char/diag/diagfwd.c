@@ -94,6 +94,10 @@ int diag_device_write(void *buf, int proc_num)
 			driver->usb_write_ptr_svc = (struct diag_request *)
 			(diagmem_alloc(driver, sizeof(struct diag_request),
 				 POOL_TYPE_USB_STRUCT));
+			
+        	if(!driver->usb_write_ptr_svc)
+				return -1;
+			
 			driver->usb_write_ptr_svc->length = driver->used;
 			driver->usb_write_ptr_svc->buf = buf;
 			err = diag_write(driver->usb_write_ptr_svc);
@@ -131,7 +135,8 @@ int diag_device_write(void *buf, int proc_num)
 				}
 		}
 		for (i = 0; i < driver->num_clients; i++)
-			if (driver->client_map[i] == driver->logging_process_id)
+			if (driver->client_map[i].pid ==
+						 driver->logging_process_id)
 				break;
 		if (i < driver->num_clients) {
 			driver->data_ready[i] |= MEMORY_DEVICE_LOG_TYPE;
@@ -316,7 +321,7 @@ void diag_update_userspace_clients(unsigned int type)
 
 	mutex_lock(&driver->diagchar_mutex);
 	for (i = 0; i < driver->num_clients; i++)
-		if (driver->client_map[i] != 0)
+		if (driver->client_map[i].pid != 0)
 			driver->data_ready[i] |= type;
 	wake_up_interruptible(&driver->wait_q);
 	mutex_unlock(&driver->diagchar_mutex);
@@ -328,7 +333,7 @@ void diag_update_sleeping_process(int process_id)
 
 	mutex_lock(&driver->diagchar_mutex);
 	for (i = 0; i < driver->num_clients; i++)
-		if (driver->client_map[i] == process_id) {
+		if (driver->client_map[i].pid == process_id) {
 			driver->data_ready[i] |= PKT_TYPE;
 			break;
 		}
@@ -444,6 +449,10 @@ void diag_process_hdlc(void *data, unsigned len)
 {
 	struct diag_hdlc_decode_type hdlc;
 	int ret, type = 0;
+/* LG_FW : 2009.02.05 khlee - bug fix */
+#if defined (CONFIG_LGE_DIAGTEST)
+    unsigned int nTempLen = 0;  
+#endif    
 #ifdef DIAG_DEBUG
 	int i;
 	printk(KERN_INFO "\n HDLC decode function, len of data  %d\n", len);
@@ -456,6 +465,48 @@ void diag_process_hdlc(void *data, unsigned len)
 	hdlc.dest_idx = 0;
 	hdlc.escaping = 0;
 
+
+/* - In the Radio test process, APP will send packet with double 0x7E tail.  */
+#if defined (CONFIG_LGE_DIAGTEST)
+
+   if( len > 2 )
+  {
+    if( hdlc.src_ptr[len -1] == 0x7E && hdlc.src_ptr[len -2] == 0x7E){
+      len--;
+      hdlc.src_size--;
+    }
+  }
+  
+/* - If packet is started with 0x7E( LG Factory packet), we can not received all of thing.  */
+    do
+    {
+      ret = diag_hdlc_decode(&hdlc);
+
+      nTempLen = hdlc.dest_idx;
+
+      if(ret)
+      {
+        hdlc.dest_idx = 0;    /* Initialize for the next packet */
+      }
+
+      if( hdlc.src_idx >=  hdlc.src_size){
+//        ret = 1;
+        break;
+      }
+      else
+        ret = 0;
+      
+    }while ( ret == 0 );
+    
+  	if (ret)
+		type = diag_process_apps_pkt(driver->hdlc_buf,
+					      nTempLen - 3);
+
+	/* ignore 2 bytes for CRC, one for 7E and send */
+	if ((driver->ch) && (ret) && (type) && (nTempLen > 3))
+		smd_write(driver->ch, driver->hdlc_buf, nTempLen - 3);
+
+#else  /* org source */
 	ret = diag_hdlc_decode(&hdlc);
 
 	if (ret)
@@ -486,6 +537,8 @@ void diag_process_hdlc(void *data, unsigned len)
 			       1, DUMP_PREFIX_ADDRESS, data, len, 1);
 #endif
 	}
+#endif
+
 
 }
 
@@ -515,11 +568,11 @@ int diagfwd_connect(void)
 
 int diagfwd_disconnect(void)
 {
-	printk(KERN_DEBUG "diag: USB disconnected\n");
 	driver->usb_connected = 0;
 	driver->in_busy = 1;
 	driver->in_busy_qdsp = 1;
 	driver->debug_flag = 1;
+	driver->display_alert = 1;
 	diag_close();
 	/* TBD - notify and flow control SMD */
 	return 0;
@@ -528,20 +581,21 @@ int diagfwd_disconnect(void)
 int diagfwd_write_complete(struct diag_request *diag_write_ptr)
 {
 	unsigned char *buf = diag_write_ptr->buf;
+	unsigned long flags = 0;
 	/*Determine if the write complete is for data from arm9/apps/q6 */
 	/* Need a context variable here instead */
 	if (buf == (void *)driver->usb_buf_in) {
 		driver->in_busy = 0;
 		APPEND_DEBUG('o');
-		spin_lock(&diagchar_smd_lock);
+		spin_lock_irqsave(&diagchar_smd_lock, flags);
 		__diag_smd_send_req(NON_SMD_CONTEXT);
-		spin_unlock(&diagchar_smd_lock);
+		spin_unlock_irqrestore(&diagchar_smd_lock, flags);
 	} else if (buf == (void *)driver->usb_buf_in_qdsp) {
 		driver->in_busy_qdsp = 0;
 		APPEND_DEBUG('p');
-		spin_lock(&diagchar_smd_qdsp_lock);
+		spin_lock_irqsave(&diagchar_smd_qdsp_lock, flags);
 		__diag_smd_qdsp_send_req(NON_SMD_CONTEXT);
-		spin_unlock(&diagchar_smd_qdsp_lock);
+		spin_unlock_irqrestore(&diagchar_smd_qdsp_lock, flags);
 	} else {
 		diagmem_free(driver, (unsigned char *)buf, POOL_TYPE_HDLC);
 		diagmem_free(driver, (unsigned char *)diag_write_ptr,
@@ -578,17 +632,19 @@ static struct diag_operations diagfwdops = {
 
 static void diag_smd_notify(void *ctxt, unsigned event)
 {
-	spin_lock(&diagchar_smd_lock);
+	unsigned long flags = 0;
+	spin_lock_irqsave(&diagchar_smd_lock, flags);
 	__diag_smd_send_req(SMD_CONTEXT);
-	spin_unlock(&diagchar_smd_lock);
+	spin_unlock_irqrestore(&diagchar_smd_lock, flags);
 }
 
 #if defined(CONFIG_MSM_N_WAY_SMD)
 static void diag_smd_qdsp_notify(void *ctxt, unsigned event)
 {
-	spin_lock(&diagchar_smd_qdsp_lock);
+	unsigned long flags = 0;
+	spin_lock_irqsave(&diagchar_smd_qdsp_lock, flags);
 	__diag_smd_qdsp_send_req(SMD_CONTEXT);
-	spin_unlock(&diagchar_smd_qdsp_lock);
+	spin_unlock_irqrestore(&diagchar_smd_qdsp_lock, flags);
 }
 #endif
 
@@ -671,7 +727,8 @@ void diagfwd_init(void)
 		goto err;
 	if (driver->client_map == NULL &&
 	    (driver->client_map = kzalloc
-	     ((driver->num_clients) * 4, GFP_KERNEL)) == NULL)
+	     ((driver->num_clients) * sizeof(struct diag_client_map),
+		   GFP_KERNEL)) == NULL)
 		goto err;
 	if (driver->buf_tbl == NULL)
 			driver->buf_tbl = kzalloc(buf_tbl_size *
@@ -679,7 +736,7 @@ void diagfwd_init(void)
 	if (driver->buf_tbl == NULL)
 		goto err;
 	if (driver->data_ready == NULL &&
-	     (driver->data_ready = kzalloc(driver->num_clients,
+			(driver->data_ready = kzalloc(driver->num_clients * 4,
 					    GFP_KERNEL)) == NULL)
 		goto err;
 	if (driver->table == NULL &&

@@ -165,6 +165,15 @@ static inline void notify_dsp_smd(void)
 	MSM_TRIG_A2Q6_SMD_INT;
 }
 
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+#define LGE_ERROR_MAX_ROW               50
+#define LGE_ERROR_MAX_COLUMN            80
+#define LGE_ERR_MESSAGE_BUF_LEN   (LGE_ERROR_MAX_ROW*LGE_ERROR_MAX_COLUMN +8)
+
+char *error_modem_message = NULL;
+void msm_pm_flush_console(void);
+#endif
+
 void smd_diag(void)
 {
 	char *x;
@@ -179,16 +188,49 @@ void smd_diag(void)
 	x = smem_get_entry(SMEM_ERR_CRASH_LOG, &size);
 	if (x != 0) {
 		x[size - 1] = 0;
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+		pr_err("vvvvv\n");
+#endif
 		pr_err("smem: CRASH LOG\n'%s'\n", x);
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+		pr_err("^^^^^\n");
+#endif
 	}
-}
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+	x = smem_find(SMEM_LGE_ERR_MESSAGE, LGE_ERR_MESSAGE_BUF_LEN);
+	if (x != 0) {
+		int i;
+		char *message = (char *)x;
+		error_modem_message = (char *)x;
 
+		pr_err("smem: SMEM_LGE_ERR_MESSAGE\n");
+
+		for (i=0; i < LGE_ERROR_MAX_ROW; i++) {
+			pr_err("%s\n", message);
+			message += LGE_ERROR_MAX_COLUMN;
+		}
+	}
+	msm_pm_flush_console();
+#endif
+}
 
 static void handle_modem_crash(void)
 {
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+	printk(KERN_INFO">>>>>\n");
+	printk(KERN_INFO"Modem crash\n");
+	printk(KERN_INFO"<<<<<\n");
+#endif
+
 	pr_err("ARM9 has CRASHED\n");
 	smd_diag();
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+	
+	msm_pm_flush_console();
+	
 
+	smsm_reset_modem(SMSM_SYSTEM_REBOOT);
+#endif
 	/* hard reboot if possible FIXME
 	if (msm_reset_hook)
 		msm_reset_hook();
@@ -1008,6 +1050,9 @@ int smd_close(smd_channel_t *ch)
 	unsigned long flags;
 
 	SMD_INFO("smd_close(%p)\n", ch);
+#ifdef CONFIG_MACH_LGE
+	SMD_INFO("smd_close(%s)\n", ch->name);
+#endif
 
 	if (ch == 0)
 		return -1;
@@ -1200,6 +1245,10 @@ void smsm_reset_modem(unsigned mode)
 		mode = SMSM_RESET | SMSM_SYSTEM_DOWNLOAD;
 	} else if (mode == SMSM_MODEM_WAIT) {
 		mode = SMSM_RESET | SMSM_MODEM_WAIT;
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+    } else if (mode == SMSM_SYSTEM_REBOOT ) {
+		mode = SMSM_RESET | SMSM_SYSTEM_REBOOT ;
+#endif
 	} else { /* reset_mode is SMSM_RESET or default */
 		mode = SMSM_RESET;
 	}
@@ -1266,6 +1315,17 @@ static irqreturn_t smsm_irq_handler(int irq, void *data)
 
 		} else if (modm & SMSM_RESET) {
 			apps |= SMSM_RESET;
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+			printk(KERN_INFO">>>>>\n");
+			printk(KERN_INFO"Modem crash\n");
+			printk(KERN_INFO"<<<<<\n");
+
+			smd_diag();
+			atomic_notifier_call_chain(&panic_notifier_list, 0, "arm9 has crashed...\n");
+			smsm_reset_modem(SMSM_SYSTEM_REBOOT);
+			
+			while (1);
+#endif
 		} else {
 			if (!(apps & SMSM_INIT)) {
 				apps |= SMSM_INIT;
@@ -1382,6 +1442,38 @@ uint32_t smsm_get_state(uint32_t smsm_entry)
 
 	return rv;
 }
+
+
+#ifdef CONFIG_MACH_LGE
+
+int smsm_change_state_nonotify(uint32_t smsm_entry,
+		      uint32_t clear_mask, uint32_t set_mask)
+{
+	unsigned long flags;
+	uint32_t  old_state, new_state;
+
+	if (smsm_entry >= SMSM_NUM_ENTRIES) {
+		pr_err("smsm_change_state: Invalid entry %d",
+		       smsm_entry);
+		return -EINVAL;
+	}
+
+	if (!smsm_info.state) {
+		pr_err("smsm_change_state <SM NO STATE>\n");
+		return -EIO;
+	}
+	spin_lock_irqsave(&smem_lock, flags);
+
+	old_state = readl(SMSM_STATE_ADDR(smsm_entry));
+	new_state = (old_state & ~clear_mask) | set_mask;
+	writel(new_state, SMSM_STATE_ADDR(smsm_entry));
+	SMSM_DBG("smsm_change_state %x\n", new_state);
+	
+	spin_unlock_irqrestore(&smem_lock, flags);
+
+	return 0;
+}
+#endif
 
 int smd_core_init(void)
 {

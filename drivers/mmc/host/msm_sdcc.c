@@ -50,8 +50,14 @@
 
 
 #include "msm_sdcc.h"
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+#include <asm/gpio.h>
+//#define BRCM_WLAN_SLOT 2
+#define BRCM_WLAN_SLOT 100 // give 50MHz for test
+#endif
 
 #define DRIVER_NAME "msm-sdcc"
+#define TIME_STEP ( 4 * HZ / 5 )
 
 #define DBG(host, fmt, args...)	\
 	pr_debug("%s: %s: " fmt "\n", mmc_hostname(host->mmc), __func__ , args)
@@ -113,6 +119,33 @@ msmsdcc_print_status(struct msmsdcc_host *host, char *hdr, uint32_t status)
 	}
 	pr_debug("\n");
 }
+#endif
+
+#if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
+struct early_suspend dhdpm;
+EXPORT_SYMBOL(dhdpm);
+
+void register_mmc_card_pm(struct early_suspend *cardpm)
+{
+	if((cardpm != NULL) && (cardpm->suspend !=NULL) && (cardpm->resume != NULL))
+	{
+		dhdpm.suspend = cardpm->suspend;
+		dhdpm.resume = cardpm->resume;
+		printk("%s: [WiFi] Callbacks registered successfully. \n",__FUNCTION__);
+	}
+	else
+		printk("%s: Error: Null pointer!! \n", __FUNCTION__);
+}
+
+EXPORT_SYMBOL(register_mmc_card_pm);
+
+void unregister_mmc_card_pm(void)
+{
+	printk("%s: [WIFI] Unregistering suspend/resume callbacks.  \n", __FUNCTION__);
+	dhdpm.suspend = NULL;
+	dhdpm.resume  = NULL;	
+}
+EXPORT_SYMBOL(unregister_mmc_card_pm);
 #endif
 
 static void
@@ -713,6 +746,15 @@ msmsdcc_pio_irq(int irq, void *dev_id)
 		if (!(status & (MCI_TXFIFOHALFEMPTY | MCI_RXDATAAVLBL)))
 			break;
 
+		
+
+		if(!host->curr.data)
+		{
+			writel(0, base + MMCIMASK1);
+			spin_unlock(&host->lock);
+			return IRQ_HANDLED;
+		}
+
 		/* Map the current scatter buffer */
 		local_irq_save(flags);
 		buffer = kmap_atomic(sg_page(host->pio.sg),
@@ -725,6 +767,12 @@ msmsdcc_pio_irq(int irq, void *dev_id)
 			len = msmsdcc_pio_read(host, buffer, remain);
 		if (status & MCI_TXACTIVE)
 			len = msmsdcc_pio_write(host, buffer, remain, status);
+
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+		if (host->mmc->card != NULL && host->mmc->card->type == MMC_TYPE_SDIO){ 
+			msmsdcc_delay(host);
+		}
+#endif	
 
 		/* Unmap the buffer */
 		kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
@@ -1101,6 +1149,34 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 	}
 }
 
+
+static int msmsdcc_get_status(struct mmc_host *mmc)
+{
+	struct msmsdcc_host *host = mmc_priv(mmc);
+	unsigned int status;
+
+	spin_lock_irq(&host->lock);
+
+	if (host->plat->status) {
+
+		status = host->plat->status(mmc_dev(mmc));
+		host->eject = !status;
+
+		if (status ^ host->oldstat) {
+			pr_info("%s: Slot status change detected (%d -> %d)\n",
+					mmc_hostname(mmc), host->oldstat, status);
+			host->oldstat = status;
+			spin_unlock_irq(&host->lock);
+
+			return 1;
+		}
+	}
+
+	spin_unlock_irq(&host->lock);
+
+	return 0;
+}
+
 static int msmsdcc_get_ro(struct mmc_host *mmc)
 {
 	int wpswitch_status = -ENOSYS;
@@ -1142,25 +1218,30 @@ static const struct mmc_host_ops msmsdcc_ops = {
 #ifdef CONFIG_MMC_AUTO_SUSPEND
 	.auto_suspend	= msmsdcc_auto_suspend,
 #endif
+	.get_status = msmsdcc_get_status,
 };
+
 
 static void
 msmsdcc_check_status(unsigned long data)
 {
 	struct msmsdcc_host *host = (struct msmsdcc_host *)data;
-	unsigned int status;
+	if (msmsdcc_get_status(host->mmc)) {
 
-	if (!host->plat->status) {
-		mmc_detect_change(host->mmc, 0);
-	} else {
-		status = host->plat->status(mmc_dev(host->mmc));
-		host->eject = !status;
-		if (status ^ host->oldstat) {
-			pr_info("%s: Slot status change detected (%d -> %d)\n",
-			       mmc_hostname(host->mmc), host->oldstat, status);
+#ifdef CONFIG_LGE_BCM432X_PATCH
+		if (host->plat->status_irq == MSM_GPIO_TO_INT(CONFIG_BCM4325_GPIO_WL_RESET)) {
+			printk(KERN_ERR "[host->plat->status_irq:%d:MSM_GPIO_TO_INIT:%d:%s:%d]\n",
+				   host->plat->status_irq,
+				   MSM_GPIO_TO_INT(CONFIG_BCM4325_GPIO_WL_RESET),
+				   __func__, __LINE__);
 			mmc_detect_change(host->mmc, 0);
 		}
-		host->oldstat = status;
+		else
+#endif
+			if (!host->eject)
+				mmc_detect_change(host->mmc, TIME_STEP);
+			else
+				mmc_detect_change(host->mmc, 0);
 	}
 }
 
@@ -1275,10 +1356,20 @@ static void msmsdcc_early_suspend(struct early_suspend *h)
 		container_of(h, struct msmsdcc_host, early_suspend);
 	unsigned long flags;
 
+	//printk(KERN_ERR "msmsdcc_early_suspend : start \n");
+#ifdef  CONFIG_BCM4325_GPIO_WL_RESET
+	if ( host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET) )
+#endif
+	{
+
 	spin_lock_irqsave(&host->lock, flags);
 	host->polling_enabled = host->mmc->caps & MMC_CAP_NEEDS_POLL;
 	host->mmc->caps &= ~MMC_CAP_NEEDS_POLL;
 	spin_unlock_irqrestore(&host->lock, flags);
+
+	}
+	//printk(KERN_ERR "msmsdcc_early_suspend : end \n");
+
 };
 static void msmsdcc_late_resume(struct early_suspend *h)
 {
@@ -1286,12 +1377,38 @@ static void msmsdcc_late_resume(struct early_suspend *h)
 		container_of(h, struct msmsdcc_host, early_suspend);
 	unsigned long flags;
 
+	//printk(KERN_ERR "msmsdcc_late_resume : start \n");
+#ifdef  CONFIG_BCM4325_GPIO_WL_RESET
+	if ( host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET) )
+#endif
+	{
+
+	unsigned int status;
+
+	if (!host->plat->status) {
+		mmc_detect_change(host->mmc, 0);
+	}
+	else {
+		status = host->plat->status(mmc_dev(host->mmc));
+		host->eject = !status;
+		if (status ^ host->oldstat) {
+			 printk(KERN_INFO
+				"%s: Slot status change detected (%d -> %d)\n",
+				mmc_hostname(host->mmc), host->oldstat, status);
+			 mmc_detect_change(host->mmc, 0);
+		}
+		host->oldstat = status;
+	}
+
 	if (host->polling_enabled) {
 		spin_lock_irqsave(&host->lock, flags);
 		host->mmc->caps |= MMC_CAP_NEEDS_POLL;
 		mmc_detect_change(host->mmc, 0);
 		spin_unlock_irqrestore(&host->lock, flags);
 	}
+
+	}
+	
 };
 #endif
 
@@ -1421,11 +1538,31 @@ msmsdcc_probe(struct platform_device *pdev)
 	 */
 	mmc->ops = &msmsdcc_ops;
 	mmc->f_min = plat->msmsdcc_fmin;
+
+#if !defined(CONFIG_LGE_BCM432X_PATCH)
 	mmc->f_max = plat->msmsdcc_fmax;
+#else
+	if (host->pdev_id == BRCM_WLAN_SLOT){ 
+		mmc->f_max = 24576000;
+		printk("%s : slot set f_max [%u]\n",mmc_hostname(host->mmc),mmc->f_max);
+	}else{
+		mmc->f_max = plat->msmsdcc_fmax;
+	}
+#endif	/* CONFIG_LGE_BCM432X_PATCH */
 	mmc->ocr_avail = plat->ocr_mask;
 	mmc->caps |= plat->mmc_bus_width;
 
+#if !defined(CONFIG_LGE_BCM432X_PATCH)
 	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
+#else
+	if (host->pdev_id == BRCM_WLAN_SLOT){ 
+		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
+		printk("%s : slot set MMC_CAP_SD_HIGHSPEED\n",mmc_hostname(host->mmc));
+	}else{
+		mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
+	}
+#endif	/* CONFIG_LGE_BCM432X_PATCH */
+
 
 	if (plat->nonremovable)
 		mmc->caps |= MMC_CAP_NONREMOVABLE;
@@ -1639,6 +1776,7 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 	struct msmsdcc_host *host = mmc_priv(mmc);
 	int rc = 0;
 
+
 #ifdef CONFIG_MMC_AUTO_SUSPEND
 	if (test_and_set_bit(0, &host->suspended))
 		return 0;
@@ -1649,6 +1787,19 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 
 		if (!mmc->card || mmc->card->type != MMC_TYPE_SDIO)
 			rc = mmc_suspend_host(mmc, state);
+
+#if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
+		//else if (mmc->card && mmc->card->type == MMC_TYPE_SDIO) {
+		else if (host->plat->status_irq == gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET)) {
+			if(dhdpm.suspend != NULL) {
+				//rc = dhdpm.suspend(NULL);
+				dhdpm.suspend(NULL);
+			}
+			/*else
+				printk("[WiFi] %s: dhdpm.suspend=NULL \n",__FUNCTION__);*/
+		}
+#endif
+
 		if (!rc) {
 			writel(0, host->base + MMCIMASK0);
 
@@ -1660,9 +1811,15 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 			}
 		}
 
-		if (host->plat->sdiowakeup_irq)
+#if 0
+		if (host->plat->sdiowakeup_irq) // original			
+#else
+		if (host->plat->sdiowakeup_irq && host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET))
+#endif			
+		
 			enable_irq(host->plat->sdiowakeup_irq);
 	}
+
 	return rc;
 }
 
@@ -1672,6 +1829,8 @@ msmsdcc_resume(struct platform_device *dev)
 	struct mmc_host *mmc = mmc_get_drvdata(dev);
 	struct msmsdcc_host *host = mmc_priv(mmc);
 	unsigned long flags;
+
+
 
 #ifdef CONFIG_MMC_AUTO_SUSPEND
 	if (!test_and_clear_bit(0, &host->suspended))
@@ -1690,7 +1849,13 @@ msmsdcc_resume(struct platform_device *dev)
 
 		spin_unlock_irqrestore(&host->lock, flags);
 
-		if (host->plat->sdiowakeup_irq)
+
+#if 0
+		if (host->plat->sdiowakeup_irq) // original 		
+#else
+		if (host->plat->sdiowakeup_irq && host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET))
+#endif			
+
 			disable_irq(host->plat->sdiowakeup_irq);
 
 		if (!mmc->card || mmc->card->type != MMC_TYPE_SDIO)
@@ -1698,7 +1863,23 @@ msmsdcc_resume(struct platform_device *dev)
 		if (host->plat->status_irq)
 			enable_irq(host->plat->status_irq);
 
+
+#if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
+		//if ( mmc->card && mmc->card->type == MMC_TYPE_SDIO) {
+		if (host->plat->status_irq == gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET)) {
+			//printk("%s: Enabling SDIO Interrupt \n", __FUNCTION__);
+			//msmsdcc_enable_sdio_irq(mmc, 1); We will confirm whether this function is need ?
+
+			if(dhdpm.resume != NULL) {
+				dhdpm.resume(NULL);
+			}
+			/*else
+				printk("[WiFi] %s: dhdpm.suspend=NULL \n",__FUNCTION__);*/
+		}
+#endif	
+
 	}
+
 	return 0;
 }
 #else
