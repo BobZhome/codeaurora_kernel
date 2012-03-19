@@ -5,11 +5,7 @@
  * Copyright (C) 2008 Google, Inc.
  *
  * Authors: 
-<<<<<<< HEAD
  *  kiwone seo
-=======
- *  kiwone seo 
->>>>>>> vendor-ls670-froyo
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -462,10 +458,6 @@ static void __exit gpio_h2w_exit(void)
 module_init(gpio_h2w_init);
 module_exit(gpio_h2w_exit);
 
-<<<<<<< HEAD
 MODULE_AUTHOR("Kiwone,Seo");
-=======
-MODULE_AUTHOR("Kiwone,Seo ");
->>>>>>> vendor-ls670-froyo
 MODULE_DESCRIPTION("LGE 2 Wire detection driver");
 MODULE_LICENSE("GPL");

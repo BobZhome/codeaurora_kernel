@@ -182,10 +182,6 @@ static struct msm_acpu_clock_platform_data msm7x2x_clock_data = {
 void msm_serial_debug_init(unsigned int base, int irq,
 			   struct device *clk_device, int signal_irq);
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 unsigned pmem_fb_size = 0x96000;
 
 static void __init msm7x2x_init(void)

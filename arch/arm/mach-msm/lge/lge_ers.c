@@ -2,11 +2,7 @@
  * arch/arm/mach-msm/lge/ers-lge.c
  *
  * Copyright (C) 2009 LGE, Inc
-<<<<<<< HEAD
  * Author: Jun-Yeong Han 
-=======
- * Author: Jun-Yeong Han <
->>>>>>> vendor-ls670-froyo
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and

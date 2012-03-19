@@ -143,18 +143,10 @@ extern int msm_chg_LG_cable_type(void);
 #define LG_FACTORY_CABLE_130K_TYPE      10
 #endif
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 #if defined (CONFIG_MACH_MSM7X27_THUNDERC)
 struct wake_lock battery_wake_lock;
 #endif
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 enum {
 	BATTERY_REGISTRATION_SUCCESSFUL = 0,
 	BATTERY_DEREGISTRATION_SUCCESSFUL = BATTERY_REGISTRATION_SUCCESSFUL,
@@ -179,10 +171,6 @@ enum {
 	BATTERY_VOLTAGE_UNKNOWN,
 };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 enum {
 	CHG_UI_EVENT_IDLE,	/* Starting point, no charger.  */
 	CHG_UI_EVENT_NO_POWER,	/* No/Weak Battery + Weak Charger. */
@@ -244,27 +232,14 @@ struct msm_battery_info {
 	u32 charger_valid;
 	u32 batt_valid;
 	u32 batt_capacity;
-<<<<<<< HEAD
 	u32 battery_temp;
 	u32 valid_battery_id;
 	u32 battery_therm;
 
-=======
-	
-	u32 battery_temp;
-	
-	u32 valid_battery_id;
-	u32 battery_therm;
-	
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 	u32 chg_current;
 	u32 batt_thrm_state;
 #endif
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 
 	 u32(*calculate_capacity) (u32 voltage);
 
@@ -305,15 +280,8 @@ static struct pseudo_batt_info_type pseudo_batt_info = {
 	.mode = 0,
 };
 
-<<<<<<< HEAD
 static int block_charging_state = 1;  //1 : charging , 0: block charging
 
-=======
-
-static int block_charging_state = 1;  //1 : charging , 0: block charging
-
-
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_THERM_NO_STOP_CHARGING)
 static int no_stop_charging = 0;
 #endif
@@ -326,19 +294,11 @@ static char *msm_power_supplied_to[] = {
 	"battery",
 };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 extern void set_charging_timer(int);
 extern void get_charging_timer(int *);
 int charging_timer_enable = -1;
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 static int msm_power_get_property(struct power_supply *psy,
 				  enum power_supply_property psp,
 				  union power_supply_propval *val)
@@ -398,34 +358,17 @@ static enum power_supply_property msm_batt_power_props[] = {
 	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
 	POWER_SUPPLY_PROP_CAPACITY,
-<<<<<<< HEAD
 	POWER_SUPPLY_PROP_TEMP,
-=======
-	
-	POWER_SUPPLY_PROP_TEMP,
-	
->>>>>>> vendor-ls670-froyo
 	POWER_SUPPLY_PROP_BATTERY_ID_CHECK,
 	POWER_SUPPLY_PROP_BATTERY_TEMP_ADC,
 	POWER_SUPPLY_PROP_PSEUDO_BATT,
 	POWER_SUPPLY_PROP_CHARGING_TIMER,
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 	POWER_SUPPLY_PROP_BLOCK_CHARGING,
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 	POWER_SUPPLY_PROP_CURRENT_NOW,
 	POWER_SUPPLY_PROP_BATTERY_THRM_STATE,
-<<<<<<< HEAD
 	POWER_SUPPLY_PROP_THERM_NO_STOP_CHARGING
 #endif
-=======
-	
-	POWER_SUPPLY_PROP_THERM_NO_STOP_CHARGING
-#endif
-	
->>>>>>> vendor-ls670-froyo
 };
 
 static void msm_batt_update_psy_status(void);
@@ -451,10 +394,6 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 		val->intval = msm_batt_info.batt_health;
 		break;
 	case POWER_SUPPLY_PROP_PRESENT:
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 		if (pseudo_batt_info.mode == 1) {
 			if (pseudo_batt_info.id == 1
 			    || pseudo_batt_info.therm != 0)
@@ -468,12 +407,6 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 			else
 				val->intval = 0;
 		}
-<<<<<<< HEAD
-		/* LGE_COMMENT_OUT
-		   val->intval = msm_batt_info.batt_valid; */
-=======
-		
->>>>>>> vendor-ls670-froyo
 		break;
 	case POWER_SUPPLY_PROP_TECHNOLOGY:
 		val->intval = msm_batt_info.batt_technology;
@@ -497,20 +430,12 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 			val->intval = msm_batt_info.batt_capacity;
 		break;
 
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 	case POWER_SUPPLY_PROP_TEMP:
 		if (pseudo_batt_info.mode == 1)
 			val->intval = pseudo_batt_info.temp;
 		else
 			val->intval = msm_batt_info.battery_temp;
 		break;
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 	case POWER_SUPPLY_PROP_BATTERY_ID_CHECK:
 		if (pseudo_batt_info.mode == 1)
 			val->intval = pseudo_batt_info.id;
@@ -523,27 +448,15 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 		else
 			val->intval = msm_batt_info.battery_therm;
 		break;
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 
 	case POWER_SUPPLY_PROP_PSEUDO_BATT:
 		val->intval = pseudo_batt_info.mode;
 		break;
 
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 	case POWER_SUPPLY_PROP_BLOCK_CHARGING:
 		val->intval = block_charging_state;
 		break;
 
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 		val->intval = msm_batt_info.chg_current;
@@ -553,21 +466,13 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 		val->intval = msm_batt_info.batt_thrm_state;
 		break;
 
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_THERM_NO_STOP_CHARGING)
 	case POWER_SUPPLY_PROP_THERM_NO_STOP_CHARGING:
 		val->intval = no_stop_charging;
 		break;
 #endif /* CONFIG_LGE_THERM_NO_STOP_CHARGING */
 #endif
-<<<<<<< HEAD
 
-=======
-		
->>>>>>> vendor-ls670-froyo
 	case POWER_SUPPLY_PROP_CHARGING_TIMER:
 		{
 			u32 intval;
@@ -604,10 +509,6 @@ enum charger_type {		// it  comes from msm_hsusb.c
 
 int charger_hw_type;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 extern void battery_info_get(struct batt_info *rsp);
 extern void pseudo_batt_info_set(struct pseudo_batt_info_type *);
 
@@ -627,10 +528,6 @@ int pseudo_batt_set(struct pseudo_batt_info_type *info)
 }
 EXPORT_SYMBOL(pseudo_batt_set);
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 int charging_timer_set(int intVal)
 {
 	set_charging_timer(intVal);
@@ -639,10 +536,6 @@ int charging_timer_set(int intVal)
 }
 EXPORT_SYMBOL(charging_timer_set);
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 extern void block_charging_set(int);
 void batt_block_charging_set(int block)
 {
@@ -651,10 +544,7 @@ void batt_block_charging_set(int block)
 }
 EXPORT_SYMBOL(batt_block_charging_set);
 
-<<<<<<< HEAD
-=======
 // no stop charging even if hot or cold battery
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_THERM_NO_STOP_CHARGING)
 extern void set_charging_therm_no_stop_charging(int info);
 void msm_batt_therm_no_stop_charging(int no_stop) 
@@ -667,10 +557,6 @@ EXPORT_SYMBOL(msm_batt_therm_no_stop_charging);
 
 struct batt_info batt_info_buf;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 struct rpc_reply_batt_chg {
 	struct rpc_reply_hdr hdr;
 	u32 more_data;
@@ -684,18 +570,10 @@ struct rpc_reply_batt_chg {
 	u32 battery_charging;
 	u32 charger_valid;
 	u32 chg_batt_event;
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 	u32 chg_current;
 	u32 batt_thrm_state;
 #endif
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 };
 
 static struct rpc_reply_batt_chg rep_batt_chg;
@@ -758,20 +636,12 @@ static int msm_batt_get_batt_chg_status_v1(u32 * batt_charging,
 		rep_batt_chg.chg_batt_event =
 		    be32_to_cpu(rep_batt_chg.chg_batt_event);
 
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		rep_batt_chg.chg_current =
 		    be32_to_cpu(rep_batt_chg.chg_current);
 		rep_batt_chg.batt_thrm_state =
 		    be32_to_cpu(rep_batt_chg.batt_thrm_state);
 #endif
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 
 		msm_batt_info.batt_capacity = rep_batt_chg.battery_level;
 		msm_batt_info.voltage_now = rep_batt_chg.battery_voltage;
@@ -782,18 +652,10 @@ static int msm_batt_get_batt_chg_status_v1(u32 * batt_charging,
 		*batt_charging = rep_batt_chg.battery_charging;
 		*charger_valid = rep_batt_chg.charger_valid;
 		*chg_batt_event = rep_batt_chg.chg_batt_event;
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		msm_batt_info.chg_current = rep_batt_chg.chg_current;
 		msm_batt_info.batt_thrm_state = rep_batt_chg.batt_thrm_state;
 #endif
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 	} else {
 		printk(KERN_INFO "%s():No more data in batt_chg rpc reply\n",
 		       __func__);
@@ -897,15 +759,7 @@ static int msm_batt_get_batt_chg_status(u32 * batt_charging,
 	}
 	*chg_batt_event = be32_to_cpu(rep_chg.chg_batt_data);
 
-<<<<<<< HEAD
 	battery_info_get((struct batt_info *)&batt_info_buf);
-	//printk(KERN_ERR "battery_info_get : auth_id=%d batt_therm_adc=%d batt_temp=%d\n",
-	//               batt_info_buf.valid_batt_id, batt_info_buf.batt_therm, batt_info_buf.batt_temp);        
-=======
-	
-	battery_info_get((struct batt_info *)&batt_info_buf);
-	
->>>>>>> vendor-ls670-froyo
 
 	charger_hw_type = msm_hsusb_get_charger_type();
 
@@ -917,10 +771,6 @@ static void msm_batt_update_psy_status(void)
 	u32 batt_charging = 0;
 	u32 chg_batt_event = CHG_UI_EVENT_INVALID;
 	u32 charger_valid = 0;
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_DETECT_PIF_PATCH)
 	static int pif_value = -1;
 
@@ -940,26 +790,14 @@ static void msm_batt_update_psy_status(void)
 		batt_info_buf.valid_batt_id = rep_batt_chg.battery_id;
 		batt_info_buf.batt_therm = rep_batt_chg.battery_therm;
 		batt_info_buf.batt_temp = rep_batt_chg.battery_temp;
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		batt_info_buf.chg_current = rep_batt_chg.chg_current;
 		batt_info_buf.batt_thrm_state = rep_batt_chg.batt_thrm_state;
 #endif
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 	} else
 		msm_batt_get_batt_chg_status(&batt_charging, &charger_valid,
 					     &chg_batt_event);
 
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 	DBG(KERN_DEBUG "batt_charging = %u  batt_valid = %u batt_volt = %u\n"
 	    "batt_level = %u charger_valid = %u chg_batt_event = %u\n"
@@ -979,10 +817,6 @@ static void msm_batt_update_psy_status(void)
 	    batt_info_buf.valid_batt_id, batt_info_buf.batt_therm,
 	    batt_info_buf.batt_temp);
 #endif
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 	if (msm_batt_info.batt_capacity < 2)
 		printk(KERN_INFO "batt_level = %u\n", msm_batt_info.batt_capacity);
 
@@ -990,7 +824,6 @@ static void msm_batt_update_psy_status(void)
 	//              "  current charger valid status = %u\n",
 	//              msm_batt_info.charger_valid, charger_valid);
 
-<<<<<<< HEAD
 	msm_batt_info.valid_battery_id = batt_info_buf.valid_batt_id;
 
 	//NEED_TO_CHECK
@@ -998,19 +831,6 @@ static void msm_batt_update_psy_status(void)
 #if defined (CONFIG_MACH_MSM7X27_THUNDERC)
 		wake_lock_timeout(&battery_wake_lock, 5 * HZ);
 #endif
-=======
-	
-	msm_batt_info.valid_battery_id = batt_info_buf.valid_batt_id;
-	
-
-	//NEED_TO_CHECK
-	if (msm_batt_info.charger_valid != charger_valid) {
-		
-#if defined (CONFIG_MACH_MSM7X27_THUNDERC)
-		wake_lock_timeout(&battery_wake_lock, 5 * HZ);
-#endif
-		
->>>>>>> vendor-ls670-froyo
 		msm_batt_info.charger_valid = charger_valid;
 		if (msm_batt_info.charger_valid
 		    && charger_hw_type == CHG_HOST_PC) {
@@ -1027,10 +847,6 @@ static void msm_batt_update_psy_status(void)
 		}
 	}
 
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_LGE_DETECT_PIF_PATCH)
 	if (1 == pif_value && 0 == msm_batt_info.valid_battery_id) {
 		msm_batt_info.batt_valid = 1; 
@@ -1042,7 +858,6 @@ static void msm_batt_update_psy_status(void)
 
 		msm_batt_info.batt_status = POWER_SUPPLY_STATUS_DISCHARGING;
 
-<<<<<<< HEAD
 		msm_batt_info.battery_temp = 29 * 10;
 		msm_batt_info.battery_therm = 88;
 
@@ -1050,18 +865,6 @@ static void msm_batt_update_psy_status(void)
 		msm_batt_info.batt_thrm_state = batt_info_buf.batt_thrm_state;
 	} 
 #endif
-=======
-		
-		msm_batt_info.battery_temp = 29 * 10;
-		msm_batt_info.battery_therm = 88;
-		
-		msm_batt_info.chg_current = batt_info_buf.chg_current;
-		msm_batt_info.batt_thrm_state = batt_info_buf.batt_thrm_state;
-		
-	} 
-#endif
-	
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 	else if (msm_batt_info.batt_valid || 
 	    msm_batt_info.valid_battery_id) {
@@ -1083,10 +886,6 @@ static void msm_batt_update_psy_status(void)
 		if (batt_charging && msm_batt_info.charger_valid) {
 			msm_batt_info.batt_status =
 			    POWER_SUPPLY_STATUS_CHARGING;
-<<<<<<< HEAD
-=======
-			
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 			if (msm_batt_info.batt_capacity == 0)
 				msm_batt_info.batt_capacity++;
@@ -1101,53 +900,27 @@ static void msm_batt_update_psy_status(void)
 			msm_batt_info.batt_capacity = 100;
 		}
 
-<<<<<<< HEAD
 		msm_batt_info.battery_temp = batt_info_buf.batt_temp * 10;
 		msm_batt_info.battery_therm = batt_info_buf.batt_therm;
 
-=======
-		
-		msm_batt_info.battery_temp = batt_info_buf.batt_temp * 10;
-		msm_batt_info.battery_therm = batt_info_buf.batt_therm;
-		
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		msm_batt_info.chg_current = batt_info_buf.chg_current;
 		msm_batt_info.batt_thrm_state = batt_info_buf.batt_thrm_state;
 #endif
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 	}
 	else {
 		msm_batt_info.batt_health = POWER_SUPPLY_HEALTH_UNKNOWN;
 		msm_batt_info.batt_status = POWER_SUPPLY_STATUS_UNKNOWN;
 
-<<<<<<< HEAD
 		if (chg_batt_event == CHG_UI_EVENT_DONE) {
 			msm_batt_info.batt_capacity = 100;
 		}
 		msm_batt_info.battery_temp = batt_info_buf.batt_temp * 10;
 		msm_batt_info.battery_therm = batt_info_buf.batt_therm;
-=======
-		
-		if (chg_batt_event == CHG_UI_EVENT_DONE) {
-			msm_batt_info.batt_capacity = 100;
-		}
-		
-		msm_batt_info.battery_temp = batt_info_buf.batt_temp * 10;
-		msm_batt_info.battery_therm = batt_info_buf.batt_therm;
-		
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC_SPRINT)
 		msm_batt_info.chg_current = batt_info_buf.chg_current;
 		msm_batt_info.batt_thrm_state = batt_info_buf.batt_thrm_state;
 #endif
-<<<<<<< HEAD
-=======
-		
->>>>>>> vendor-ls670-froyo
 	}
 
 	power_supply_changed(&msm_psy_batt);
@@ -1367,10 +1140,6 @@ static ssize_t msm_batt_pif_show(struct device *dev, struct device_attribute *at
 static DEVICE_ATTR(pif, S_IRUGO, msm_batt_pif_show, NULL);
 #endif
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 #include <mach/lg_comdef.h> /* boolean */
 extern void set_operation_mode(boolean info);
 static ssize_t msm_batt_modem_lpm_store(struct device *dev, struct device_attribute *attr,
@@ -1536,20 +1305,10 @@ static int __devinit msm_batt_probe(struct platform_device *pdev)
 
 	msm_batt_start_cb_thread();
 
-<<<<<<< HEAD
 #if defined (CONFIG_MACH_MSM7X27_THUNDERC)
 	wake_lock_init(&battery_wake_lock, WAKE_LOCK_SUSPEND, "msm_battery");
 #endif
 
-=======
-	
-#if defined (CONFIG_MACH_MSM7X27_THUNDERC)
-	wake_lock_init(&battery_wake_lock, WAKE_LOCK_SUSPEND, "msm_battery");
-#endif
-	
-
-	
->>>>>>> vendor-ls670-froyo
 	rc = sysfs_create_group(&pdev->dev.kobj, &dev_attr_grp);
 	if(rc < 0) {
 		dev_err(&pdev->dev, "%s: pif sysfs create failed rc=%d\n", __func__, rc);
@@ -1758,10 +1517,6 @@ static int __devexit msm_batt_remove(struct platform_device *pdev)
 {
 	int rc;
 
-<<<<<<< HEAD
-=======
-	
->>>>>>> vendor-ls670-froyo
 	sysfs_remove_group(&pdev->dev.kobj, &dev_attr_grp);
 
 	rc = msm_batt_cleanup();

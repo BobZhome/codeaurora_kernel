@@ -33,10 +33,6 @@ void SendKeyToInputDevie(unsigned int code, int value)
 {
 	struct input_dev *ats_input_dev;
 
-<<<<<<< HEAD
-=======
-	// printk("keycode = %d, value = %d\n", code, value);
->>>>>>> vendor-ls670-froyo
 
 	ats_input_dev = get_ats_input_dev();
 	if (ats_input_dev)

@@ -33,10 +33,6 @@ static struct snd_endpoint snd_endpoints_list[] = {
 	SND(IN_S_SADC_OUT_SPEAKER_PHONE, 25),
 	SND(CURRENT, 27),
 #else
-<<<<<<< HEAD
-=======
-/* LGE_CHANGE_S, [junyoub.an] , 2010-02-12, Define sound device*/
->>>>>>> vendor-ls670-froyo
 	SND(HANDSET, 5),
 	SND(HEADSET_LOOPBACK, 1),
 	SND(HEADSET, 2),
@@ -54,10 +50,6 @@ static struct snd_endpoint snd_endpoints_list[] = {
 	SND(TTY_HCO, 16),
 	SND(TTY_HCO_SPEAKER, 17),
 	SND(CURRENT, 25),
-<<<<<<< HEAD
-=======
-/* LGE_CHANGE_E, [junyoub.an] , 2010-02-12, Define sound device*/
->>>>>>> vendor-ls670-froyo
 
 #endif
 };

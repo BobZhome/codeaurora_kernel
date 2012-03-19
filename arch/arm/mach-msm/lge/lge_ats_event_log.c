@@ -28,10 +28,6 @@
 
 static struct input_dev *ats_input_dev;
 
-<<<<<<< HEAD
-/* add ETA  key event logging for vs660 [younchan.kim 2010-05-31]*/
-=======
->>>>>>> vendor-ls670-froyo
 static struct input_handler input_handler;
 static struct work_struct event_log_work;
 struct ats_mtc_key_log_type ats_mtc_key_log1;
@@ -225,10 +221,6 @@ int event_log_end(void)
 }
 EXPORT_SYMBOL(event_log_end);
 
-<<<<<<< HEAD
-/* [END] add ETA  key event logging for vs660 [younchan.kim 2010-05-31]*/
-=======
->>>>>>> vendor-ls670-froyo
 
 
 static int  __init ats_event_log_probe(struct platform_device *pdev)

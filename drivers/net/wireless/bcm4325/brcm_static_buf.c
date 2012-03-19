@@ -9,15 +9,8 @@
 #define DBG(args)
 #endif
 
-<<<<<<< HEAD
 #define USE_STATIC_SKB	/* Use DHD_USE_STATIC_BUF at SKB */
 
-=======
-
-#define USE_STATIC_SKB	/* Use DHD_USE_STATIC_BUF at SKB */
-
-
->>>>>>> vendor-ls670-froyo
 #define MAX_WIFI_SECTION		4
 #define MAX_STATIC_PKT_NUM		8
 

@@ -70,15 +70,8 @@ uint sd_f2_blocksize = 512;		/* Default blocksize */
 uint sd_f2_blocksize = 64;		/* Default blocksize */
 #endif	/* CONFIG_LGE_BCM432X_PATCH */
 
-<<<<<<< HEAD
 #define USE_STATIC_SKB	/* Use DHD_USE_STATIC_BUF at SKB */
 
-=======
-
-#define USE_STATIC_SKB	/* Use DHD_USE_STATIC_BUF at SKB */
-
-
->>>>>>> vendor-ls670-froyo
 uint sd_divisor = 2;			/* Default 48MHz/2 = 24MHz */
 
 uint sd_power = 1;		/* Default to SD Slot powered ON */
@@ -684,15 +677,8 @@ sdioh_cis_read(sdioh_info_t *sd, uint func, uint8 *cisd, uint32 length)
 extern SDIOH_API_RC
 sdioh_request_byte(sdioh_info_t *sd, uint rw, uint func, uint regaddr, uint8 *byte)
 {
-<<<<<<< HEAD
 	int err_ret = 0;
 
-=======
-	
-	int err_ret = 0;
-
-
->>>>>>> vendor-ls670-froyo
 	sd_info(("%s: rw=%d, func=%d, addr=0x%05x\n", __FUNCTION__, rw, func, regaddr));
 
 	DHD_PM_RESUME_WAIT(sdioh_request_byte_wait);

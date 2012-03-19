@@ -26,11 +26,8 @@
 #include <mach/vreg.h>
 #include <mach/board_lge.h>
 
-<<<<<<< HEAD
-=======
 #define DRV_AUO_PANEL
 
->>>>>>> vendor-ls670-froyo
 #define PANEL_DEBUG 0
 
 #define LCD_CONTROL_BLOCK_BASE	0x110000
@@ -123,8 +120,6 @@ static struct display_table mddi_hitachi_display_on_3rd[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
-<<<<<<< HEAD
-=======
 
 static struct display_table mddi_hitachi_display_on_auo[] = {
 	// Display on sequence
@@ -134,7 +129,6 @@ static struct display_table mddi_hitachi_display_on_auo[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
->>>>>>> vendor-ls670-froyo
 #if 0
 static struct display_table2 mddi_hitachi_img[] = {
 	{0x2c, 16384, {}},
@@ -155,15 +149,8 @@ static struct display_table mddi_hitachi_display_off[] = {
 static struct display_table mddi_hitachi_sleep_mode_on_data[] = {
 	// Display off sequence
 	{0x28, 4, {0x00, 0x00, 0x00, 0x00}},
-<<<<<<< HEAD
 	{REGFLAG_DELAY, 20, {}},
 	{0x10, 4, {0x00, 0x00, 0x00, 0x00}},
-=======
-	// [App 4th Table] Change from 40ms to 20ms. 2010-08-03. minjong.gong@lge.com
-	{REGFLAG_DELAY, 20, {}},
-	{0x10, 4, {0x00, 0x00, 0x00, 0x00}},
-	// [Apply 4th Table] Change from 100ms to 40ms. 2010-08-03. minjong.gong@lge.com
->>>>>>> vendor-ls670-froyo
 	{REGFLAG_DELAY, 40, {}},
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
@@ -203,20 +190,12 @@ static struct display_table mddi_hitachi_initialize_1st[] = {
 	// PGAMMACTL 
 	//{0xfa, 16, {0x11, 0x13, 0x08, 0x14, 0x28, 0x2c, 0x2b, 0x0d,
 	//		    0x19, 0x14, 0x1e, 0x1e, 0x0f, 0x00, 0x00, 0x00}},
-<<<<<<< HEAD
-=======
-	// Apply 3rd Cut gamma table. 2010-08-10. minjong.gong@lge.com
->>>>>>> vendor-ls670-froyo
 	{0xfa, 16, {0x03, 0x03, 0x08, 0x28, 0x2b, 0x2f, 0x32, 0x12,
 				0x1d, 0x1f, 0x1c, 0x1c, 0x0f, 0x00, 0x00, 0x00}},
 
 	// NGAMMACTL 
 	//{0xfb, 16, {0x11, 0x13, 0x08, 0x14, 0x28, 0x2c, 0x2b, 0x2d,
 	//			0x19, 0x14, 0x1e, 0x1e, 0x0f, 0x00, 0x00, 0x00}},
-<<<<<<< HEAD
-=======
-	// Apply 3rd Cut gamma table. 2010-08-10. minjong.gong@lge.com
->>>>>>> vendor-ls670-froyo
 	{0xfb, 16, {0x03, 0x03, 0x08, 0x28, 0x2b, 0x2f, 0x32, 0x12,
 				0x1d, 0x1f, 0x1c, 0x1c, 0x0f, 0x00, 0x00, 0x00}},
 
@@ -258,11 +237,8 @@ static struct display_table mddi_hitachi_initialize_3rd_vs660[] = {
 	{0xf3, 8,  {0x03, 0x6e, 0x15, 0x07, 0x03, 0x00, 0x00, 0x00}},
 	
 	// DISCTL 
-<<<<<<< HEAD
 	// Change 2nd and 15th parameters. From 0x4d to 0x54.
 	// When useing 0x4D (65Hz), it causes decreasing the touch sensitivity.
-=======
->>>>>>> vendor-ls670-froyo
 	{0xf2, 20, {0x3b, 0x54, 0x0f, 0x08, 0x08, 0x08, 0x08, 0x00,
 			    0x08, 0x08, 0x00, 0x04, 0x00, 0x00, 0x54, 0x08,
 			    0x08, 0x08, 0x08, 0x00}},
@@ -312,11 +288,8 @@ static struct display_table mddi_hitachi_initialize_3rd_p500[] = {
 	{0xf3, 8,  {0x03, 0x6e, 0x15, 0x07, 0x03, 0x00, 0x00, 0x00}},
 	
 	// DISCTL 
-<<<<<<< HEAD
 	// Change 2nd and 15th parameters. From 0x4d to 0x54.
 	// When useing 0x4D (65Hz), it causes decreasing the touch sensitivity.
-=======
->>>>>>> vendor-ls670-froyo
 	{0xf2, 20, {0x3b, 0x54, 0x0f, 0x08, 0x08, 0x08, 0x08, 0x00,
 			    0x08, 0x08, 0x00, 0x04, 0x00, 0x00, 0x54, 0x08,
 			    0x08, 0x08, 0x08, 0x00}},
@@ -347,8 +320,6 @@ static struct display_table mddi_hitachi_initialize_3rd_p500[] = {
 
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
-<<<<<<< HEAD
-=======
 
 static struct display_table mddi_hitachi_initialize_auo[] = {
 
@@ -453,7 +424,6 @@ static struct display_table mddi_hitachi_initialize_auo[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {0}}
 };
 
->>>>>>> vendor-ls670-froyo
 void hitachi_display_table(struct display_table *table, unsigned int count)
 {
 	unsigned int i;
@@ -554,11 +524,6 @@ static void mddi_hitachi_lcd_vsync_detected(boolean detected)
 	uint32 num_vsyncs;
 
 
-<<<<<<< HEAD
-=======
-//	mddi_queue_register_write_int(0x2C, 0);
-
->>>>>>> vendor-ls670-froyo
 #if 0 /* Block temporaly till vsync implement */
 	if ((detected) || (mddi_hitachi_vsync_attempts > 5)) {
 		if ((detected) || (mddi_hitachi_monitor_refresh_value)) {
@@ -664,11 +629,6 @@ static int mddi_hitachi_lcd_on(struct platform_device *pdev)
 	hitachi_display_table(mddi_hitachi_display_on_1st,
 			sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
 #else
-<<<<<<< HEAD
-	EPRINTK("ThunderC ==> lge_bd_rev = %d : 3rd LCD initial\n", lge_bd_rev);
-	hitachi_display_table(mddi_hitachi_initialize_3rd_vs660, sizeof(mddi_hitachi_initialize_3rd_vs660)/sizeof(struct display_table));
-	hitachi_display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
-=======
 #ifdef DRV_AUO_PANEL
 	EPRINTK("ThunderC ==> lge_bd_rev = %d : AUO LCD initial\n", lge_bd_rev);
 	hitachi_display_table(mddi_hitachi_initialize_auo, sizeof(mddi_hitachi_initialize_auo)/sizeof(struct display_table));
@@ -678,7 +638,6 @@ static int mddi_hitachi_lcd_on(struct platform_device *pdev)
 	hitachi_display_table(mddi_hitachi_initialize_3rd_vs660, sizeof(mddi_hitachi_initialize_3rd_vs660)/sizeof(struct display_table));
 	hitachi_display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
 #endif	
->>>>>>> vendor-ls670-froyo
 #endif
 	is_lcd_on = TRUE;
 
@@ -718,11 +677,6 @@ static int mddi_hitachi_lcd_store_on(void)
 	hitachi_display_table(mddi_hitachi_display_on_1st,
 			sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
 #else
-<<<<<<< HEAD
-	hitachi_display_table(mddi_hitachi_initialize_3rd_vs660, sizeof(mddi_hitachi_initialize_3rd_vs660)/sizeof(struct display_table));
-	mdelay(200);
-	hitachi_display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
-=======
 #ifdef DRV_AUO_PANEL
 	hitachi_display_table(mddi_hitachi_initialize_auo, sizeof(mddi_hitachi_initialize_auo)/sizeof(struct display_table));
 	mdelay(200);
@@ -732,7 +686,6 @@ static int mddi_hitachi_lcd_store_on(void)
 	mdelay(200);
 	hitachi_display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
 #endif	
->>>>>>> vendor-ls670-froyo
 #endif
 	is_lcd_on = TRUE;
 	return 0;
@@ -868,10 +821,6 @@ static int mddi_hitachi_lcd_init(void)
 		pinfo->lcd.refx100 = (mddi_hitachi_rows_per_second * 100) /
                         		mddi_hitachi_rows_per_refresh;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 		pinfo->lcd.v_back_porch = 6;
 		pinfo->lcd.v_front_porch = 6;
 		pinfo->lcd.v_pulse_width = 4;
@@ -950,10 +899,6 @@ static void mddi_hitachi_lcd_panel_store_poweron(void)
 	}
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 static void mddi_hitachi_lcd_panel_poweroff(void)
 {
 	struct msm_panel_hitachi_pdata *pdata = mddi_hitachi_pdata;

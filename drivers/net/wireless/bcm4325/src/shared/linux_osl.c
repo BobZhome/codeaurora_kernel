@@ -53,15 +53,8 @@ typedef struct bcm_static_buf {
 
 static bcm_static_buf_t *bcm_static_buf = 0;
 
-<<<<<<< HEAD
 #define USE_STATIC_SKB	/* Use DHD_USE_STATIC_BUF at SKB */
 
-=======
-
-#define USE_STATIC_SKB	/* Use DHD_USE_STATIC_BUF at SKB */
-
-
->>>>>>> vendor-ls670-froyo
 #ifdef USE_STATIC_SKB
 #define MAX_STATIC_PKT_NUM 8
 typedef struct bcm_static_pkt {
@@ -161,19 +154,11 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 {
 	osl_t *osh;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 	if(!(osh = kmalloc(sizeof(osl_t), GFP_ATOMIC))){
 	ASSERT(osh);
 		return NULL;
 	}
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 	bzero(osh, sizeof(osl_t));
 
 	
@@ -206,10 +191,6 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 
 #ifdef DHD_USE_STATIC_BUF
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 	if (!bcm_static_buf) {
 		if (!(bcm_static_buf = (bcm_static_buf_t *)dhd_os_prealloc(3, STATIC_BUF_SIZE+
 			STATIC_BUF_TOTAL_LEN))) {
@@ -221,10 +202,6 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 			bcm_static_buf->buf_ptr = (unsigned char *)bcm_static_buf + STATIC_BUF_SIZE;
 		}
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 	
 #ifdef USE_STATIC_SKB
 	if (!bcm_static_skb)
@@ -560,18 +537,10 @@ osl_mfree(osl_t *osh, void *addr, uint size)
 		ASSERT(osh->magic == OS_HANDLE_MAGIC);
 		osh->malloced -= size;
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 	if(addr != NULL){
 	kfree(addr);
 		addr = NULL;
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 }
 
 uint

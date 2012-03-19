@@ -146,10 +146,6 @@ DHD_SPINWAIT_SLEEP_INIT(sdioh_spinwait_sleep);
 
 int gDK8 = FALSE;			/* Temp flag for DevKit8000 support */
 					/* This will go away soon */
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 #if defined(CONFIG_BRCM_LGE_WL_PKTFILTER)
 typedef struct wl_filter_tag {
 uint32 filterid;
@@ -172,10 +168,6 @@ wl_filter_tag_t filters[MAX_PKT_FILTERS];
 
 #endif /* CONFIG_BRCM_LGE_WL_PKTFILTER */
 
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo
 extern int dhdcdc_set_ioctl(dhd_pub_t *dhd, int ifidx, uint cmd, void *buf, uint len);
 /* Private data for SDIO bus interaction */
 typedef struct dhd_bus {
@@ -3943,15 +3935,8 @@ dhdsdio_dpc(dhd_bus_t *bus)
 	         * transfer. */
 		if(dhd_suspend_context == FALSE)
 		{
-<<<<<<< HEAD
 		}
 #endif /* CONFIG_BRCM_LGE_WL_HOSTWAKEUP */
-=======
-
-		}
-#endif /* CONFIG_BRCM_LGE_WL_HOSTWAKEUP */
-
->>>>>>> vendor-ls670-froyo
 		framecnt = dhdsdio_readframes(bus, rxlimit, &rxdone);
 		if (rxdone || bus->rxskip)
 			intstatus &= ~I_HMB_FRAME_IND;
@@ -4052,17 +4037,9 @@ dhdsdio_isr(void *arg)
 	bus->intdis = TRUE;
 
 #if defined(SDIO_ISR_THREAD)
-<<<<<<< HEAD
 #if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
 	bus->dpc_sched = TRUE;
 #endif /* CONFIG_BRCM_LGE_WL_HOSTWAKEUP */
-=======
-
-#if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
-	bus->dpc_sched = TRUE;
-#endif /* CONFIG_BRCM_LGE_WL_HOSTWAKEUP */
-
->>>>>>> vendor-ls670-froyo
 	DHD_TRACE(("Calling dhdsdio_dpc() from %s\n", __FUNCTION__));
 	dhdsdio_dpc(bus);
 #else
@@ -5787,7 +5764,3 @@ int dhd_config_pktfilter(dhd_pub_t *dhd, uint32 id ,uint32 flag)
 }
 
 #endif	/* defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP) && defined(CONFIG_BRCM_LGE_WL_PKTFILTER) */
-<<<<<<< HEAD
-=======
-
->>>>>>> vendor-ls670-froyo

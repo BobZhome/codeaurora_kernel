@@ -404,11 +404,6 @@ Don't change previous defines and add new id at the end
 
 #define DIAG_MAX_F                 255
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> vendor-ls670-froyo
 typedef enum {
   DIAG_SUBSYS_OEM                = 0,       /* Reserved for OEM use */
   DIAG_SUBSYS_ZREX               = 1,       /* ZREX */
