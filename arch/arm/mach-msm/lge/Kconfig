@@ -29,6 +29,11 @@ config MACH_MSM7X27_THUNDERC_SPRINT
 	  Support for the LGE MSM7x27 THUNDER CDMA Sprint board.
 endchoice
 
+config MACH_MSM7X27_THUNDERC_SPRINT_VM
+	bool "MSM7x27 THUNDER CDMA Virgin Mobile"
+	depends on MACH_MSM7X27_THUNDERC_SPRINT
+	help
+	  Support for the LGE MSM7x27 THUNDER CDMA Virgin Mobile board.
 
 endmenu
 
