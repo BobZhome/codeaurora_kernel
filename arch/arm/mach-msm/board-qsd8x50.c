@@ -22,7 +22,6 @@
 #include <linux/platform_device.h>
 #include <linux/android_pmem.h>
 #include <linux/bootmem.h>
-#include <linux/usb/mass_storage_function.h>
 #include <linux/i2c.h>
 #include <linux/spi/spi.h>
 #include <linux/delay.h>
@@ -64,6 +63,7 @@
 #include "msm-keypad-devices.h"
 #include "pm.h"
 #include "proc_comm.h"
+#include "smd_private.h"
 #include <linux/msm_kgsl.h>
 #ifdef CONFIG_USB_ANDROID
 #include <linux/usb/android.h>
@@ -76,7 +76,7 @@
 
 #define SMEM_SPINLOCK_I2C	"S:6"
 
-#define MSM_PMEM_ADSP_SIZE	0x2196000
+#define MSM_PMEM_ADSP_SIZE	0x2B96000
 #define MSM_FB_SIZE         0x2EE000
 #define MSM_AUDIO_SIZE		0x80000
 #define MSM_GPU_PHYS_SIZE 	SZ_2M
@@ -211,6 +211,19 @@ static struct usb_composition usb_func_composition[] = {
 	},
 #endif
 };
+static struct usb_mass_storage_platform_data mass_storage_pdata = {
+	.nluns		= 1,
+	.vendor		= "GOOGLE",
+	.product	= "Mass Storage",
+	.release	= 0xFFFF,
+};
+static struct platform_device mass_storage_device = {
+	.name           = "usb_mass_storage",
+	.id             = -1,
+	.dev            = {
+		.platform_data          = &mass_storage_pdata,
+	},
+};
 static struct android_usb_platform_data android_usb_pdata = {
 	.vendor_id	= 0x05C6,
 	.version	= 0x0100,
@@ -218,7 +231,6 @@ static struct android_usb_platform_data android_usb_pdata = {
 	.num_compositions = ARRAY_SIZE(usb_func_composition),
 	.product_name	= "Qualcomm HSUSB Device",
 	.manufacturer_name = "Qualcomm Incorporated",
-	.nluns = 1,
 };
 static struct platform_device android_usb_device = {
 	.name	= "android_usb",
@@ -1215,15 +1227,13 @@ static const struct msm_gpio tsif_gpios[] = {
 	{ .gpio_cfg = TSIF_A_EN,   .label =  "tsif_en", },
 	{ .gpio_cfg = TSIF_A_DATA, .label =  "tsif_data", },
 	{ .gpio_cfg = TSIF_A_SYNC, .label =  "tsif_sync", },
-#if 0
-	{ .gpio_cfg = 0, .label =  "tsif_error", },
-	{ .gpio_cfg = 0, .label =  "tsif_null", },
-#endif
 };
 
 static struct msm_tsif_platform_data tsif_platform_data = {
 	.num_gpios = ARRAY_SIZE(tsif_gpios),
 	.gpios = tsif_gpios,
+	.tsif_clk = "tsif_clk",
+	.tsif_ref_clk = "tsif_ref_clk",
 };
 
 #endif /* defined(CONFIG_TSIF) || defined(CONFIG_TSIF_MODULE) */
@@ -1827,6 +1837,7 @@ static struct platform_device *devices[] __initdata = {
 	&mass_storage_device,
 #endif
 #ifdef CONFIG_USB_ANDROID
+	&mass_storage_device,
 	&android_usb_device,
 #endif
 	&msm_device_tssc,
@@ -2286,7 +2297,7 @@ static void __init msm_device_i2c_init(void)
 	if (gpio_request(61, "i2c_sec_dat"))
 		pr_err("failed to request gpio i2c_sec_dat\n");
 
-	msm_i2c_pdata.rmutex = 1;
+	msm_i2c_pdata.rmutex = (uint32_t)smem_alloc(SMEM_I2C_MUTEX, 8);
 	msm_i2c_pdata.pm_lat =
 		msm_pm_data[MSM_PM_SLEEP_MODE_POWER_COLLAPSE_NO_XO_SHUTDOWN]
 		.latency;

@@ -60,8 +60,10 @@
 #define MSG_MASK_SIZE 8000
 #define LOG_MASK_SIZE 1000
 #define EVENT_MASK_SIZE 1000
-#define REG_TABLE_SIZE 25
 #define PKT_SIZE 4096
+/* This is the maximum number of pkt registrations supported at initialization*/
+extern unsigned int diag_max_registration;
+extern unsigned int diag_threshold_registration;
 
 #define APPEND_DEBUG(ch) \
 do {							\
@@ -83,6 +85,11 @@ struct diag_write_device {
 	int length;
 };
 
+struct diag_client_map {
+	char name[20];
+	int pid;
+};
+
 struct diagchar_dev {
 
 	/* State for the char driver */
@@ -96,7 +103,7 @@ struct diagchar_dev {
 	int ref_count;
 	struct mutex diagchar_mutex;
 	wait_queue_head_t wait_q;
-	int *client_map;
+	struct diag_client_map *client_map;
 	int *data_ready;
 	int num_clients;
 	struct diag_write_device *buf_tbl;
@@ -109,6 +116,7 @@ struct diagchar_dev {
 	unsigned int itemsize_usb_struct;
 	unsigned int poolsize_usb_struct;
 	unsigned int debug_flag;
+	unsigned int display_alert;
 	/* State for the mempool for the char driver */
 	mempool_t *diagpool;
 	mempool_t *diag_hdlc_pool;

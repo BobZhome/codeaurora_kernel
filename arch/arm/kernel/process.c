@@ -301,6 +301,9 @@ void __show_regs(struct pt_regs *regs)
 		init_utsname()->version);
 	print_symbol("PC is at %s\n", instruction_pointer(regs));
 	print_symbol("LR is at %s\n", regs->ARM_lr);
+#ifdef CONFIG_MACH_LGE
+	printk(KERN_EMERG"<<<<<\n");
+#endif
 	printk("pc : [<%08lx>]    lr : [<%08lx>]    psr: %08lx\n"
 	       "sp : %08lx  ip : %08lx  fp : %08lx\n",
 		regs->ARM_pc, regs->ARM_lr, regs->ARM_cpsr,
@@ -360,16 +363,17 @@ void show_regs(struct pt_regs * regs)
 	__backtrace();
 }
 
+ATOMIC_NOTIFIER_HEAD(thread_notify_head);
+
+EXPORT_SYMBOL_GPL(thread_notify_head);
+
 /*
  * Free current thread data structures etc..
  */
 void exit_thread(void)
 {
+	thread_notify(THREAD_NOTIFY_EXIT, current_thread_info());
 }
-
-ATOMIC_NOTIFIER_HEAD(thread_notify_head);
-
-EXPORT_SYMBOL_GPL(thread_notify_head);
 
 void flush_thread(void)
 {
@@ -385,9 +389,6 @@ void flush_thread(void)
 
 void release_thread(struct task_struct *dead_task)
 {
-	struct thread_info *thread = task_thread_info(dead_task);
-
-	thread_notify(THREAD_NOTIFY_RELEASE, thread);
 }
 
 asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");

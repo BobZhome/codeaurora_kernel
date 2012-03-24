@@ -27,6 +27,29 @@ config ANDROID_PMEM_KAPI_TEST
 	depends on ANDROID_PMEM
 	default m
 
+config ANDROID_VIBRATOR
+    bool "Android vibrator support"
+	depends on ANDROID_TIMED_OUTPUT
+	default y
+	help
+	  This option enalbes device driver support for Android Vibrator driver.
+	  Some functions should be given by platform data for enable PWM, Motor IC, etc.
+
+config VIB_USE_WORK_QUEUE
+    bool "Vibrator use work queue"
+	depends on ANDROID_VIBRATOR
+	default n
+	help
+	  This option enalbes device driver support for work queue.
+
+config VIB_USE_HIGH_VOL_OVERDRIVE
+    bool "Vibrator use the high voltage overdriving tech. for Q-Coin Motor"
+	depends on ANDROID_VIBRATOR
+	default n
+	help
+	  This option enalbes device driver support for the high voltage overdriving tech. for Q-Coin Motor.
+
+
 config ATMEL_PWM
 	tristate "Atmel AT32/AT91 PWM support"
 	depends on AVR32 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91CAP9
@@ -321,7 +344,7 @@ config TSIF_CHRDEV
 	  module will be called tsif_chrdev.
 
 config TSIF_DEBUG
-	tristate "Turn on debugging information for tsif driver"
+	bool "Turn on debugging information for tsif driver"
 	depends on TSIF
 	default n
 	---help---
@@ -360,9 +383,17 @@ config PMIC8058_NFC
 	  Qualcomm PM8058 chip has a module to support NFC (Near Field
 	  Communication). This option enables the driver to support it.
 
+config LGE_AT_CMD_DEVICE
+	bool "Support LGE AT_CMD device"
+	default n
+	depends on LGE_SUPPORT_AT_CMD
+	depends on MACH_LGE
+	help
+	 Choose if use AT_CMD device used for sending uevent to user space
+
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
-source "drivers/misc/video_core/720p/Kconfig"
+source "drivers/misc/vidc/Kconfig"
 
 endif # MISC_DEVICES

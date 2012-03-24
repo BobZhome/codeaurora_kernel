@@ -60,13 +60,14 @@ static uint32_t bytes_per_pixel[] = {
 extern uint32 mdp_plv[];
 extern struct semaphore mdp_ppp_mutex;
 
-uint32_t mdp_get_bytes_per_pixel(uint32_t format)
+int mdp_get_bytes_per_pixel(uint32_t format)
 {
-	uint32_t bpp = 0;
+	int bpp = -EINVAL;
 	if (format < ARRAY_SIZE(bytes_per_pixel))
 		bpp = bytes_per_pixel[format];
 
-	BUG_ON(!bpp);
+	if (bpp <= 0)
+		printk(KERN_ERR "%s incorrect format %d\n", __func__, format);
 	return bpp;
 }
 
@@ -555,23 +556,19 @@ static void flush_imgs(struct mdp_blit_req *req, int src_bpp, int dst_bpp,
 {
 	uint32_t src0_len, src1_len, dst0_len, dst1_len;
 
-	/* flush src images to memory before dma to mdp */
-	get_len(&req->src, &req->src_rect, src_bpp,
-	&src0_len, &src1_len);
+	if (!(req->flags & MDP_BLIT_NON_CACHED)) {
+		/* flush src images to memory before dma to mdp */
+		get_len(&req->src, &req->src_rect, src_bpp,
+		&src0_len, &src1_len);
 
-	flush_pmem_file(p_src_file,
-	req->src.offset, src0_len);
-
-	if (IS_PSEUDOPLNR(req->src.format))
 		flush_pmem_file(p_src_file,
-			req->src.offset + src0_len, src1_len);
+		req->src.offset, src0_len);
 
-	get_len(&req->dst, &req->dst_rect, dst_bpp, &dst0_len, &dst1_len);
-	flush_pmem_file(p_dst_file, req->dst.offset, dst0_len);
+		if (IS_PSEUDOPLNR(req->src.format))
+			flush_pmem_file(p_src_file,
+				req->src.offset + src0_len, src1_len);
+	}
 
-	if (IS_PSEUDOPLNR(req->dst.format))
-		flush_pmem_file(p_dst_file,
-			req->dst.offset + dst0_len, dst1_len);
 }
 #else
 static void flush_imgs(struct mdp_blit_req *req, int src_bpp, int dst_bpp,
@@ -1372,11 +1369,14 @@ int mdp_ppp_blit(struct fb_info *info, struct mdp_blit_req *req)
 	if (req->flags & MDP_DEINTERLACE) {
 #ifdef CONFIG_FB_MSM_MDP31
 		if ((req->src.format != MDP_Y_CBCR_H2V2) &&
-			(req->src.format != MDP_Y_CRCB_H2V2))
+			(req->src.format != MDP_Y_CRCB_H2V2)) {
 #endif
 			put_img(p_src_file);
 			put_img(p_dst_file);
 			return -EINVAL;
+#ifdef CONFIG_FB_MSM_MDP31
+		}
+#endif
 	}
 
 	/* scale check */
@@ -1428,8 +1428,12 @@ int mdp_ppp_blit(struct fb_info *info, struct mdp_blit_req *req)
 	down(&mdp_ppp_mutex);
 	/* MDP cmd block enable */
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON, FALSE);
-
-#ifdef CONFIG_FB_MSM_MDP31
+	
+	/* progressbar's glitch is observed when go to another site during landscape in browser.
+	 * dojip.kim@lge.com 2010-08-17, QCT Case 00356710
+	 */
+//#ifdef CONFIG_FB_MSM_MDP31
+#ifndef CONFIG_FB_MSM_MDP22
 	mdp_start_ppp(mfd, &iBuf, req, p_src_file, p_dst_file);
 #else
 	/* bg tile fetching HW workaround */

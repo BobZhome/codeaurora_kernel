@@ -120,7 +120,11 @@ static uint32_t YCALCBLOCKS(uint64_t partition_size, uint32_t block_size)
 
 unsigned int yaffs_traceMask = YAFFS_TRACE_BAD_BLOCKS;
 unsigned int yaffs_wr_attempts = YAFFS_WR_ATTEMPTS;
+#if defined(CONFIG_LGE_YAFFS_AUTO_CHECKPOINT_PATCH)
+unsigned int yaffs_auto_checkpoint = 2;
+#else /* qualcomm or google */
 unsigned int yaffs_auto_checkpoint = 1;
+#endif
 
 /* Module Parameters */
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(2, 5, 0))
@@ -484,7 +488,10 @@ static void yaffs_RemoveObjectCallback(yaffs_Object *obj)
          ylist_for_each(i, search_contexts) {
                 if (i) {
                         sc = ylist_entry(i, struct yaffs_SearchContext,others);
-                        if(sc->nextReturn == obj)
+			// LGE_CHANGE [dojip.kim@lge.com] 2010-09-27,
+			// sometimes null point exception
+                        //if(sc->nextReturn == obj)
+                        if(sc && sc->nextReturn == obj)
                                 yaffs_SearchAdvance(sc);
                 }
 	}

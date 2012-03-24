@@ -77,12 +77,17 @@ typedef struct {
 				.owner_cpu = -1,			\
 				RW_DEP_MAP_INIT(lockname) }
 #else
+#ifdef __SPLINT__
+# define __SPIN_LOCK_UNLOCKED(lockname) NULL
+#define __RW_LOCK_UNLOCKED(lockname) 	NULL
+#else
 # define __SPIN_LOCK_UNLOCKED(lockname) \
 	(spinlock_t)	{	.raw_lock = __RAW_SPIN_LOCK_UNLOCKED,	\
 				SPIN_DEP_MAP_INIT(lockname) }
 #define __RW_LOCK_UNLOCKED(lockname) \
 	(rwlock_t)	{	.raw_lock = __RAW_RW_LOCK_UNLOCKED,	\
 				RW_DEP_MAP_INIT(lockname) }
+#endif
 #endif
 
 /*

@@ -17,9 +17,9 @@
  */
 
 #include "kgsl.h"
-#include "kgsl_device.h"
 #include "kgsl_cmdstream.h"
 #include "kgsl_sharedmem.h"
+#include "kgsl_yamato.h"
 
 int kgsl_cmdstream_init(struct kgsl_device *device)
 {
@@ -69,11 +69,9 @@ void kgsl_cmdstream_memqueue_drain(struct kgsl_device *device)
 	struct kgsl_ringbuffer *rb = &device->ringbuffer;
 
 	/* get current EOP timestamp */
-	if (device == &kgsl_driver.yamato_device)
-		ts_processed =
-		   kgsl_cmdstream_readtimestamp(device, KGSL_TIMESTAMP_RETIRED);
-	else
-		ts_processed = device->timestamp;
+	ts_processed = device->ftbl.device_cmdstream_readtimestamp(
+					device,
+					KGSL_TIMESTAMP_RETIRED);
 
 	list_for_each_entry_safe(entry, entry_tmp, &rb->memqueue, free_list) {
 		/*NOTE: this assumes that the free list is sorted by
