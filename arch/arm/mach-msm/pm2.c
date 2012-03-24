@@ -28,6 +28,7 @@
 #include <linux/reboot.h>
 #include <linux/uaccess.h>
 #include <linux/io.h>
+#include <linux/console.h>
 #ifdef CONFIG_HAS_WAKELOCK
 #include <linux/wakelock.h>
 #endif
@@ -51,6 +52,7 @@
 #include "timer.h"
 #include "pm.h"
 #include "spm.h"
+
 
 /******************************************************************************
  * Debug Definitions
@@ -1675,9 +1677,57 @@ static struct platform_suspend_ops msm_pm_ops = {
 
 static uint32_t restart_reason = 0x776655AA;
 
+#ifdef CONFIG_MACH_LGE
+/* LGE_CHANGE
+ * flush console before reboot
+ * from google's mahimahi kernel
+ * 2010-05-04, cleaneye.kim@lge.com
+ */
+
+static bool console_flushed;
+
+void msm_pm_flush_console(void)
+{
+	if (console_flushed)
+		return;
+	console_flushed = true;
+
+	printk("\n");
+	printk(KERN_EMERG "Restarting %s\n", linux_banner);
+	if (!try_acquire_console_sem()) {
+		release_console_sem();
+		return;
+	}
+
+	mdelay(50);
+
+	local_irq_disable();
+	if (try_acquire_console_sem())
+		printk(KERN_EMERG "msm_restart: Console was locked! Busting\n");
+	else
+		printk(KERN_EMERG "msm_restart: Console was locked!\n");
+	release_console_sem();
+}
+#endif
+
+// LGE_CHANGE [dojip.kim@lge.com] 2010-08-04, clean the ram console when normal shutdown
+extern void ram_console_clean_buffer(void);
+
 static void msm_pm_power_off(void)
 {
+	// LGE_CHANGE [dojip.kim@lge.com] 2010-08-04, clean the ram console when normal shutdown
+	ram_console_clean_buffer();
+
+#ifdef CONFIG_MACH_LGE
+	/* To prevent Phone freezing during power off
+	 * blue.park@lge.com 2010-04-14 <To prevent Phone freezing during power off>
+	 */
+	smsm_change_state_nonotify(SMSM_APPS_STATE,
+						  0, SMSM_SYSTEM_POWER_DOWN);
+#endif
+
 	msm_rpcrouter_close();
+	printk(KERN_INFO"%s: \n",__func__);
 	msm_proc_comm(PCOM_POWER_DOWN, 0, 0);
 	for (;;)
 		;
@@ -1685,6 +1735,15 @@ static void msm_pm_power_off(void)
 
 static void msm_pm_restart(char str, const char *cmd)
 {
+#ifdef CONFIG_MACH_LGE
+	/* LGE_CHANGE
+	 * flush console before reboot
+	 * from google's mahimahi kernel
+	 * 2010-05-04, cleaneye.kim@lge.com
+	 */
+	msm_pm_flush_console();
+#endif
+
 	msm_rpcrouter_close();
 	msm_proc_comm(PCOM_RESET_CHIP, &restart_reason, 0);
 
@@ -1706,6 +1765,8 @@ static int msm_reboot_call
 		} else if (!strncmp(cmd, "oem-", 4)) {
 			unsigned code = simple_strtoul(cmd + 4, 0, 16) & 0xff;
 			restart_reason = 0x6f656d00 | code;
+		} else if (!strncmp(cmd, "", 1)) {
+			restart_reason = 0x776655AA;
 		} else {
 			restart_reason = 0x77665501;
 		}
@@ -1717,6 +1778,14 @@ static struct notifier_block msm_reboot_notifier = {
 	.notifier_call = msm_reboot_call,
 };
 
+#if defined(CONFIG_MACH_LGE)
+void lge_set_reboot_reason(unsigned int reason)
+{
+	restart_reason = reason;
+
+	return;
+}
+#endif
 
 /******************************************************************************
  *
@@ -1798,7 +1867,6 @@ static int __init msm_pm_init(void)
 		d_entry->data = NULL;
 	}
 #endif
-
 	return 0;
 }
 

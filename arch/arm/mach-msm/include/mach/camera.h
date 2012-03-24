@@ -42,6 +42,7 @@
 #define NUM_AUTOFOCUS_MULTI_WINDOW_GRIDS 16
 #define NUM_STAT_OUTPUT_BUFFERS      3
 #define NUM_AF_STAT_OUTPUT_BUFFERS      3
+#define max_control_command_size 150
 
 enum msm_queue {
 	MSM_CAM_Q_CTRL,     /* control command or control command status */
@@ -120,6 +121,7 @@ struct msm_queue_cmd {
 	void *command;
 	int on_heap;
 	struct timespec ts;
+	uint32_t error_code;
 };
 
 struct msm_device_queue {
@@ -194,7 +196,7 @@ struct msm_control_device {
 	struct msm_device *pmsm;
 
 	/* Used for MSM_CAM_IOCTL_CTRL_CMD_DONE responses */
-	uint8_t ctrl_data[50];
+	uint8_t ctrl_data[max_control_command_size];
 	struct msm_ctrl_cmd ctrl;
 	struct msm_queue_cmd qcmd;
 
@@ -338,6 +340,8 @@ void msm_camio_clk_sel(enum msm_camio_clk_src_type);
 void msm_camio_disable(struct platform_device *);
 int msm_camio_probe_on(struct platform_device *);
 int msm_camio_probe_off(struct platform_device *);
+int msm_camio_sensor_clk_off(struct platform_device *);
+int msm_camio_sensor_clk_on(struct platform_device *);
 int msm_camio_csi_config(struct msm_camera_csi_params *csi_params);
 int add_axi_qos(void);
 int update_axi_qos(uint32_t freq);

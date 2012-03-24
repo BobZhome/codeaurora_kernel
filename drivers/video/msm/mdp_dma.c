@@ -56,6 +56,63 @@ extern struct workqueue_struct *mdp_dma_wq;
 
 int vsync_start_y_adjust = 4;
 
+/* LGE_CHANGE
+  * Change to apply workaround code according to the board revision info.
+  * 2010-06-10, minjong.gong@lge.com
+  */
+#ifdef CONFIG_FB_MSM_MDDI_HITACHI_HVGA
+#include <mach/board_lge.h>
+
+struct display_table {
+    unsigned reg;
+    unsigned char count;
+    unsigned char val_list[20];
+};
+
+#define REGFLAG_END_OF_TABLE      0xFFFF   // END OF REGISTERS MARKER
+
+static struct display_table mddi_hitachi_2c[] = {
+	{0x2c, 4, {0x00, 0x00, 0x00, 0x00}},
+	{REGFLAG_END_OF_TABLE, 0x00, {}}
+};
+static struct display_table mddi_hitachi_position_table[] = {
+	// set column address 
+	{0x2a,  4, {0x00, 0x00, 0x01, 0x3f}},
+	// set page address 
+	{0x2b,  4, {0x00, 0x00, 0x01, 0xdf}},
+	{REGFLAG_END_OF_TABLE, 0x00, {}}
+};
+extern void display_table(struct display_table *table, unsigned int count);
+#endif
+
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-05-20,
+ * add code to prevent LCD shift
+ */
+#ifdef CONFIG_FB_MSM_MDDI_NOVATEK_HVGA
+#define REGFLAG_END_OF_TABLE      0xFFFF   // END OF REGISTERS MARKER
+
+	struct display_table {
+	    unsigned reg;
+	    unsigned char count;
+	    unsigned val_list[256];
+	};
+
+	struct display_table mddi_novatek_position_table[] = {
+		// set horizontal address 
+		{0x2a00, 1, {0x0000}}, // XSA
+		{0x2a01, 1, {0x0000}}, // XSA
+		{0x2a02, 1, {0x0000}}, // XEA
+		{0x2a03, 1, {0x013f}}, // XEA, 320-1
+		// set vertical address 
+		{0x2b00, 1, {0x0000}}, // YSA
+		{0x2b01, 1, {0x0000}}, // YSA
+		{0x2b02, 1, {0x0000}}, // YEA
+		{0x2b03, 1, {0x01df}}, // YEA, 480-1
+		{REGFLAG_END_OF_TABLE, 0x00, {}}
+	};
+extern void display_table(struct display_table *table, unsigned int count);
+#endif
+
 static void mdp_dma2_update_lcd(struct msm_fb_data_type *mfd)
 {
 	MDPIBUF *iBuf = &mfd->ibuf;
@@ -70,8 +127,12 @@ static void mdp_dma2_update_lcd(struct msm_fb_data_type *mfd)
 	uint32 ystride = mfd->fbi->fix.line_length;
 	uint32 mddi_pkt_desc;
 
-	dma2_cfg_reg = DMA_PACK_TIGHT | DMA_PACK_ALIGN_LSB |
-	    DMA_OUT_SEL_AHB | DMA_IBUF_NONCONTIGUOUS;
+	dma2_cfg_reg = DMA_PACK_ALIGN_LSB |
+		    DMA_OUT_SEL_AHB | DMA_IBUF_NONCONTIGUOUS;
+
+#ifdef CONFIG_FB_MSM_MDP22
+	dma2_cfg_reg |= DMA_PACK_TIGHT;
+#endif
 
 #ifdef CONFIG_FB_MSM_MDP30
 	/*
@@ -152,6 +213,40 @@ static void mdp_dma2_update_lcd(struct msm_fb_data_type *mfd)
 	mdp_curr_dma2_update_width = iBuf->dma_w;
 	mdp_curr_dma2_update_height = iBuf->dma_h;
 
+#if defined(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) && defined(CONFIG_MACH_MSM7X27_THUNDERG)
+	if (lge_bd_rev <= LGE_REV_E) {
+		/* Use workaround code for 1st cut LCD.
+		 * 2010-04-22, minjong.gong@lge.com
+		 */
+		display_table(mddi_hitachi_2c,
+				sizeof(mddi_hitachi_2c) / sizeof(struct display_table));
+	}
+	/* Add code to prevent LCD shift.
+	 * 2010-05-18, minjong.gong@lge.com
+	 */
+	display_table(mddi_hitachi_position_table,
+			sizeof(mddi_hitachi_2c) / sizeof(struct display_table));
+#elif defined(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) && defined(CONFIG_MACH_MSM7X27_THUNDERC)
+	if (lge_bd_rev <= LGE_REV_D){
+		/* Use workaround code for 1st cut LCD.
+		 * 2010-04-22, minjong.gong@lge.com
+		 */
+		display_table(mddi_hitachi_2c, sizeof(mddi_hitachi_2c) / sizeof(struct display_table));
+	}
+	/* Add code to prevent LCD shift.
+	 * 2010-05-18, minjong.gong@lge.com
+	 */
+	display_table(mddi_hitachi_position_table, sizeof(mddi_hitachi_2c) / sizeof(struct display_table));
+#elif defined(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) && defined(CONFIG_MACH_MSM7X27_THUNDERA)
+	display_table(mddi_hitachi_2c,
+			sizeof(mddi_hitachi_2c) / sizeof(struct display_table));
+#endif
+
+#ifdef CONFIG_FB_MSM_MDDI_NOVATEK_HVGA
+	display_table(mddi_novatek_position_table, 
+		sizeof(mddi_novatek_position_table) / sizeof(struct display_table));
+#endif
+
 	/* MDP cmd block enable */
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON, FALSE);
 
@@ -181,17 +276,35 @@ static void mdp_dma2_update_lcd(struct msm_fb_data_type *mfd)
 	}
 
 	if (mddi_dest) {
+
 #ifdef CONFIG_FB_MSM_MDP22
 		MDP_OUTP(MDP_CMD_DEBUG_ACCESS_BASE + 0x0194,
 			 (iBuf->dma_y << 16) | iBuf->dma_x);
 		MDP_OUTP(MDP_CMD_DEBUG_ACCESS_BASE + 0x01a0, mddi_ld_param);
 		MDP_OUTP(MDP_CMD_DEBUG_ACCESS_BASE + 0x01a4,
-			 (mddi_pkt_desc << 16) | mddi_vdo_packet_reg);
+	/* Don't apply 6013 patch only when using Hitachi HVGA module. 2010-07-28. minjong.gong@lge.com */
+	#if defined (CONFIG_FB_MSM_MDDI_HITACHI_HVGA)
+			(MDDI_VDO_PACKET_DESC << 16) | mddi_vdo_packet_reg);
+	#else
+			(mddi_pkt_desc << 16) | mddi_vdo_packet_reg);
+	#endif
 #else
 		MDP_OUTP(MDP_BASE + 0x90010, (iBuf->dma_y << 16) | iBuf->dma_x);
 		MDP_OUTP(MDP_BASE + 0x00090, mddi_ld_param);
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-04-23, [LS670] fixed the pixel format */
+#if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HVGA)
 		MDP_OUTP(MDP_BASE + 0x00094,
-			 (mddi_pkt_desc << 16) | mddi_vdo_packet_reg);
+			 (0x5565 /*MDDI_VDO_PACKET_DESC*/ << 16) | mddi_vdo_packet_reg);
+#else /* original */
+		MDP_OUTP(MDP_BASE + 0x00094,
+	/* Don't apply 6013 patch only when using Hitachi HVGA module. 2010-07-28. minjong.gong@lge.com */
+	#if defined (CONFIG_FB_MSM_MDDI_HITACHI_HVGA)
+			(MDDI_VDO_PACKET_DESC << 16) | mddi_vdo_packet_reg);
+	#else
+			(mddi_pkt_desc << 16) | mddi_vdo_packet_reg);
+	#endif
+#endif
+
 #endif
 	} else {
 		/* setting EBI2 LCDC write window */
