@@ -24,6 +24,11 @@
 #include <linux/sysdev.h>
 #include "socinfo.h"
 #include "smd_private.h"
+//20100712 myeonggyu.son@lge.com [MS690] hw revision [START]
+#if defined (CONFIG_LGE_PCB_VERSION)  /* LG_FW_PCB_VERSION */
+#include <mach/lg_pcb_version.h>
+#endif
+//20100712 myeonggyu.son@lge.com [MS690] hw revision [END]
 
 #define BUILD_ID_LENGTH 32
 enum {
@@ -319,6 +324,83 @@ socinfo_show_platform_version(struct sys_device *dev,
 		socinfo_get_platform_version());
 }
 
+//20100712 myeonggyu.son@lge.com [MS690] hw revision [START]
+/* LGE_CHANGE [dojip@lge.com] 2010-05-29, pcb version from LS680 */
+#ifdef CONFIG_LGE_PCB_VERSION
+static char hw_pcb_version[10] = "Unknown";
+
+static ssize_t
+lg_show_hw_version(struct sys_device *dev,
+		struct sysdev_attribute *attr,
+		char *buf)
+{
+	if (!strncmp(hw_pcb_version, "Unknown", 7)) {
+		pr_info("%s: get pcb version using rpc\n", __func__);
+		lg_set_hw_version_string((char *)hw_pcb_version);
+	}
+	return snprintf(buf, PAGE_SIZE, "%s\n", hw_pcb_version);
+}
+static struct sysdev_attribute pcb_ver_file[] = {
+	_SYSDEV_ATTR(hw_version, 0444, lg_show_hw_version, NULL),
+};
+#endif /* CONFIG_LGE_PCB_VERSION */
+//20100712 myeonggyu.son@lge.com [MS690] hw revision [END]
+
+//20100929 yongman.kwon@lge.com [MS690] for check prl version for wifi on/off [START]
+//LG_FW_CHECK_PRL_VERSION
+static char prl_version[10] = "Unknown";
+static ssize_t lg_show_prl_version(struct sys_device *dev,
+		struct sysdev_attribute *attr,
+		char *buf)
+{
+	if (!strncmp(prl_version, "Unknown", 7)) {
+		pr_info("%s: get pcb version using rpc\n", __func__);
+		lg_set_prl_version_string((char *)prl_version);
+	}
+	return snprintf(buf, PAGE_SIZE, "%s\n", prl_version);
+}
+static struct sysdev_attribute prl_ver_file[] = {
+	_SYSDEV_ATTR(prl_version, 0444, lg_show_prl_version, NULL),
+};
+
+//EDAM_KYC_2010.11.23 : Flight Kernel Model On add [start]
+extern void remote_get_ftm_boot(int *info);
+static ssize_t lg_show_ftm_boot(struct sys_device *dev,
+		struct sysdev_attribute *attr,
+		char *buf)
+{
+	int ftm;
+
+	remote_get_ftm_boot(&ftm);
+	return snprintf(buf, PAGE_SIZE, "%d\n", ftm);
+}
+static struct sysdev_attribute ftm_boot_file[] = {
+	_SYSDEV_ATTR(ftm_boot, 0444, lg_show_ftm_boot, NULL),
+};
+//EDAM_KYC_2010.11.23 : Flight Kernel Model On add [end]
+
+//20100929 yongman.kwon@lge.com [MS690] for check prl version for wifi on/off [START]
+
+
+//20101130 yongman.kwon@lge.com [MS690] support HITACHI & SHARP [START]
+#if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
+static char lcd_version[10] = "Unknown";
+static ssize_t lg_show_lcd_version(struct sys_device *dev,
+		struct sysdev_attribute *attr,
+		char *buf)
+{
+	if (!strncmp(lcd_version, "Unknown", 7)) {
+		pr_info("%s: get lcd version using rpc\n", __func__);
+		lg_get_lcd_version_string((char *)lcd_version);
+	}
+	return snprintf(buf, PAGE_SIZE, "%s\n", lcd_version);
+}
+static struct sysdev_attribute lcd_ver_file[] = {
+	_SYSDEV_ATTR(lcd_version, 0444, lg_show_lcd_version, NULL),
+};
+#endif
+//20101130 yongman.kwon@lge.com [MS690] support HITACHI & SHARP [END]
+
 static struct sysdev_attribute socinfo_v1_files[] = {
 	_SYSDEV_ATTR(id, 0444, socinfo_show_id, NULL),
 	_SYSDEV_ATTR(version, 0444, socinfo_show_version, NULL),
@@ -379,6 +461,30 @@ static void __init socinfo_init_sysdev(void)
 		       __func__, err);
 		return;
 	}
+#ifdef CONFIG_LGE_PCB_VERSION  /* LG_FW_PCB_VERSION */
+	socinfo_create_files(&soc_sys_device, pcb_ver_file,
+				ARRAY_SIZE(pcb_ver_file));
+#endif
+
+//20100929 yongman.kwon@lge.com [MS690] for check prl version for wifi on/off [START]
+//LG_FW_CHECK_PRL_VERSION
+socinfo_create_files(&soc_sys_device, prl_ver_file,
+			ARRAY_SIZE(prl_ver_file));
+//20100929 yongman.kwon@lge.com [MS690] for check prl version for wifi on/off [END]
+
+//EDAM_KYC_2010.11.23 : Flight Kernel Model On add [start]
+	socinfo_create_files(&soc_sys_device, ftm_boot_file,
+				ARRAY_SIZE(ftm_boot_file));
+//EDAM_KYC_2010.11.23 : Flight Kernel Model On add [end]
+
+
+//20101130 yongman.kwon@lge.com [MS690] support HITACHI & SHARP [START]
+#if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
+socinfo_create_files(&soc_sys_device, lcd_ver_file,
+			ARRAY_SIZE(lcd_ver_file));
+#endif
+//20101130 yongman.kwon@lge.com [MS690] support HITACHI & SHARP [END]
+
 	socinfo_create_files(&soc_sys_device, socinfo_v1_files,
 				ARRAY_SIZE(socinfo_v1_files));
 	if (socinfo->v1.format < 2)

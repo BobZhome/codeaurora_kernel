@@ -94,6 +94,10 @@ int diag_device_write(void *buf, int proc_num)
 			driver->usb_write_ptr_svc = (struct diag_request *)
 			(diagmem_alloc(driver, sizeof(struct diag_request),
 				 POOL_TYPE_USB_STRUCT));
+
+			if (!driver->usb_write_ptr_svc)
+				return -ENOMEM;
+			
 			driver->usb_write_ptr_svc->length = driver->used;
 			driver->usb_write_ptr_svc->buf = buf;
 			err = diag_write(driver->usb_write_ptr_svc);
@@ -131,7 +135,8 @@ int diag_device_write(void *buf, int proc_num)
 				}
 		}
 		for (i = 0; i < driver->num_clients; i++)
-			if (driver->client_map[i] == driver->logging_process_id)
+			if (driver->client_map[i].pid ==
+						 driver->logging_process_id)
 				break;
 		if (i < driver->num_clients) {
 			driver->data_ready[i] |= MEMORY_DEVICE_LOG_TYPE;
@@ -316,7 +321,7 @@ void diag_update_userspace_clients(unsigned int type)
 
 	mutex_lock(&driver->diagchar_mutex);
 	for (i = 0; i < driver->num_clients; i++)
-		if (driver->client_map[i] != 0)
+		if (driver->client_map[i].pid != 0)
 			driver->data_ready[i] |= type;
 	wake_up_interruptible(&driver->wait_q);
 	mutex_unlock(&driver->diagchar_mutex);
@@ -328,7 +333,7 @@ void diag_update_sleeping_process(int process_id)
 
 	mutex_lock(&driver->diagchar_mutex);
 	for (i = 0; i < driver->num_clients; i++)
-		if (driver->client_map[i] == process_id) {
+		if (driver->client_map[i].pid == process_id) {
 			driver->data_ready[i] |= PKT_TYPE;
 			break;
 		}
@@ -389,7 +394,7 @@ static int diag_process_apps_pkt(unsigned char *buf, int len)
 		subsys_cmd_code = *(uint16_t *)temp;
 		temp += 2;
 
-		for (i = 0; i < REG_TABLE_SIZE; i++) {
+		for (i = 0; i < diag_max_registration; i++) {
 			if (driver->table[i].process_id != 0) {
 				if (driver->table[i].cmd_code ==
 				     cmd_code && driver->table[i].subsys_id ==
@@ -435,7 +440,7 @@ static int diag_process_apps_pkt(unsigned char *buf, int len)
 					}
 				} /* end of else-if */
 			} /* if(driver->table[i].process_id != 0) */
-		}  /* for (i = 0; i < REG_TABLE_SIZE; i++) */
+		}  /* for (i = 0; i < diag_max_registration; i++) */
 	} /* else */
 		return packet_type;
 }
@@ -520,6 +525,7 @@ int diagfwd_disconnect(void)
 	driver->in_busy = 1;
 	driver->in_busy_qdsp = 1;
 	driver->debug_flag = 1;
+	driver->display_alert = 1;
 	diag_close();
 	/* TBD - notify and flow control SMD */
 	return 0;
@@ -528,20 +534,21 @@ int diagfwd_disconnect(void)
 int diagfwd_write_complete(struct diag_request *diag_write_ptr)
 {
 	unsigned char *buf = diag_write_ptr->buf;
+	unsigned long flags = 0;
 	/*Determine if the write complete is for data from arm9/apps/q6 */
 	/* Need a context variable here instead */
 	if (buf == (void *)driver->usb_buf_in) {
 		driver->in_busy = 0;
 		APPEND_DEBUG('o');
-		spin_lock(&diagchar_smd_lock);
+		spin_lock_irqsave(&diagchar_smd_lock, flags);
 		__diag_smd_send_req(NON_SMD_CONTEXT);
-		spin_unlock(&diagchar_smd_lock);
+		spin_unlock_irqrestore(&diagchar_smd_lock, flags);
 	} else if (buf == (void *)driver->usb_buf_in_qdsp) {
 		driver->in_busy_qdsp = 0;
 		APPEND_DEBUG('p');
-		spin_lock(&diagchar_smd_qdsp_lock);
+		spin_lock_irqsave(&diagchar_smd_qdsp_lock, flags);
 		__diag_smd_qdsp_send_req(NON_SMD_CONTEXT);
-		spin_unlock(&diagchar_smd_qdsp_lock);
+		spin_unlock_irqrestore(&diagchar_smd_qdsp_lock, flags);
 	} else {
 		diagmem_free(driver, (unsigned char *)buf, POOL_TYPE_HDLC);
 		diagmem_free(driver, (unsigned char *)diag_write_ptr,
@@ -578,17 +585,19 @@ static struct diag_operations diagfwdops = {
 
 static void diag_smd_notify(void *ctxt, unsigned event)
 {
-	spin_lock(&diagchar_smd_lock);
+	unsigned long flags = 0;
+	spin_lock_irqsave(&diagchar_smd_lock, flags);
 	__diag_smd_send_req(SMD_CONTEXT);
-	spin_unlock(&diagchar_smd_lock);
+	spin_unlock_irqrestore(&diagchar_smd_lock, flags);
 }
 
 #if defined(CONFIG_MSM_N_WAY_SMD)
 static void diag_smd_qdsp_notify(void *ctxt, unsigned event)
 {
-	spin_lock(&diagchar_smd_qdsp_lock);
+	unsigned long flags = 0;
+	spin_lock_irqsave(&diagchar_smd_qdsp_lock, flags);
 	__diag_smd_qdsp_send_req(SMD_CONTEXT);
-	spin_unlock(&diagchar_smd_qdsp_lock);
+	spin_unlock_irqrestore(&diagchar_smd_qdsp_lock, flags);
 }
 #endif
 
@@ -671,7 +680,8 @@ void diagfwd_init(void)
 		goto err;
 	if (driver->client_map == NULL &&
 	    (driver->client_map = kzalloc
-	     ((driver->num_clients) * 4, GFP_KERNEL)) == NULL)
+	     ((driver->num_clients) * sizeof(struct diag_client_map),
+		   GFP_KERNEL)) == NULL)
 		goto err;
 	if (driver->buf_tbl == NULL)
 			driver->buf_tbl = kzalloc(buf_tbl_size *
@@ -679,11 +689,11 @@ void diagfwd_init(void)
 	if (driver->buf_tbl == NULL)
 		goto err;
 	if (driver->data_ready == NULL &&
-	     (driver->data_ready = kzalloc(driver->num_clients,
+	     (driver->data_ready = kzalloc(driver->num_clients * 4,
 					    GFP_KERNEL)) == NULL)
 		goto err;
 	if (driver->table == NULL &&
-	     (driver->table = kzalloc(REG_TABLE_SIZE*
+	     (driver->table = kzalloc(diag_max_registration*
 				      sizeof(struct diag_master_table),
 				       GFP_KERNEL)) == NULL)
 		goto err;

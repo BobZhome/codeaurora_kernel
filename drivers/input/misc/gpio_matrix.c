@@ -21,6 +21,15 @@
 #include <linux/wakelock.h>
 #include <mach/gpio.h>
 
+
+//20100724 yongman.kwon@lge.com MS690 : for key test in TESTMODE [START]
+#if defined(CONFIG_LGE_DIAGTEST)
+/* LGE_CHANGES_S [woonghee@lge.com] 2010-01-23, [VS740] for key test */
+extern uint8_t if_condition_is_on_key_buffering;
+extern uint8_t lgf_factor_key_test_rsp(char);
+#endif
+//20100724 yongman.kwon@lge.com MS690 : for key test in TESTMODE [END]
+
 struct gpio_kp {
 	struct gpio_event_input_devs *input_devs;
 	struct gpio_event_matrix_info *keypad_info;
@@ -124,7 +133,24 @@ static void report_key(struct gpio_kp *kp, int key_index, int out, int in)
 					"changed to %d\n", keycode,
 					out, in, mi->output_gpios[out],
 					mi->input_gpios[in], pressed);
+//20100724 yongman.kwon@lge.com MS690 : for key test in TESTMODE [START]
+#if defined(CONFIG_LGE_DIAGTEST)
+			if(if_condition_is_on_key_buffering == 1/*HS_TRUE*/ && pressed == 1/*press*/)
+					lgf_factor_key_test_rsp((uint8_t)keycode);				
+#endif
+//20100724 yongman.kwon@lge.com MS690 : for key test in TESTMODE [END]			
 			input_report_key(kp->input_devs->dev[dev], keycode, pressed);
+			/* TODO temporary code for DEBUG
+			 * 2010-04-19 younchan.kim@lge.com
+			 */
+//20100916 yongman.kwon@lge.com [MS690] block keypad log [START]
+#if 0
+			printk("gpiomatrix: key %x, %d-%d (%d-%d) "
+					"changed to %d\n", keycode,
+					out, in, mi->output_gpios[out],
+					mi->input_gpios[in], pressed);
+#endif
+//20100916 yongman.kwon@lge.com [MS690] block keypad log [END]
 		}
 	}
 }

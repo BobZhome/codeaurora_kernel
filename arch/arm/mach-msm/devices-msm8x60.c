@@ -789,7 +789,7 @@ struct clk msm_clocks_8x60[] = {
 	CLK_8X60("ijpeg_clk",		IJPEG_CLK,		NULL, 0),
 	CLK_8X60("jpegd_clk",		JPEGD_CLK,		NULL, 0),
 	CLK_8X60("mdp_clk",		MDP_CLK,		NULL, 0),
-	CLK_8X60("mdp_vsync_clk",	MDP_VSYNC_CLK,		NULL, 0),
+	CLK_8X60("mdp_vsync_clk",	MDP_VSYNC_CLK,		NULL, OFF),
 	CLK_8X60("pixel_mdp_clk",	PIXEL_MDP_CLK,		NULL, 0),
 	CLK_8X60("pixel_lcdc_clk",	PIXEL_LCDC_CLK,		NULL, 0),
 	CLK_8X60("rot_clk",		ROT_CLK,		NULL, 0),
@@ -800,6 +800,7 @@ struct clk msm_clocks_8x60[] = {
 	CLK_8X60("mdp_tv_clk",		MDP_TV_CLK,		NULL, 0),
 	CLK_8X60("hdmi_tv_clk",		HDMI_TV_CLK,		NULL, 0),
 	CLK_8X60("dsub_tv_clk",		DSUB_TV_CLK,		NULL, 0),
+	CLK_8X60("hdmi_app_clk",	HDMI_APP_CLK,		NULL, 0),
 	CLK_8X60("vpe_clk",		VPE_CLK,		NULL, 0),
 	CLK_8X60("vfe_clk",		VFE_CLK,		NULL, 0),
 	CLK_8X60("csi_vfe_clk",		CSI0_VFE_CLK,		NULL, 0),
@@ -839,7 +840,7 @@ struct clk msm_clocks_8x60[] = {
 
 unsigned msm_num_clocks_8x60 = ARRAY_SIZE(msm_clocks_8x60);
 
-struct platform_device msm_device_gpio __initdata = {
+struct platform_device msm_device_gpio = {
 	.name = "msm8660-gpio",
 	.id   = 0,
 };

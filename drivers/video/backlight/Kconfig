@@ -262,3 +262,10 @@ config BACKLIGHT_ADP5520
 	  To compile this driver as a module, choose M here: the module will
 	  be called adp5520_bl.
 
+
+config BACKLIGHT_AAT2870
+	tristate "AAT2870 Backlight Driver "
+	depends on BACKLIGHT_CLASS_DEVICE
+	default n
+	help
+	  If you have a ANALOGIC TECH AAT2870, say y to enable the backlight driver

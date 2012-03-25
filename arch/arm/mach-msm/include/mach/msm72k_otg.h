@@ -69,9 +69,13 @@ struct msm_otg {
 	atomic_t		in_lpm;
 	unsigned int 		core_clk;
 
+	atomic_t		chg_type;
+
 	void (*start_host)	(struct usb_bus *bus, int suspend);
 	/* Enable/disable the clocks */
 	int (*set_clk)		(struct otg_transceiver *otg, int on);
+	/* Reset phy and link */
+	void (*reset)		(struct otg_transceiver *otg);
 	/* pmic notfications apis */
 	u8 pmic_notif_supp;
 	struct msm_otg_platform_data *pdata;

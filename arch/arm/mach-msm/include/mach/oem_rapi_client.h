@@ -44,6 +44,39 @@ enum {
 	 * list of oem rapi client events
 	 */
 
+#if defined (CONFIG_LGE_SUPPORT_RAPI)
+	/* LGE_CHANGES_S [khlee@lge.com] 2009-12-04, [VS740] use OEMRAPI */
+	LG_FW_RAPI_START = 100,
+	LG_FW_RAPI_CLIENT_EVENT_GET_LINE_TYPE = LG_FW_RAPI_START,
+	LG_FW_TESTMODE_EVENT_FROM_ARM11 = LG_FW_RAPI_START + 1,
+	LG_FW_A2M_BATT_INFO_GET = LG_FW_RAPI_START + 2,
+	LG_FW_A2M_PSEUDO_BATT_INFO_SET = LG_FW_RAPI_START + 3,
+	LG_FW_MEID_GET = LG_FW_RAPI_START + 4,
+	/* LGE_CHANGE_S 
+	 * SUPPORT TESTMODE FOR AIRPLAN MODE
+	 * 2010-07-12 taehung.kim@lge.com
+	 */
+	LG_FW_SET_OPERATIN_MODE = LG_FW_RAPI_START + 5,
+	LG_FW_A2M_BLOCK_CHARGING_SET = LG_FW_RAPI_START + 6,
+	//20100712 myeonggyu.son@lge.com [MS690] hw revision
+	LG_FW_GET_PCB_VERSION = LG_FW_RAPI_START + 7,
+	/*LGE_CHANGES yongman.kwon 2010-09-07[MS690] : firstboot check */
+	LG_FW_SET_BOOT_INFO =	  LG_FW_RAPI_START + 8,
+	/*LGE_CHANGES yongman.kwon 2010-09-07[MS690] : check power mode [START]*/
+	LG_FW_GET_POWER_MODE =  	 LG_FW_RAPI_START + 9,	
+	LG_FW_GET_FLIGHT_MODE =  	 LG_FW_RAPI_START + 10,	
+	/*LGE_CHANGES yongman.kwon 2010-09-07[MS690] : check power mode [END]*/	
+
+	/* LGE_CHANGES yongman.kwon@lge.com [MS690] for check prl version for wifi on/off */
+	//LG_FW_CHECK_PRL_VERSION
+	LG_FW_GET_PRL_VERSION = LG_FW_RAPI_START + 11,
+	
+	//EDAM_KYC_2010.11.23 : Flight Kernel Model On add [start]
+	LG_FW_SET_FTM_BOOT = LG_FW_RAPI_START + 12,
+	LG_FW_GET_FTM_BOOT = LG_FW_RAPI_START + 13,
+	//EDAM_KYC_2010.11.23 : Flight Kernel Model On add [end]
+
+#endif
 	OEM_RAPI_CLIENT_EVENT_MAX
 
 };

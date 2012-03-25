@@ -123,6 +123,12 @@ config BATTERY_MSM
 	help
 	  Say Y to enable support for the battery in Qualcomm MSM.
 
+config MAX17040_FUEL_GAUGE
+	tristate "MAX17040 fuel gauge"
+	depends on ARCH_MSM
+	default n
+	help
+	  Say Y to enable support for MAX17040 fuel gauge.
 config BATTERY_MSM_FAKE
 	tristate "Fake MSM battery"
 	depends on ARCH_MSM && BATTERY_MSM
@@ -130,4 +136,11 @@ config BATTERY_MSM_FAKE
 	help
 	  Say Y to bypass actual battery queries.
 
+config LGE_CHARGER_LOGO_MODE_NOTI
+	bool "Charger Logo Mode Noti"
+	default n
+	depends on LGE_PROC_COMM
+	help
+	  LGE Charger Logo Mode
+	  
 endif # POWER_SUPPLY
