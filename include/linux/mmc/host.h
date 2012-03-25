@@ -107,6 +107,10 @@ struct mmc_host_ops {
 	int	(*get_cd)(struct mmc_host *host);
 
 	void	(*enable_sdio_irq)(struct mmc_host *host, int enable);
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE fred.cho@lge.com, 2010-08-05 , check gpio pin status */
+>>>>>>> vendor-vs660-froyo
 	int (*get_status)(struct mmc_host *host);
 };
 

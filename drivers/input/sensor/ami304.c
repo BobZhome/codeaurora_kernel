@@ -29,6 +29,7 @@
 
 #include <mach/board_lge.h>
 
+<<<<<<< HEAD
 #define AMI304_DRV_NAME		"ami304"
 #define DRIVER_VERSION		"1.0.11.19"
 
@@ -37,6 +38,11 @@
 
 //#define AMI304_TEST		1
 
+=======
+#define AMI304_DEBUG_PRINT	1
+#define AMI304_ERROR_PRINT	1
+
+>>>>>>> vendor-vs660-froyo
 /* AMI304 Debug mask value
  * usage: echo [mask_value] > /sys/module/ami304/parameters/debug_mask
  * All		: 127
@@ -51,6 +57,10 @@ enum {
 	AMI304_DEBUG_DEV_DEBOUNCE	= 1U << 4,
 	AMI304_DEBUG_GEN_INFO		= 1U << 5,
 	AMI304_DEBUG_INTR_INFO		= 1U << 6,
+<<<<<<< HEAD
+=======
+	AMI304_DEBUG_DELAY_SETTING		= 1U << 7,
+>>>>>>> vendor-vs660-froyo
 };
 
 static unsigned int ami304_debug_mask = AMI304_DEBUG_USER_ERROR;
@@ -88,20 +98,35 @@ static int ami304_suspend(struct device *device);
 static int ami304_resume(struct device *device);
 #endif
 
+<<<<<<< HEAD
+=======
+#define AMI_ORIENTATION_SENSOR		0
+#define AMI_MAGNETIC_FIELD_SENSOR	1
+#define AMI_ACCELEROMETER_SENSOR		2
+
+>>>>>>> vendor-vs660-froyo
 /* Addresses to scan */
 static unsigned short normal_i2c[] = { AMI304_I2C_ADDRESS, I2C_CLIENT_END };
 
 /* Insmod parameters */
+<<<<<<< HEAD
 I2C_CLIENT_INSMOD;
 
 struct _ami304_data {
 	rwlock_t lock;
 	int chipset;
+=======
+I2C_CLIENT_INSMOD_1(ami304);
+
+struct _ami302_data {
+	rwlock_t lock;
+>>>>>>> vendor-vs660-froyo
 	int mode;
 	int rate;
 	volatile int updated;
 } ami304_data;
 
+<<<<<<< HEAD
 typedef struct {
 	int x;
 	int y;
@@ -127,17 +152,38 @@ struct _ami304mid_data {
 	ami304_vec_t gyro;
 	ami304_pedo_t pedo;	
 	int status;
+=======
+struct _ami304mid_data {
+	rwlock_t datalock;
+	rwlock_t ctrllock;
+	int controldata[10];
+	int yaw;
+	int roll;
+	int pitch;
+	int nmx;
+	int nmy;
+	int nmz;
+	int nax;
+	int nay;
+	int naz;
+	int mag_status;
+>>>>>>> vendor-vs660-froyo
 } ami304mid_data;
 
 struct ami304_i2c_data {
 	struct input_dev *input_dev;
+<<<<<<< HEAD
 	struct i2c_client *client;
+=======
+	struct i2c_client client;
+>>>>>>> vendor-vs660-froyo
 };
 
 static atomic_t dev_open_count;
 static atomic_t hal_open_count;
 static atomic_t daemon_open_count;
 
+<<<<<<< HEAD
 #ifndef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
 static u8 i2c_read_addr, i2c_read_len;
 
@@ -179,10 +225,18 @@ static int AMI304_I2c_Write(u8 reg_adr, u8 *buf, u8 buf_len)
 #endif
 
 static int AMI304_Chipset_Init(int mode, int chipset)
+=======
+static atomic_t o_status;
+static atomic_t m_status;
+static atomic_t a_status;
+
+static int AMI304_Init(int mode)
+>>>>>>> vendor-vs660-froyo
 {
 	u8 databuf[10];
 	u8 regaddr;
 	u8 ctrl1, ctrl2, ctrl3;
+<<<<<<< HEAD
 	unsigned char ctrl4[2];
 	
 	regaddr = AMI304_REG_CTRL1;
@@ -203,17 +257,48 @@ static int AMI304_Chipset_Init(int mode, int chipset)
 	
 	databuf[0] = AMI304_REG_CTRL1;
 	if( mode == AMI304_FORCE_MODE ) {
+=======
+	int res = 0;
+
+	regaddr = AMI304_REG_CTRL1;
+	res = i2c_master_send(ami304_i2c_client, &regaddr, 1);
+	if (res<=0) goto exit_AMI304_Init;
+	res = i2c_master_recv(ami304_i2c_client, &ctrl1, 1);
+	if (res<=0) goto exit_AMI304_Init;
+
+	regaddr = AMI304_REG_CTRL2;
+	res = i2c_master_send(ami304_i2c_client, &regaddr, 1);
+	if (res<=0) goto exit_AMI304_Init;
+	res = i2c_master_recv(ami304_i2c_client, &ctrl2, 1);
+	if (res<=0) goto exit_AMI304_Init;
+
+	regaddr = AMI304_REG_CTRL3;
+	res = i2c_master_send(ami304_i2c_client, &regaddr, 1);
+	if (res<=0) goto exit_AMI304_Init;
+	res = i2c_master_recv(ami304_i2c_client, &ctrl3, 1);
+	if (res<=0) goto exit_AMI304_Init;
+
+	databuf[0] = AMI304_REG_CTRL1;
+	if( mode==AMI304_FORCE_MODE )
+	{
+>>>>>>> vendor-vs660-froyo
 		databuf[1] = ctrl1 | AMI304_CTRL1_PC1 | AMI304_CTRL1_FS1_FORCE;
 		write_lock(&ami304_data.lock);
 		ami304_data.mode = AMI304_FORCE_MODE;
 		write_unlock(&ami304_data.lock);
 	}
+<<<<<<< HEAD
 	else {
+=======
+	else
+	{
+>>>>>>> vendor-vs660-froyo
 		databuf[1] = ctrl1 | AMI304_CTRL1_PC1 | AMI304_CTRL1_FS1_NORMAL | AMI304_CTRL1_ODR1;
 		write_lock(&ami304_data.lock);
 		ami304_data.mode = AMI304_NORMAL_MODE;
 		write_unlock(&ami304_data.lock);
 	}
+<<<<<<< HEAD
 	i2c_master_send(ami304_i2c_client, databuf, 2);		
 	
 	databuf[0] = AMI304_REG_CTRL2;
@@ -235,35 +320,71 @@ static int AMI304_Chipset_Init(int mode, int chipset)
 	databuf[2] = ctrl4[1];
 	i2c_master_send(ami304_i2c_client, databuf, 3);				
 	
+=======
+	res = i2c_master_send(ami304_i2c_client, databuf, 2);
+	if (res<=0) goto exit_AMI304_Init;
+
+	databuf[0] = AMI304_REG_CTRL2;
+	databuf[1] = ctrl2 | AMI304_CTRL2_DREN;
+	res = i2c_master_send(ami304_i2c_client, databuf, 2);
+	if (res<=0) goto exit_AMI304_Init;
+
+	databuf[0] = AMI304_REG_CTRL3;
+	databuf[1] = ctrl3 | AMI304_CTRL3_B0_LO_CLR;
+	res = i2c_master_send(ami304_i2c_client, databuf, 2);
+	if (res<=0) goto exit_AMI304_Init;
+
+exit_AMI304_Init:
+	if (res<=0) {
+		AMIE("I2C error: ret value=%d\n", res);
+		return -3;
+	}
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 
 static int AMI304_SetMode(int newmode)
 {
 	int mode = 0;
+<<<<<<< HEAD
 	int chipset = 0;
 
 	read_lock(&ami304_data.lock);
 	mode = ami304_data.mode;
 	chipset = ami304_data.chipset;
+=======
+
+	read_lock(&ami304_data.lock);
+	mode = ami304_data.mode;
+>>>>>>> vendor-vs660-froyo
 	read_unlock(&ami304_data.lock);
 
 	if (mode == newmode)
 		return 0;
 
+<<<<<<< HEAD
 	return AMI304_Chipset_Init(newmode, chipset);
+=======
+	return AMI304_Init(newmode);
+>>>>>>> vendor-vs660-froyo
 }
 
 static int AMI304_ReadChipInfo(char *buf, int bufsize)
 {
 	if ((!buf)||(bufsize<=30))
 		return -1;
+<<<<<<< HEAD
 		
 	if (!ami304_i2c_client) {
+=======
+	if (!ami304_i2c_client)
+	{
+>>>>>>> vendor-vs660-froyo
 		*buf = 0;
 		return -2;
 	}
 
+<<<<<<< HEAD
 	if (ami304_data.chipset == AMI306_CHIPSET)	{
 		sprintf(buf, "AMI306 Chip");
 	}
@@ -315,6 +436,9 @@ static int Identify_AMI_Chipset(void)
 		ami304_data.chipset = AMI304_CHIPSET;
 	}
 	
+=======
+	sprintf(buf, "AMI304 Chip");
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 
@@ -327,8 +451,13 @@ static int AMI304_ReadSensorData(char *buf, int bufsize)
 
 	if ((!buf)||(bufsize<=80))
 		return -1;
+<<<<<<< HEAD
 
 	if (!ami304_i2c_client) {
+=======
+	if (!ami304_i2c_client)
+	{
+>>>>>>> vendor-vs660-froyo
 		*buf = 0;
 		return -2;
 	}
@@ -339,6 +468,7 @@ static int AMI304_ReadSensorData(char *buf, int bufsize)
 
 	databuf[0] = AMI304_REG_CTRL3;
 	databuf[1] = AMI304_CTRL3_FORCE_BIT;
+<<<<<<< HEAD
 	res = i2c_master_send(ami304_i2c_client, databuf, 2);	
 	if (res <= 0) 
 		goto exit_AMI304_ReadSensorData;
@@ -358,6 +488,22 @@ static int AMI304_ReadSensorData(char *buf, int bufsize)
 			databuf[3], databuf[4], databuf[5]);
 
 	if (AMI304_DEBUG_DEV_STATUS & ami304_debug_mask) {
+=======
+	res = i2c_master_send(ami304_i2c_client, databuf, 2);
+	if (res<=0) goto exit_AMI304_ReadSensorData;
+
+	// We can read all measured data in once
+	cmd = AMI304_REG_DATAXH;
+	res = i2c_master_send(ami304_i2c_client, &cmd, 1);
+	if (res<=0) goto exit_AMI304_ReadSensorData;
+	res = i2c_master_recv(ami304_i2c_client, &(databuf[0]), 6);
+	if (res<=0) goto exit_AMI304_ReadSensorData;
+
+	sprintf(buf, "%02x %02x %02x %02x %02x %02x", databuf[0], databuf[1], databuf[2], databuf[3], databuf[4], databuf[5]);
+
+	if (AMI304_DEBUG_DEV_STATUS & ami304_debug_mask)
+	{
+>>>>>>> vendor-vs660-froyo
 		int mx, my, mz;
 		mx = my = mz = 0;
 
@@ -369,6 +515,7 @@ static int AMI304_ReadSensorData(char *buf, int bufsize)
 		if (my>32768)  my = my-65536;
 		if (mz>32768)  mz = mz-65536;
 
+<<<<<<< HEAD
 		AMID("Magnetic Raw Data: X=%d, Y=%d, Z=%d\n", mx, my, mz);
 	}
 
@@ -377,6 +524,16 @@ exit_AMI304_ReadSensorData:
 		if (printk_ratelimit()) {
 			AMIE("I2C error: ret value=%d\n", res);
 		}
+=======
+		//AMID("X=%d, Y=%d, Z=%d\n", (int)(databuf[0] | (databuf[1]  << 8)), (int)(databuf[2] | (databuf[3] << 8)), (int)(databuf[4] | (databuf[5] << 8)));
+		AMID("X=%d, Y=%d, Z=%d\n", mx, my, mz);
+	}
+
+exit_AMI304_ReadSensorData:
+	if (res<=0) {
+		if(printk_ratelimit())
+			AMIE("I2C error: ret value=%d\n", res);
+>>>>>>> vendor-vs660-froyo
 		return -3;
 	}
 	return 0;
@@ -388,11 +545,15 @@ static int AMI304_ReadPostureData(char *buf, int bufsize)
 		return -1;
 
 	read_lock(&ami304mid_data.datalock);
+<<<<<<< HEAD
 	sprintf(buf, "%d %d %d %d", 
 			ami304mid_data.yaw, 
 			ami304mid_data.pitch, 
 			ami304mid_data.roll, 
 			ami304mid_data.status);
+=======
+	sprintf(buf, "%d %d %d %d", ami304mid_data.yaw, ami304mid_data.pitch, ami304mid_data.roll, ami304mid_data.mag_status);
+>>>>>>> vendor-vs660-froyo
 	read_unlock(&ami304mid_data.datalock);
 	return 0;
 }
@@ -403,6 +564,7 @@ static int AMI304_ReadCaliData(char *buf, int bufsize)
 		return -1;
 
 	read_lock(&ami304mid_data.datalock);
+<<<<<<< HEAD
 	sprintf(buf, "%d %d %d %d %d %d %d", 
 			ami304mid_data.nm.x, 
 			ami304mid_data.nm.y, 
@@ -411,10 +573,14 @@ static int AMI304_ReadCaliData(char *buf, int bufsize)
 			ami304mid_data.na.y,
 			ami304mid_data.na.z,
 			ami304mid_data.status);
+=======
+	sprintf(buf, "%d %d %d %d %d %d %d", ami304mid_data.nmx, ami304mid_data.nmy, ami304mid_data.nmz,ami304mid_data.nax,ami304mid_data.nay,ami304mid_data.naz,ami304mid_data.mag_status);
+>>>>>>> vendor-vs660-froyo
 	read_unlock(&ami304mid_data.datalock);
 	return 0;
 }
 
+<<<<<<< HEAD
 static int AMI304_ReadGyroData(char *buf, int bufsize)
 {
 	if ((!buf)||(bufsize<=80))
@@ -445,6 +611,8 @@ static int AMI304_ReadPedoData(char *buf, int bufsize)
 }
 #endif
 
+=======
+>>>>>>> vendor-vs660-froyo
 static int AMI304_ReadMiddleControl(char *buf, int bufsize)
 {
 	if ((!buf)||(bufsize<=80))
@@ -452,6 +620,7 @@ static int AMI304_ReadMiddleControl(char *buf, int bufsize)
 
 	read_lock(&ami304mid_data.ctrllock);
 	sprintf(buf, "%d %d %d %d %d %d %d %d %d %d",
+<<<<<<< HEAD
 			ami304mid_data.controldata[AMI304_CB_LOOPDELAY],
 			ami304mid_data.controldata[AMI304_CB_RUN],
 			ami304mid_data.controldata[AMI304_CB_ACCCALI],
@@ -462,10 +631,15 @@ static int AMI304_ReadMiddleControl(char *buf, int bufsize)
 			ami304mid_data.controldata[AMI304_CB_UNDEFINE_1],
 			ami304mid_data.controldata[AMI304_CB_UNDEFINE_2],
 			ami304mid_data.controldata[AMI304_CB_UNDEFINE_3] );
+=======
+		ami304mid_data.controldata[0], ami304mid_data.controldata[1], ami304mid_data.controldata[2],ami304mid_data.controldata[3],ami304mid_data.controldata[4],
+		ami304mid_data.controldata[5], ami304mid_data.controldata[6], ami304mid_data.controldata[7], ami304mid_data.controldata[8], ami304mid_data.controldata[9]);
+>>>>>>> vendor-vs660-froyo
 	read_unlock(&ami304mid_data.ctrllock);
 	return 0;
 }
 
+<<<<<<< HEAD
 static int AMI304_Report_Value(int iEnable)
 {
 	int controlbuf[AMI304_CB_LENGTH];
@@ -521,43 +695,105 @@ static int AMI304_Report_Value(int iEnable)
 	}
 
 	if (report_enable)
+=======
+static int AMI304_Report_Value(int en_dis)
+{
+	struct ami304_i2c_data *data = i2c_get_clientdata(ami304_i2c_client);
+	char report_enable = 0;
+
+	if( !en_dis )
+		return 0;
+
+	if(atomic_read(&o_status))
+	{
+		input_report_abs(data->input_dev, ABS_RX, ami304mid_data.yaw);	/* yaw */
+		input_report_abs(data->input_dev, ABS_RY, ami304mid_data.pitch);/* pitch */
+		input_report_abs(data->input_dev, ABS_RZ, ami304mid_data.roll);/* roll */
+		input_report_abs(data->input_dev, ABS_RUDDER, ami304mid_data.mag_status);/* status of orientation sensor */
+		report_enable = 1;
+	}
+
+	if(atomic_read(&a_status))
+	{
+		input_report_abs(data->input_dev, ABS_X, ami304mid_data.nax);/* x-axis raw acceleration */
+		input_report_abs(data->input_dev, ABS_Y, ami304mid_data.nay);/* y-axis raw acceleration */
+		input_report_abs(data->input_dev, ABS_Z, ami304mid_data.naz);/* z-axis raw acceleration */
+		report_enable = 1;
+	}
+
+	if(atomic_read(&m_status))
+	{
+		input_report_abs(data->input_dev, ABS_HAT0X, ami304mid_data.nmx); /* x-axis of raw magnetic vector */
+		input_report_abs(data->input_dev, ABS_HAT0Y, ami304mid_data.nmy); /* y-axis of raw magnetic vector */
+		input_report_abs(data->input_dev, ABS_BRAKE, ami304mid_data.nmz); /* z-axis of raw magnetic vector */
+		input_report_abs(data->input_dev, ABS_WHEEL, ami304mid_data.mag_status);/* status of magnetic sensor */
+		report_enable = 1;
+	}
+
+	if (AMI304_DEBUG_DEV_DEBOUNCE & ami304_debug_mask)
+	{
+		AMID("yaw: %d, pitch: %d, roll: %d\n", ami304mid_data.yaw, ami304mid_data.pitch, ami304mid_data.roll);
+		AMID("nax: %d, nay: %d, naz: %d\n", ami304mid_data.nax, ami304mid_data.nay, ami304mid_data.naz);
+		AMID("nmx: %d, nmy: %d, nmz: %d\n", ami304mid_data.nmx, ami304mid_data.nmy, ami304mid_data.nmz);
+		AMID("mag_status: %d\n", ami304mid_data.mag_status);
+	}
+
+	if(report_enable)
+>>>>>>> vendor-vs660-froyo
 		input_sync(data->input_dev);
 
 	return 0;
 }
 
+<<<<<<< HEAD
 static ssize_t show_chipinfo_value(struct device *dev, 
 		struct device_attribute *attr, char *buf)
+=======
+static ssize_t show_chipinfo_value(struct device *dev, struct device_attribute *attr, char *buf)
+>>>>>>> vendor-vs660-froyo
 {
 	char strbuf[AMI304_BUFSIZE];
 	AMI304_ReadChipInfo(strbuf, AMI304_BUFSIZE);
 	return sprintf(buf, "%s\n", strbuf);
 }
 
+<<<<<<< HEAD
 static ssize_t show_sensordata_value(struct device *dev, 
 		struct device_attribute *attr, char *buf)
+=======
+static ssize_t show_sensordata_value(struct device *dev, struct device_attribute *attr, char *buf)
+>>>>>>> vendor-vs660-froyo
 {
 	char strbuf[AMI304_BUFSIZE];
 	AMI304_ReadSensorData(strbuf, AMI304_BUFSIZE);
 	return sprintf(buf, "%s\n", strbuf);
 }
 
+<<<<<<< HEAD
 static ssize_t show_posturedata_value(struct device *dev, 
 		struct device_attribute *attr, char *buf)
+=======
+static ssize_t show_posturedata_value(struct device *dev, struct device_attribute *attr, char *buf)
+>>>>>>> vendor-vs660-froyo
 {
 	char strbuf[AMI304_BUFSIZE];
 	AMI304_ReadPostureData(strbuf, AMI304_BUFSIZE);
 	return sprintf(buf, "%s\n", strbuf);
 }
 
+<<<<<<< HEAD
 static ssize_t show_calidata_value(struct device *dev, 
 		struct device_attribute *attr, char *buf)
+=======
+static ssize_t show_calidata_value(struct device *dev, struct device_attribute *attr, char *buf)
+>>>>>>> vendor-vs660-froyo
 {
 	char strbuf[AMI304_BUFSIZE];
 	AMI304_ReadCaliData(strbuf, AMI304_BUFSIZE);
 	return sprintf(buf, "%s\n", strbuf);
 }
 
+<<<<<<< HEAD
 static ssize_t show_gyrodata_value(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	char strbuf[AMI304_BUFSIZE];
@@ -567,23 +803,37 @@ static ssize_t show_gyrodata_value(struct device *dev, struct device_attribute *
 
 static ssize_t show_midcontrol_value(struct device *dev, 
 		struct device_attribute *attr, char *buf)
+=======
+static ssize_t show_midcontrol_value(struct device *dev, struct device_attribute *attr, char *buf)
+>>>>>>> vendor-vs660-froyo
 {
 	char strbuf[AMI304_BUFSIZE];
 	AMI304_ReadMiddleControl(strbuf, AMI304_BUFSIZE);
 	return sprintf(buf, "%s\n", strbuf);
 }
 
+<<<<<<< HEAD
 static ssize_t store_midcontrol_value(struct device *dev, 
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	write_lock(&ami304mid_data.ctrllock);
 	memcpy(&ami304mid_data.controldata[0], buf, sizeof(int)*AMI304_CB_LENGTH);	
+=======
+static ssize_t store_midcontrol_value(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	write_lock(&ami304mid_data.ctrllock);
+	memcpy(&ami304mid_data.controldata[0], buf, sizeof(int)*10);
+>>>>>>> vendor-vs660-froyo
  	write_unlock(&ami304mid_data.ctrllock);
 	return count;
 }
 
+<<<<<<< HEAD
 static ssize_t show_mode_value(struct device *dev, 
 		struct device_attribute *attr, char *buf)
+=======
+static ssize_t show_mode_value(struct device *dev, struct device_attribute *attr, char *buf)
+>>>>>>> vendor-vs660-froyo
 {
 	int mode=0;
 	read_lock(&ami304_data.lock);
@@ -592,8 +842,12 @@ static ssize_t show_mode_value(struct device *dev,
 	return sprintf(buf, "%d\n", mode);
 }
 
+<<<<<<< HEAD
 static ssize_t store_mode_value(struct device *dev, 
 		struct device_attribute *attr, const char *buf, size_t count)
+=======
+static ssize_t store_mode_value(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+>>>>>>> vendor-vs660-froyo
 {
 	int mode = 0;
 	sscanf(buf, "%d", &mode);
@@ -601,6 +855,7 @@ static ssize_t store_mode_value(struct device *dev,
 	return count;
 }
 
+<<<<<<< HEAD
 static ssize_t show_wia_value(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	char strbuf[AMI304_BUFSIZE];
@@ -611,12 +866,20 @@ static ssize_t show_wia_value(struct device *dev, struct device_attribute *attr,
 /* Test mode attribute */
 static ssize_t show_pitch_value(struct device *dev, 
 		struct device_attribute *attr, char *buf)
+=======
+/* Test mode attribute */
+static ssize_t show_pitch_value(struct device *dev, struct device_attribute *attr, char *buf)
+>>>>>>> vendor-vs660-froyo
 {
 	return sprintf(buf, "%d\n", ami304mid_data.pitch);
 }
 
+<<<<<<< HEAD
 static ssize_t show_roll_value(struct device *dev, 
 		struct device_attribute *attr, char *buf)
+=======
+static ssize_t show_roll_value(struct device *dev, struct device_attribute *attr, char *buf)
+>>>>>>> vendor-vs660-froyo
 {
 	return sprintf(buf, "%d\n", ami304mid_data.roll);
 }
@@ -625,6 +888,7 @@ static DEVICE_ATTR(chipinfo, S_IRUGO, show_chipinfo_value, NULL);
 static DEVICE_ATTR(sensordata, S_IRUGO, show_sensordata_value, NULL);
 static DEVICE_ATTR(posturedata, S_IRUGO, show_posturedata_value, NULL);
 static DEVICE_ATTR(calidata, S_IRUGO, show_calidata_value, NULL);
+<<<<<<< HEAD
 static DEVICE_ATTR(gyrodata, S_IRUGO, show_gyrodata_value, NULL);
 static DEVICE_ATTR(midcontrol, S_IRUGO | S_IWUSR, show_midcontrol_value, store_midcontrol_value );
 static DEVICE_ATTR(mode, S_IRUGO | S_IWUSR, show_mode_value, store_mode_value );
@@ -660,6 +924,22 @@ static int ami304_open(struct inode *inode, struct file *file)
 		res = nonseekable_open(inode, file);
 	}
 	return res;
+=======
+static DEVICE_ATTR(midcontrol, S_IRUGO | S_IWUSR, show_midcontrol_value, store_midcontrol_value );
+static DEVICE_ATTR(mode, S_IRUGO | S_IWUSR, show_mode_value, store_mode_value );
+static DEVICE_ATTR(pitch, S_IRUGO | S_IWUSR, show_pitch_value, NULL);
+static DEVICE_ATTR(roll, S_IRUGO | S_IWUSR, show_roll_value, NULL);
+
+static int ami304_open(struct inode *inode, struct file *file)
+{
+	int ret = -1;
+	if( atomic_cmpxchg(&dev_open_count, 0, 1)==0 ) {
+		if (AMI304_DEBUG_FUNC_TRACE & ami304_debug_mask)
+			AMID("Open device node:ami304\n");
+		ret = nonseekable_open(inode, file);
+	}
+	return ret;
+>>>>>>> vendor-vs660-froyo
 }
 
 static int ami304_release(struct inode *inode, struct file *file)
@@ -673,6 +953,7 @@ static int ami304_release(struct inode *inode, struct file *file)
 static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd,unsigned long arg)
 {
 	char strbuf[AMI304_BUFSIZE];
+<<<<<<< HEAD
 	int controlbuf[AMI304_CB_LENGTH];
 	int valuebuf[4];
 #ifndef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
@@ -685,14 +966,25 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 	void __user *data;
 	int retval=0;
 	int mode=0,chipset=0;
+=======
+	int controlbuf[10];
+	void __user *data;
+	int retval=0;
+	int mode=0;
+>>>>>>> vendor-vs660-froyo
 
 	switch (cmd) {
 		case AMI304_IOCTL_INIT:
 			read_lock(&ami304_data.lock);
 			mode = ami304_data.mode;
+<<<<<<< HEAD
 			chipset = ami304_data.chipset;
 			read_unlock(&ami304_data.lock);
 			AMI304_Chipset_Init(mode, chipset);			
+=======
+			read_unlock(&ami304_data.lock);
+			AMI304_Init(mode);
+>>>>>>> vendor-vs660-froyo
 			break;
 
 		case AMI304_IOCTL_READ_CHIPINFO:
@@ -727,6 +1019,7 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 				goto err_out;
 			}
 			break;
+<<<<<<< HEAD
 	 
 	 	case AMI304_IOCTL_WRITE_POSTUREDATA:
 			data = (void __user *) arg;
@@ -744,6 +1037,9 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 			write_unlock(&ami304mid_data.datalock);		 	
 	 		break;
 	 	 
+=======
+
+>>>>>>> vendor-vs660-froyo
 	        case AMI304_IOCTL_READ_CALIDATA:
 			data = (void __user *) arg;
 			if (data == NULL)
@@ -754,6 +1050,7 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 				goto err_out;
 			}
 	        	break;
+<<<<<<< HEAD
 	        
 #ifndef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
 		case AMI304_IOCTL_WRITE_CALIDATA:
@@ -854,6 +1151,9 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 			break;	
 #endif
 	        
+=======
+
+>>>>>>> vendor-vs660-froyo
 	        case AMI304_IOCTL_READ_CONTROL:
 			read_lock(&ami304mid_data.ctrllock);
 			memcpy(controlbuf, &ami304mid_data.controldata[0], sizeof(controlbuf));
@@ -867,7 +1167,11 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 			}
 	        	break;
 
+<<<<<<< HEAD
 		case AMI304_IOCTL_WRITE_CONTROL:
+=======
+		case AMI304_IOCTL_SET_CONTROL:
+>>>>>>> vendor-vs660-froyo
 			data = (void __user *) arg;
 			if (data == NULL)
 				break;
@@ -880,7 +1184,11 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 			write_unlock(&ami304mid_data.ctrllock);
 			break;
 
+<<<<<<< HEAD
 		case AMI304_IOCTL_WRITE_MODE:
+=======
+		case AMI304_IOCTL_SET_MODE:
+>>>>>>> vendor-vs660-froyo
 			data = (void __user *) arg;
 			if (data == NULL)
 				break;
@@ -891,6 +1199,7 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 			AMI304_SetMode(mode);
 			break;
 
+<<<<<<< HEAD
 #ifndef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
 		case AMI304_IOCTL_WRITE_REPORT:
 			data = (void __user *) arg;
@@ -915,6 +1224,8 @@ static int ami304_ioctl(struct inode *inode, struct file *file, unsigned int cmd
 			break;
 #endif
 
+=======
+>>>>>>> vendor-vs660-froyo
 		default:
 			if (AMI304_DEBUG_USER_ERROR & ami304_debug_mask)
 				AMIE("not supported command= 0x%04x\n", cmd);
@@ -928,6 +1239,7 @@ err_out:
 
 static int ami304daemon_open(struct inode *inode, struct file *file)
 {
+<<<<<<< HEAD
 	int res = -1;
 
 	if (atomic_cmpxchg(&daemon_open_count, 0, 1) == 0) {
@@ -936,6 +1248,16 @@ static int ami304daemon_open(struct inode *inode, struct file *file)
 		res = 0;
 	}
 	return res;
+=======
+	//return nonseekable_open(inode, file);
+	int ret = -1;
+	if( atomic_cmpxchg(&daemon_open_count, 0, 1)==0 ) {
+		if (AMI304_DEBUG_FUNC_TRACE & ami304_debug_mask)
+			AMID("Open device node:ami304daemon\n");
+		ret = 0;
+	}
+	return ret;
+>>>>>>> vendor-vs660-froyo
 }
 
 static int ami304daemon_release(struct inode *inode, struct file *file)
@@ -951,6 +1273,7 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 {
 	int valuebuf[4];
 	int calidata[7];
+<<<<<<< HEAD
 #ifndef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
 	int gyrodata[3];
 	long pedodata[3];
@@ -958,16 +1281,28 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 	char i2creaddata[3];
 #endif
 	int controlbuf[AMI304_CB_LENGTH];
+=======
+	int controlbuf[10];
+>>>>>>> vendor-vs660-froyo
 	char strbuf[AMI304_BUFSIZE];
 	void __user *data;
 	int retval=0;
 	int mode;
 #if !defined(CONFIG_HAS_EARLYSUSPEND)
+<<<<<<< HEAD
 	int iEnReport;
 #endif
 
 	switch (cmd) {
 		case AMI304DAE_IOCTL_GET_SENSORDATA:
+=======
+	int en_dis_Report=1;
+#endif
+
+	switch (cmd) {
+
+		case AMI304MID_IOCTL_GET_SENSORDATA:
+>>>>>>> vendor-vs660-froyo
 			data = (void __user *) arg;
 			if (data == NULL)
 				break;
@@ -978,7 +1313,11 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 			}
 			break;
 
+<<<<<<< HEAD
 		case AMI304DAE_IOCTL_SET_POSTURE:
+=======
+		case AMI304MID_IOCTL_SET_POSTURE:
+>>>>>>> vendor-vs660-froyo
 			data = (void __user *) arg;
 			if (data == NULL)
 				break;
@@ -990,11 +1329,19 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 			ami304mid_data.yaw   = valuebuf[0];
 			ami304mid_data.pitch = valuebuf[1];
 			ami304mid_data.roll  = valuebuf[2];
+<<<<<<< HEAD
 			ami304mid_data.status = valuebuf[3];
 			write_unlock(&ami304mid_data.datalock);
 			break;
 
 		case AMI304DAE_IOCTL_SET_CALIDATA:
+=======
+			ami304mid_data.mag_status = valuebuf[3];
+			write_unlock(&ami304mid_data.datalock);
+			break;
+
+		case AMI304MID_IOCTL_SET_CALIDATA:
+>>>>>>> vendor-vs660-froyo
 			data = (void __user *) arg;
 			if (data == NULL)
 				break;
@@ -1003,6 +1350,7 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 				goto err_out;
 			}
 			write_lock(&ami304mid_data.datalock);
+<<<<<<< HEAD
 			ami304mid_data.nm.x = calidata[0];
 			ami304mid_data.nm.y = calidata[1];
 			ami304mid_data.nm.z = calidata[2];
@@ -1080,6 +1428,28 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 #endif
 
 		case AMI304DAE_IOCTL_GET_CONTROL:
+=======
+			ami304mid_data.nmx = calidata[0];
+			ami304mid_data.nmy = calidata[1];
+			ami304mid_data.nmz = calidata[2];
+			ami304mid_data.nax = calidata[3];
+			ami304mid_data.nay = calidata[4];
+			ami304mid_data.naz = calidata[5];
+			ami304mid_data.mag_status = calidata[6];
+			write_unlock(&ami304mid_data.datalock);
+#if defined(CONFIG_HAS_EARLYSUSPEND)
+			/*
+				Disable input report at early suspend state
+				On-Demand Governor set max cpu frequency when input evnet is appeared
+			*/
+			AMI304_Report_Value(	atomic_read(&ami304_report_enabled));
+#else
+			AMI304_Report_Value(en_dis_Report);
+#endif
+			break;
+
+		case AMI304MID_IOCTL_GET_CONTROL:
+>>>>>>> vendor-vs660-froyo
 			read_lock(&ami304mid_data.ctrllock);
 			memcpy(controlbuf, &ami304mid_data.controldata[0], sizeof(controlbuf));
 			read_unlock(&ami304mid_data.ctrllock);
@@ -1092,7 +1462,11 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 			}
 			break;
 
+<<<<<<< HEAD
 		case AMI304DAE_IOCTL_SET_CONTROL:
+=======
+		case AMI304MID_IOCTL_SET_CONTROL:
+>>>>>>> vendor-vs660-froyo
 			data = (void __user *) arg;
 			if (data == NULL)
 				break;
@@ -1105,7 +1479,11 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 			write_unlock(&ami304mid_data.ctrllock);
 			break;
 
+<<<<<<< HEAD
 		case AMI304DAE_IOCTL_SET_MODE:
+=======
+		case AMI304MID_IOCTL_SET_MODE:
+>>>>>>> vendor-vs660-froyo
 			data = (void __user *) arg;
 			if (data == NULL)
 				break;
@@ -1115,6 +1493,7 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 			}
 			AMI304_SetMode(mode);
 			break;
+<<<<<<< HEAD
 								
 		//Add for input_device sync			
 		case AMI304DAE_IOCTL_SET_REPORT:
@@ -1178,6 +1557,8 @@ static int ami304daemon_ioctl(struct inode *inode, struct file *file, unsigned i
 			}
 			break;
 #endif
+=======
+>>>>>>> vendor-vs660-froyo
 
 		default:
 			if (AMI304_DEBUG_USER_ERROR & ami304_debug_mask)
@@ -1192,22 +1573,41 @@ err_out:
 
 static int ami304hal_open(struct inode *inode, struct file *file)
 {
+<<<<<<< HEAD
 	atomic_inc(&hal_open_count);
 	if (AMI304_DEBUG_FUNC_TRACE & ami304_debug_mask)
 		AMID("Open device node:ami304hal %d times.\n", atomic_read(&hal_open_count));
+=======
+	int ret;
+	ret = atomic_inc_and_test(&hal_open_count);
+
+	if (AMI304_DEBUG_FUNC_TRACE & ami304_debug_mask)
+		AMID("Open device node:ami304hal %d times.\n", atomic_read(&hal_open_count));
+
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 
 static int ami304hal_release(struct inode *inode, struct file *file)
 {
+<<<<<<< HEAD
 	atomic_dec(&hal_open_count);
 	if (AMI304_DEBUG_FUNC_TRACE & ami304_debug_mask)
 		AMID("Release ami304hal, remainder is %d times.\n", atomic_read(&hal_open_count));
+=======
+	int ret;
+	ret = atomic_dec_and_test(&hal_open_count);
+
+	if (AMI304_DEBUG_FUNC_TRACE & ami304_debug_mask)
+		AMID("Release ami304hal, remainder is %d times.\n", atomic_read(&hal_open_count));
+
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 
 static int ami304hal_ioctl(struct inode *inode, struct file *file, unsigned int cmd,unsigned long arg)
 {
+<<<<<<< HEAD
 	int controlbuf[AMI304_CB_LENGTH];
 	char strbuf[AMI304_BUFSIZE];
 #ifndef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
@@ -1216,6 +1616,16 @@ static int ami304hal_ioctl(struct inode *inode, struct file *file, unsigned int 
 	void __user *data;
 	int retval=0;
 	switch (cmd) {
+=======
+	char strbuf[AMI304_BUFSIZE];
+	void __user *data;
+	int retval=0;
+	unsigned int mode =0;
+	int controlbuf[10];
+
+	switch (cmd) {
+
+>>>>>>> vendor-vs660-froyo
 		case AMI304HAL_IOCTL_GET_SENSORDATA:
 			data = (void __user *) arg;
 			if (data == NULL)
@@ -1248,6 +1658,7 @@ static int ami304hal_ioctl(struct inode *inode, struct file *file, unsigned int 
 				goto err_out;
 			}
 	        	break;
+<<<<<<< HEAD
 
 #ifndef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
 		case AMI304HAL_IOCTL_GET_GYRODATA:
@@ -1299,6 +1710,37 @@ static int ami304hal_ioctl(struct inode *inode, struct file *file, unsigned int 
 			write_unlock(&ami304mid_data.ctrllock);
 			break;	
 #endif
+=======
+		case AMI304HAL_IOCTL_SET_ACTIVE:
+			data = (void __user *) arg;
+			if (data == NULL)
+				break;
+
+			if (copy_from_user(&mode, data, sizeof(mode))) {
+				retval = -EFAULT;
+				goto err_out;
+			}
+
+			if (AMI304_DEBUG_GEN_INFO & ami304_debug_mask)
+				AMID("ami304hal active sensor %d\n", mode);
+
+			if(mode & (0x00000001<<AMI_ORIENTATION_SENSOR))
+				atomic_set(&o_status, 1);
+			else
+				atomic_set(&o_status, 0);
+
+			if(mode & (0x00000001<<AMI_MAGNETIC_FIELD_SENSOR))
+				atomic_set(&m_status, 1);
+			else
+				atomic_set(&m_status, 0);
+
+			if(mode & (0x00000001<<AMI_ACCELEROMETER_SENSOR))
+				atomic_set(&a_status, 1);
+			else
+				atomic_set(&a_status, 0);
+
+	        	break;
+>>>>>>> vendor-vs660-froyo
 
 		case AMI304HAL_IOCTL_GET_CONTROL:
 			read_lock(&ami304mid_data.ctrllock);
@@ -1325,6 +1767,7 @@ static int ami304hal_ioctl(struct inode *inode, struct file *file, unsigned int 
 			write_lock(&ami304mid_data.ctrllock);
 			memcpy(&ami304mid_data.controldata[0], controlbuf, sizeof(controlbuf));
 			write_unlock(&ami304mid_data.ctrllock);
+<<<<<<< HEAD
 			break;	
 
 #ifndef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
@@ -1339,6 +1782,13 @@ static int ami304hal_ioctl(struct inode *inode, struct file *file, unsigned int 
 			}
 			break;
 #endif
+=======
+
+			if (AMI304_DEBUG_DELAY_SETTING & ami304_debug_mask)
+				AMID("Dleay setting = %dms\n", ami304mid_data.controldata[0] / 1000);
+
+			break;
+>>>>>>> vendor-vs660-froyo
 
 		default:
 			if (AMI304_DEBUG_USER_ERROR & ami304_debug_mask)
@@ -1391,6 +1841,7 @@ static struct miscdevice ami304hal_device = {
 	.fops = &ami304hal_fops,
 };
 
+<<<<<<< HEAD
 static int ami304_input_init(struct ami304_i2c_data *data)
 {
 	int err=0;
@@ -1455,6 +1906,9 @@ exit_input_dev_alloc_failed:
 
 static int __devinit ami304_probe(struct i2c_client *client, 
 		const struct i2c_device_id * devid)
+=======
+static int __init ami304_probe(struct i2c_client *client, const struct i2c_device_id * devid)
+>>>>>>> vendor-vs660-froyo
 {
 	int err = 0;
 	struct ami304_i2c_data *data;
@@ -1474,12 +1928,23 @@ static int __devinit ami304_probe(struct i2c_client *client,
 	}
 	memset(data, 0, sizeof(struct ami304_i2c_data));
 
+<<<<<<< HEAD
 	data->client = client;
+=======
+>>>>>>> vendor-vs660-froyo
 	i2c_set_clientdata(client, data);
 	ami304_i2c_client = client;
 
 	ecom_pdata = ami304_i2c_client->dev.platform_data;
 	ecom_pdata->power(1);
+<<<<<<< HEAD
+=======
+	AMI304_Init(AMI304_FORCE_MODE); // default is Force State
+
+	atomic_set(&o_status, 0);
+	atomic_set(&m_status, 0);
+	atomic_set(&a_status, 0);
+>>>>>>> vendor-vs660-froyo
 
 #if defined(CONFIG_HAS_EARLYSUSPEND)
 	ami304_sensor_early_suspend.suspend = ami304_early_suspend;
@@ -1488,6 +1953,7 @@ static int __devinit ami304_probe(struct i2c_client *client,
 
 	atomic_set(&ami304_report_enabled, 1);
 #endif
+<<<<<<< HEAD
 	err=Identify_AMI_Chipset();
 	if (err != 0) {  //get ami304_data.chipset
 		printk(KERN_INFO "Failed to identify AMI_Chipset!\n");	
@@ -1540,11 +2006,91 @@ exit_misc_ami304_device_register_failed:
 	input_unregister_device(data->input_dev);
 	input_free_device(data->input_dev);
 exit_kfree:
+=======
+
+	data->input_dev = input_allocate_device();
+	if (!data->input_dev) {
+		err = -ENOMEM;
+		AMIE("ami304_i2c_detect: Failed to allocate input device\n");
+		goto exit_input_dev_alloc_failed;
+	}
+
+	set_bit(EV_ABS, data->input_dev->evbit);
+	/* yaw */
+	input_set_abs_params(data->input_dev, ABS_RX, 0, 360, 0, 0);
+	/* pitch */
+	input_set_abs_params(data->input_dev, ABS_RY, -180, 180, 0, 0);
+	/* roll */
+	input_set_abs_params(data->input_dev, ABS_RZ, -90, 90, 0, 0);
+	/* status of magnetic sensor */
+	input_set_abs_params(data->input_dev, ABS_RUDDER, 0, 5, 0, 0);
+
+	/* x-axis acceleration */
+	input_set_abs_params(data->input_dev, ABS_X, -2000, 2000, 0, 0);
+	/* y-axis acceleration */
+	input_set_abs_params(data->input_dev, ABS_Y, -2000, 2000, 0, 0);
+	/* z-axis acceleration */
+	input_set_abs_params(data->input_dev, ABS_Z, -2000, 2000, 0, 0);
+
+	/* x-axis of raw magnetic vector */
+	input_set_abs_params(data->input_dev, ABS_HAT0X, -3000, 3000, 0, 0);
+	/* y-axis of raw magnetic vector */
+	input_set_abs_params(data->input_dev, ABS_HAT0Y, -3000, 3000, 0, 0);
+	/* z-axis of raw magnetic vector */
+	input_set_abs_params(data->input_dev, ABS_BRAKE, -3000, 3000, 0, 0);
+	/* status of acceleration sensor */
+	input_set_abs_params(data->input_dev, ABS_WHEEL, 0, 5, 0, 0);
+
+	data->input_dev->name = "Acompass";
+
+	err = input_register_device(data->input_dev);
+	if (err) {
+		AMIE("ami304_i2c_detect: Unable to register input device: %s\n",
+		       data->input_dev->name);
+		goto exit_input_register_device_failed;
+	}
+	if (AMI304_DEBUG_FUNC_TRACE & ami304_debug_mask)
+	        AMID("register input device successfully!!!\n");
+
+	err = misc_register(&ami304_device);
+	if (err) {
+		AMIE("ami304_device register failed\n");
+		goto exit_misc_device_register_failed;
+	}
+	err = device_create_file(&client->dev, &dev_attr_chipinfo);
+	err = device_create_file(&client->dev, &dev_attr_sensordata);
+	err = device_create_file(&client->dev, &dev_attr_posturedata);
+	err = device_create_file(&client->dev, &dev_attr_calidata);
+	err = device_create_file(&client->dev, &dev_attr_midcontrol);
+	err = device_create_file(&client->dev, &dev_attr_mode);
+	/* Test mode attribute */
+	err = device_create_file(&client->dev, &dev_attr_pitch);
+	err = device_create_file(&client->dev, &dev_attr_roll);
+
+	err = misc_register(&ami304daemon_device);
+	if (err) {
+		AMIE("ami304daemon_device register failed\n");
+		goto exit_misc_device_register_failed;
+	}
+
+	err = misc_register(&ami304hal_device);
+	if (err) {
+		AMIE("ami304hal_device register failed\n");
+		goto exit_misc_device_register_failed;
+	}
+
+	return 0;
+exit_misc_device_register_failed:
+exit_input_register_device_failed:
+	input_free_device(data->input_dev);
+exit_input_dev_alloc_failed:
+>>>>>>> vendor-vs660-froyo
 	kfree(data);
 exit:
 	return err;
 }
 
+<<<<<<< HEAD
 static int __devexit ami304_remove(struct i2c_client *client)
 {
 	struct ami304_i2c_data *data = i2c_get_clientdata(client);
@@ -1555,12 +2101,35 @@ static int __devexit ami304_remove(struct i2c_client *client)
 	misc_deregister(&ami304daemon_device);
 	misc_deregister(&ami304hal_device);
 
+=======
+static int ami304_remove(struct	i2c_client *client)
+{
+	struct ami304_i2c_data *data = i2c_get_clientdata(client);
+
+>>>>>>> vendor-vs660-froyo
 	input_unregister_device(data->input_dev);
 	input_free_device(data->input_dev);
 
 	ami304_i2c_client = NULL;
 	kfree(data);
 
+<<<<<<< HEAD
+=======
+	device_remove_file(&client->dev, &dev_attr_chipinfo);
+	device_remove_file(&client->dev, &dev_attr_sensordata);
+	device_remove_file(&client->dev, &dev_attr_posturedata);
+	device_remove_file(&client->dev, &dev_attr_calidata);
+	device_remove_file(&client->dev, &dev_attr_midcontrol);
+	device_remove_file(&client->dev, &dev_attr_mode);
+	/* Test mode attribute */
+	device_remove_file(&client->dev, &dev_attr_pitch);
+	device_remove_file(&client->dev, &dev_attr_roll);
+
+	misc_deregister(&ami304_device);
+	misc_deregister(&ami304daemon_device);
+	misc_deregister(&ami304hal_device);
+
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_HAS_EARLYSUSPEND)
 	unregister_early_suspend(&ami304_sensor_early_suspend);
 #endif
@@ -1603,28 +2172,48 @@ static int ami304_resume(struct device *device)
 		AMID("AMI304 resume....!\n");
 
 	ecom_pdata->power(1);
+<<<<<<< HEAD
 	AMI304_Chipset_Init(ami304_data.mode, ami304_data.chipset);
+=======
+	AMI304_Init(ami304_data.mode);
+>>>>>>> vendor-vs660-froyo
 
 	return 0;
 }
 #endif
 
+<<<<<<< HEAD
 static const struct i2c_device_id ami304_ids[] = {
 	{ "ami304_sensor", 0 },
 	{ },
+=======
+static const struct i2c_device_id motion_ids[] = {
+		{ "ami304_sensor", 0 },
+		{ },
+>>>>>>> vendor-vs660-froyo
 };
 
 #if defined(CONFIG_PM)
 static struct dev_pm_ops ami304_pm_ops = {
+<<<<<<< HEAD
 	.suspend = ami304_suspend,
 	.resume = ami304_resume,
+=======
+       .suspend = ami304_suspend,
+       .resume = ami304_resume,
+>>>>>>> vendor-vs660-froyo
 };
 #endif
 
 static struct i2c_driver ami304_i2c_driver = {
 	.probe		= ami304_probe,
+<<<<<<< HEAD
 	.remove		= __devexit_p(ami304_remove),
 	.id_table	= ami304_ids,
+=======
+	.remove		= ami304_remove,
+	.id_table	= motion_ids,
+>>>>>>> vendor-vs660-froyo
 	.driver = {
 		.owner = THIS_MODULE,
 		.name	= "ami304_sensor",
@@ -1636,7 +2225,11 @@ static struct i2c_driver ami304_i2c_driver = {
 
 static int __init ami304_init(void)
 {
+<<<<<<< HEAD
 	int res;
+=======
+	int ret;
+>>>>>>> vendor-vs660-froyo
 
 	if (AMI304_DEBUG_FUNC_TRACE & ami304_debug_mask)
 		AMID("AMI304 MI sensor driver: init\n");
@@ -1644,6 +2237,7 @@ static int __init ami304_init(void)
 	rwlock_init(&ami304mid_data.datalock);
 	rwlock_init(&ami304_data.lock);
 	memset(&ami304mid_data.controldata[0], 0, sizeof(int)*10);
+<<<<<<< HEAD
 	
 	ami304mid_data.controldata[AMI304_CB_LOOPDELAY] = 20;  // Loop Delay
 	ami304mid_data.controldata[AMI304_CB_RUN] = 1;         // Run	
@@ -1653,17 +2247,35 @@ static int __init ami304_init(void)
 	ami304mid_data.controldata[AMI304_CB_PD_RESET] = 0;    // Pedometer not reset    
 	ami304mid_data.controldata[AMI304_CB_PD_EN_PARAM] = 0; // Disable parameters of Pedometer
 	memset(&ami304mid_data.pedometerparam[0], 0, sizeof(int)*AMI304_PD_LENGTH);	
+=======
+	ami304mid_data.controldata[0] = 200*1000; //Loop Delay
+	ami304mid_data.controldata[1] = 0; // Run
+	ami304mid_data.controldata[2] = 0; // Disable Start-AccCali
+	ami304mid_data.controldata[3] = 1; // Enable Start-Cali
+	ami304mid_data.controldata[4] = 350; // MW-Timout
+	ami304mid_data.controldata[5] = 10; // MW-IIRStrength_M
+	ami304mid_data.controldata[6] = 10; // MW-IIRStrength_G
+>>>>>>> vendor-vs660-froyo
 	atomic_set(&dev_open_count, 0);
 	atomic_set(&hal_open_count, 0);
 	atomic_set(&daemon_open_count, 0);
 
+<<<<<<< HEAD
 	res = i2c_add_driver(&ami304_i2c_driver);
 	if (res) {
+=======
+	ret = i2c_add_driver(&ami304_i2c_driver);
+	if (ret) {
+>>>>>>> vendor-vs660-froyo
 		AMIE("failed to probe i2c \n");
 		i2c_del_driver(&ami304_i2c_driver);
 	}
 
+<<<<<<< HEAD
 	return res;
+=======
+	return ret;
+>>>>>>> vendor-vs660-froyo
 }
 
 static void __exit ami304_exit(void)
@@ -1678,6 +2290,11 @@ module_init(ami304_init);
 module_exit(ami304_exit);
 
 MODULE_AUTHOR("Kyle K.Y. Chen");
+<<<<<<< HEAD
 MODULE_DESCRIPTION("AMI304 MI-Sensor driver without DRDY");
 MODULE_LICENSE("GPL");
 MODULE_VERSION(DRIVER_VERSION);
+=======
+MODULE_DESCRIPTION("AMI304 MI sensor input_dev driver v1.0.5.10");
+MODULE_LICENSE("GPL");
+>>>>>>> vendor-vs660-froyo

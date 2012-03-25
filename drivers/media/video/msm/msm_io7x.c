@@ -52,7 +52,6 @@ static struct msm_camera_io_ext camio_ext;
 static struct resource *appio, *mdcio;
 void __iomem *appbase, *mdcbase;
 
-static struct msm_camera_io_ext camio_ext;
 static struct resource *appio, *mdcio;
 void __iomem *appbase, *mdcbase;
 
@@ -146,6 +145,7 @@ int msm_camio_enable(struct platform_device *pdev)
 		rc = -ENOMEM;
 		goto apps_no_mem;
 	}
+<<<<<<< HEAD
 	msm_camio_clk_enable(CAMIO_VFE_CLK);
  	msm_camio_clk_enable(CAMIO_MDC_CLK);
  	return 0;
@@ -168,13 +168,34 @@ int msm_camio_sensor_clk_on(struct platform_device *pdev)
 		rc = -EBUSY;
 	
 
+=======
+
+	msm_camio_clk_enable(CAMIO_VFE_CLK);
+	msm_camio_clk_enable(CAMIO_MDC_CLK);
+	return 0;
+apps_no_mem:
+	release_mem_region(camio_ext.appphy, camio_ext.appsz);
+enable_fail:
+	return rc;
+}
+
+int msm_camio_sensor_clk_on(struct platform_device *pdev)
+{
+	struct msm_camera_sensor_info *sinfo = pdev->dev.platform_data;
+	struct msm_camera_device_platform_data *camdev = sinfo->pdata;
+	int32_t rc = 0;
+	camio_ext = camdev->ioext;
+	mdcio = request_mem_region(camio_ext.mdcphy,
+		camio_ext.mdcsz, pdev->name);
+	if (!mdcio)
+		rc = -EBUSY;
+>>>>>>> vendor-vs660-froyo
 	mdcbase = ioremap(camio_ext.mdcphy,
 		camio_ext.mdcsz);
 	if (!mdcbase) {
 		rc = -EINVAL;
 		goto mdc_no_mem;
 	}
-
 	camdev->camera_gpio_on();
 	return msm_camio_clk_enable(CAMIO_VFE_MDC_CLK);
 
@@ -187,6 +208,7 @@ int msm_camio_sensor_clk_off(struct platform_device *pdev)
 {
 	struct msm_camera_sensor_info *sinfo = pdev->dev.platform_data;
 	struct msm_camera_device_platform_data *camdev = sinfo->pdata;
+<<<<<<< HEAD
 
 	camdev->camera_gpio_off();
 	iounmap(mdcbase);
@@ -201,6 +223,21 @@ void msm_camio_disable(struct platform_device *pdev)
 	iounmap(appbase);
 	release_mem_region(camio_ext.appphy, camio_ext.appsz);
 
+=======
+	camdev->camera_gpio_off();
+	iounmap(mdcbase);
+	release_mem_region(camio_ext.mdcphy, camio_ext.mdcsz);
+	return msm_camio_clk_disable(CAMIO_VFE_MDC_CLK);
+}
+
+void msm_camio_disable(struct platform_device *pdev)
+{
+	struct msm_camera_sensor_info *sinfo = pdev->dev.platform_data;
+	struct msm_camera_device_platform_data *camdev = sinfo->pdata;
+
+	iounmap(appbase);
+	release_mem_region(camio_ext.appphy, camio_ext.appsz);
+>>>>>>> vendor-vs660-froyo
 	msm_camio_clk_disable(CAMIO_VFE_CLK);
 	msm_camio_clk_disable(CAMIO_MDC_CLK);
 }

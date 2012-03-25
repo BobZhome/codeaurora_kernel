@@ -2751,6 +2751,10 @@ static void fsg_bind(void *_ctxt)
 		if( nCount++ > 20)
 			break;
 	}
+<<<<<<< HEAD
+=======
+	/*LGE_CHANGE_E[kyuhyung.lee@lge.com - #endif*/
+>>>>>>> vendor-vs660-froyo
 #endif
 
 	dev_attr_file.attr.mode = 0644;

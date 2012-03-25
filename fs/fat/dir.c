@@ -97,11 +97,20 @@ next:
 
 	*bh = sb_bread(sb, phys);
 	if (*bh == NULL) {
+<<<<<<< HEAD
+=======
+		// LGE_CHANGE [dojip.kim@lge.com] 2010-08-29,
+		// suppressed the message
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_MACH_LGE)
 		// nothing
 #else
 		printk(KERN_ERR "FAT: Directory bread(block %llu) failed\n",
+<<<<<<< HEAD
 		       (llu)phys);
+=======
+			   (llu)phys);
+>>>>>>> vendor-vs660-froyo
 #endif
 		/* skip this block */
 		*pos = (iblock + 1) << sb->s_blocksize_bits;

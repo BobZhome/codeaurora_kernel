@@ -2,8 +2,13 @@
  * drivers/input/sensor/gp2ap002.c - Proximity Sensor driver
  *
  * Copyright (C) 2009 - 2010 LGE, Inc.
+<<<<<<< HEAD
  * Author: Lee, Kenobi
  *         Cho, EunYoung
+=======
+ * Author: Lee, Kenobi [sungyoung.lee@lge.com]
+ *         Cho, EunYoung [ey.cho@lge.com]
+>>>>>>> vendor-vs660-froyo
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,8 +121,13 @@ module_param_named(debug_mask, gp2ap_debug_mask, int,
 #define PROX_SENSOR_DETECT_N	(0)
 
 #define	PROX_OPMODE_A		0x0
+<<<<<<< HEAD
 #define	PROX_OPMODE_B1		0x1
 #define	PROX_OPMODE_B2		0x2
+=======
+#define	PROX_OPMODE_B1	0x1
+#define	PROX_OPMODE_B2	0x2
+>>>>>>> vendor-vs660-froyo
 
 /* Declare proximity device structure for GP2AP00200F */
 struct proximity_gp2ap_device {
@@ -226,7 +236,12 @@ prox_i2c_read(u8 addr, u8 intclr)
 		}
 	}
 
+<<<<<<< HEAD
 	if(addr == 0) {
+=======
+	if(addr == 0)
+	{
+>>>>>>> vendor-vs660-froyo
 		ret = i2c_smbus_read_word_data(gp2ap_pdev->client, addr | intclr);
 		if (GP2AP_DEBUG_ERR_CHECK & gp2ap_debug_mask) {
 			if (ret < 0) {
@@ -235,7 +250,12 @@ prox_i2c_read(u8 addr, u8 intclr)
 			}
 		}
 	}
+<<<<<<< HEAD
 	else {
+=======
+	else
+	{
+>>>>>>> vendor-vs660-froyo
 		ret = gp2ap_pdev->reg_backup[addr];
 	}
 
@@ -301,10 +321,13 @@ gp2ap_device_initialise(void)
 	if (GP2AP_DEBUG_FUNC_TRACE & gp2ap_debug_mask)
 		PROXD("exit\n");
 
+<<<<<<< HEAD
 	printk("proximity initialized (op mode: %s, method: %s)\n",
 			(gp2ap_pdev->op_mode == PROX_OPMODE_A)? "A" :
 			(gp2ap_pdev->op_mode == PROX_OPMODE_B1)? "B1" : "B2",
 			gp2ap_pdev->methods? "interrupt" : "normal");
+=======
+>>>>>>> vendor-vs660-froyo
  	return ret;
 
 end_device_init:
@@ -321,7 +344,12 @@ static irqreturn_t gp2ap_irq_handler(int irq, void *dev_id)
 	struct proximity_gp2ap_device *pdev = dev_id;
 	unsigned long delay;
 
+<<<<<<< HEAD
 	if (GP2AP_DEBUG_INTR_DELAY & gp2ap_debug_mask) {
+=======
+	if (GP2AP_DEBUG_INTR_DELAY & gp2ap_debug_mask)
+	{
+>>>>>>> vendor-vs660-froyo
 		time_result.ready = 1;
 		time_result.start= 0;
 		time_result.end = 0;
@@ -359,8 +387,15 @@ gp2ap_report_event(int state)
 	input_report_abs(gp2ap_pdev->input_dev, ABS_DISTANCE, input_state);
 	input_sync(gp2ap_pdev->input_dev);
 
+<<<<<<< HEAD
 	if (GP2AP_DEBUG_INTR_DELAY & gp2ap_debug_mask) {
 		if(time_result.ready == 1) {
+=======
+	if (GP2AP_DEBUG_INTR_DELAY & gp2ap_debug_mask)
+	{
+		if(time_result.ready == 1)
+		{
+>>>>>>> vendor-vs660-froyo
 			time_result.end = cpu_clock(smp_processor_id());
 			time_result.result_t  = time_result.end -time_result.start;
 			time_result.rem = do_div(time_result.result_t , 1000000000);
@@ -378,10 +413,17 @@ gp2ap_report_event(int state)
 		PROXD("exit\n");
 }
 
+<<<<<<< HEAD
 static void gp2ap_work_func(struct work_struct *work)
 {
 	struct proximity_gp2ap_device *dev = 
 		container_of(work, struct proximity_gp2ap_device, dwork.work);
+=======
+static void
+gp2ap_work_func(struct work_struct *work)
+{
+	struct proximity_gp2ap_device *dev = container_of(work, struct proximity_gp2ap_device, dwork.work);
+>>>>>>> vendor-vs660-froyo
 	struct proximity_platform_data* proxi_pdata = dev->client->dev.platform_data;
 
 	int vo_data;
@@ -394,8 +436,12 @@ static void gp2ap_work_func(struct work_struct *work)
 		disable_irq(dev->irq);
 		vo_data = prox_i2c_read(GP2AP_REG_PROX, GP2AP_NO_INTCLEAR);
 		vo_data = (vo_data >> 8) & 0x1;
+<<<<<<< HEAD
 	} 
 	else { /* Nomal mode*/
+=======
+	} else { /* Nomal mode*/
+>>>>>>> vendor-vs660-froyo
 		if(gpio_get_value(proxi_pdata->irq_num) == 1) /* FAR */
 			vo_data = PROX_SENSOR_DETECT_N;
 		else
@@ -403,6 +449,7 @@ static void gp2ap_work_func(struct work_struct *work)
 	}
 
 	/* compare last state and current state */
+<<<<<<< HEAD
 	if (dev->last_vout != vo_data) {
 		gp2ap_report_event(vo_data);
 
@@ -438,6 +485,42 @@ static void gp2ap_work_func(struct work_struct *work)
 
 	if (GP2AP_DEBUG_FUNC_TRACE & gp2ap_debug_mask)
 		PROXD("exit\n");
+=======
+	if (dev->last_vout == vo_data) {
+		if (GP2AP_DEBUG_DEV_DEBOUNCE & gp2ap_debug_mask)
+			PROXD("not change state by debounce\n");
+
+		if (dev->methods) {	/* Interrupt mode */
+			goto clear_interrupt;
+		}
+		goto work_func_end;
+	}
+	gp2ap_report_event(vo_data);
+
+clear_interrupt:
+	if (dev->methods) {	/* Interrupt mode */
+		if (dev->vout_level == 0) {
+			if(PROX_OPMODE_B1) {
+				(vo_data) ? prox_i2c_write(GP2AP_REG_HYS, 0x20, GP2AP_NO_INTCLEAR) : \
+	        	            prox_i2c_write(GP2AP_REG_HYS, 0x40, GP2AP_NO_INTCLEAR);
+			}
+			else	/* PROX_OPMODE_B2 */
+			{
+				(vo_data) ? prox_i2c_write(GP2AP_REG_HYS, 0x00, GP2AP_NO_INTCLEAR) : \
+	        	            prox_i2c_write(GP2AP_REG_HYS, 0x20, GP2AP_NO_INTCLEAR);
+			}
+			prox_i2c_write(GP2AP_REG_CON, 0x18, GP2AP_NO_INTCLEAR);
+		}
+		enable_irq(dev->irq);
+		prox_i2c_write(GP2AP_REG_CON, 0x00, GP2AP_INTCLEAR);
+	}
+
+work_func_end:
+	if (GP2AP_DEBUG_FUNC_TRACE & gp2ap_debug_mask)
+		PROXD("exit\n");
+
+	return;
+>>>>>>> vendor-vs660-froyo
 }
 
 static int gp2ap_suspend(struct i2c_client *i2c_dev, pm_message_t state);
@@ -579,6 +662,7 @@ gp2ap_enable_store(struct device *dev, struct device_attribute *attr, const char
 		printk(KERN_INFO "mode is already %d\n", pdev->sw_mode);
 		return count;
 	}
+<<<<<<< HEAD
 
 	if (mode) {
 		gp2ap_resume(client);
@@ -587,6 +671,17 @@ gp2ap_enable_store(struct device *dev, struct device_attribute *attr, const char
 	else {
 		gp2ap_suspend(client, dummy_state);
 		printk(KERN_INFO "Power Off Disable\n");
+=======
+	else {
+		if (mode) {
+			gp2ap_resume(client);
+			printk(KERN_INFO "Power On Enable\n");
+		}
+		else {
+			gp2ap_suspend(client, dummy_state);
+			printk(KERN_INFO "Power Off Disable\n");
+		}
+>>>>>>> vendor-vs660-froyo
 	}
 
 	return count;
@@ -854,10 +949,17 @@ gp2ap_suspend(struct i2c_client *i2c_dev, pm_message_t state)
 	disable_irq(pdev->irq);
 
 	/* shutdown & analog shutdown */
+<<<<<<< HEAD
 	if (pdev->methods) /* Interrnupt mode */
 		ret = prox_i2c_write(GP2AP_REG_OPMOD, (GP2AP_ASD_SHIFT(1) | 0x02), GP2AP_NO_INTCLEAR);
 	else /* Normal mode */
 		ret = prox_i2c_write(GP2AP_REG_OPMOD, (GP2AP_ASD_SHIFT(1) | 0x00), GP2AP_NO_INTCLEAR);
+=======
+	if (pdev->methods) 	/* Interrnupt mode */
+		ret	= prox_i2c_write(GP2AP_REG_OPMOD, (GP2AP_ASD_SHIFT(1) | 0x02), GP2AP_NO_INTCLEAR);
+	else				/* Normal mode */
+		ret	= prox_i2c_write(GP2AP_REG_OPMOD, (GP2AP_ASD_SHIFT(1) | 0x00), GP2AP_NO_INTCLEAR);
+>>>>>>> vendor-vs660-froyo
 
 	if (GP2AP_DEBUG_ERR_CHECK & gp2ap_debug_mask) {
 		if (ret < 0) {
@@ -919,8 +1021,15 @@ gp2ap_resume(struct i2c_client *i2c_dev)
 	else				/* Normal mode */
 		pdev->reg_backup[GP2AP_REG_OPMOD] = 0x01;
 
+<<<<<<< HEAD
 	for(addr = 0; addr < 6; addr++) {
 		if(pdev->reg_backup[addr] != 0) {
+=======
+	for(addr = 0; addr < 6; addr++)
+	{
+		if(pdev->reg_backup[addr] != 0)
+		{
+>>>>>>> vendor-vs660-froyo
 			ret = prox_i2c_write(addr, pdev->reg_backup[addr], GP2AP_NO_INTCLEAR);
 
 			if (ret < 0) {
@@ -959,8 +1068,13 @@ gp2ap_resume(struct i2c_client *i2c_dev)
 }
 
 static const struct i2c_device_id gp2ap_i2c_ids[] = {
+<<<<<<< HEAD
 	{"proximity_gp2ap", 0 },
 	{ },
+=======
+		{"proximity_gp2ap", 0 },
+		{ },
+>>>>>>> vendor-vs660-froyo
 };
 
 MODULE_DEVICE_TABLE(i2c, prox_ids);

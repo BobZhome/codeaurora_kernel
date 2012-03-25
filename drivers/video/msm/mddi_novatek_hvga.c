@@ -19,6 +19,10 @@
  * along with this program; if not, you can find it at http://www.fsf.org
  */
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-05-13, V 4.0 */
+>>>>>>> vendor-vs660-froyo
 
 #include "msm_fb.h"
 #include "mddihost.h"
@@ -26,11 +30,21 @@
 #include <asm/gpio.h>
 #include <mach/vreg.h>
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-05-11, from mddi_hitachi_hvga.c */
+/* LGE_CHANGE
+ * Define new structure named 'msm_panel_hitachi_pdata' 
+ * to use LCD initialization Flag (.initialized).
+ * 2010-04-21, minjong.gong@lge.com
+ */
+>>>>>>> vendor-vs660-froyo
 #include <mach/board_lge.h>
 
 
 #define PANEL_DEBUG 0
 
+<<<<<<< HEAD
 /* set gamma */
 //#define GAMMA_CURRENT
 //#define GAMMA_1_DOT_8
@@ -40,12 +54,25 @@
 #define GAMMA_2_DOT_2
 
 
+=======
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-04-26, 
+ * tentative command for 4/20,21 shipping sample 
+ */
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-05-13, not any more needed */
+//#define USE_TENTATIVE_COMMAND	1
+>>>>>>> vendor-vs660-froyo
 
 #define LCD_CONTROL_BLOCK_BASE	0x110000
 #define INTFLG		LCD_CONTROL_BLOCK_BASE|(0x18)
 #define INTMSK		LCD_CONTROL_BLOCK_BASE|(0x1c)
 #define VPOS		LCD_CONTROL_BLOCK_BASE|(0xc0)
 
+<<<<<<< HEAD
+=======
+static uint32 mddi_novatek_curr_vpos;
+static boolean mddi_novatek_monitor_refresh_value = FALSE;
+static boolean mddi_novatek_report_refresh_measurements = FALSE;
+>>>>>>> vendor-vs660-froyo
 static boolean is_lcd_on = -1;
 
 /* The comment from AMSS codes:
@@ -55,16 +82,30 @@ static boolean is_lcd_on = -1;
  * XXX: TODO: change this values for INNOTEK PANEL */
 static uint32 mddi_novatek_rows_per_second = 31250;
 static uint32 mddi_novatek_rows_per_refresh = 480;
+<<<<<<< HEAD
+=======
+static uint32 mddi_novatek_usecs_per_refresh = 15360; /* rows_per_refresh / rows_per_second */
+>>>>>>> vendor-vs660-froyo
 extern boolean mddi_vsync_detect_enabled;
 
 static msm_fb_vsync_handler_type mddi_novatek_vsync_handler = NULL;
 static void *mddi_novatek_vsync_handler_arg;
 static uint16 mddi_novatek_vsync_attempts;
 
+<<<<<<< HEAD
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
 extern int g_mddi_lcd_probe;
 #endif
 
+=======
+/* LGE_CHANGE [dojip.kim@lge.com] 2010-05-11, from mddi_hitachi_hvga.c */
+/* LGE_CHANGE
+ * Define new structure named 'msm_panel_hitachi_pdata' 
+ * to use LCD initialization Flag (.initialized).
+ * 2010-04-21, minjong.gong@lge.com
+ */
+//static struct msm_panel_common_pdata *mddi_novatek_pdata;
+>>>>>>> vendor-vs660-froyo
 static struct msm_panel_novatek_pdata *mddi_novatek_pdata;
 
 static int mddi_novatek_lcd_on(struct platform_device *pdev);
@@ -104,18 +145,28 @@ static struct display_table mddi_novatek_position_table[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
+<<<<<<< HEAD
 #if 0
 static struct display_table mddi_novatek_display_on[] = {
 	// Display on sequence
 	//{0x1100, 1, {0x0000}}, // sleep out
 	//{REGFLAG_DELAY, 150, {}},
+=======
+static struct display_table mddi_novatek_display_on[] = {
+	// Display on sequence
+	{0x1100, 1, {0x0000}}, // sleep out
+	{REGFLAG_DELAY, 150, {}},
+>>>>>>> vendor-vs660-froyo
 	{0x2c00, 1, {0x0000}},
 	{0x3800, 1, {0x0000}}, // Set Idle Mode Off
 	{0x2900, 1, {0x0000}}, // Display On
 	{0x2c00, 1, {0x0000}},
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> vendor-vs660-froyo
 
 #if 0
 static struct display_table2 mddi_novatek_img[] = {
@@ -126,7 +177,10 @@ static struct display_table mddi_novatek_img_end[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 #endif
+<<<<<<< HEAD
 #if 0
+=======
+>>>>>>> vendor-vs660-froyo
 static struct display_table mddi_novatek_display_off[] = {
 	// Display off sequence
 	{0x3900, 1, {0x0000}}, // Set Idle mode On
@@ -136,7 +190,10 @@ static struct display_table mddi_novatek_display_off[] = {
 	{REGFLAG_DELAY, 100, {}},
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> vendor-vs660-froyo
 static struct display_table mddi_novatek_sleep_mode_on_data[] = {
 	// Display off sequence
 	{0x3900, 1, {0x0000}}, // Set Idle mode On
@@ -150,8 +207,15 @@ static struct display_table mddi_novatek_sleep_mode_on_data[] = {
 static struct display_table mddi_novatek_initialize[] = {
 	// Display on sequence
 	{0x3900, 1, {0x0000}}, // Set Idle Mode on
+<<<<<<< HEAD
 	{0x1100, 1, {0x0000}}, // sleep out
 	{REGFLAG_DELAY, 130, {}}, // change 100->130 for stability
+=======
+#if defined(USE_TENTATIVE_COMMAND)
+	{0x1100, 1, {0x0000}}, // sleep out
+#endif
+	{REGFLAG_DELAY, 100, {}},
+>>>>>>> vendor-vs660-froyo
 	{0xF300, 1, {0x00AA}}, // unlock cmd2
 	{0xF280, 1, {0x0002}}, // check cmd status
 	{0x0280, 1, {0x0011}}, // power ctrl
@@ -193,12 +257,20 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0x1B80, 1, {0x0050}}, // Set VCOMMH=3.5V
 	{0x1C80, 1, {0x0080}}, // VCOM Control
 	{0x9480, 1, {0x0017}}, // Set LTPS timing : 23 clks
+<<<<<<< HEAD
 	{0x9580, 1, {0x0017}}, // Set LTPS timing : 33 clks
+=======
+	{0x9580, 1, {0x0021}}, // Set LTPS timing : 33 clks
+>>>>>>> vendor-vs660-froyo
 	{0x9680, 1, {0x0005}}, // Set LTPS timing : 5 clks
 	{0x9780, 1, {0x000C}}, // Set LTPS timing : 12 clks
 	{0x9880, 1, {0x0072}}, // Set LTPS timing : 114 clks
 	{0x9980, 1, {0x0012}}, // Set LTPS timing : 18 clks
+<<<<<<< HEAD
 	{0x9A80, 1, {0x0084}}, // Set LTPS timing : 132 clks
+=======
+	{0x9A80, 1, {0x0088}}, // Set LTPS timing : 136 clks
+>>>>>>> vendor-vs660-froyo
 	{0x9B80, 1, {0x0001}}, // Set LTPS timing : 1 clks
 	{0x9C80, 1, {0x0005}}, // Set LTPS timing : 5 clks
 	{0x9D80, 1, {0x0016}}, // Set LTPS timing : 22 clks
@@ -207,8 +279,12 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0xA380, 1, {0x00F8}}, // Set LTPS timing
 	{0xA480, 1, {0x003F}}, // Set LTPS timing
 	{0xA680, 1, {0x0008}}, // Set LTPS timing
+<<<<<<< HEAD
 	//{0x3600, 1, {0x0008}}, // Set RGB	
 	#if defined(GAMMA_CURRENT)
+=======
+	//{0x3600, 1, {0x0008}}, // Set RGB
+>>>>>>> vendor-vs660-froyo
 	{0x2880, 1, {0x0009}}, // Set Gamma R
 	{0x2980, 1, {0x001E}}, // Set Gamma R
 	{0x2A80, 1, {0x0045}}, // Set Gamma R
@@ -226,7 +302,11 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0x3680, 1, {0x0078}}, // Set Gamma R
 	{0x3780, 1, {0x0088}}, // Set Gamma R
 	{0x3880, 1, {0x0025}}, // Set Gamma R
+<<<<<<< HEAD
 	{0x3980, 1, {0x0053}}, // Set Gamma R
+=======
+	{0x3890, 1, {0x0053}}, // Set Gamma R
+>>>>>>> vendor-vs660-froyo
 	{0x3A80, 1, {0x0009}}, // Set Gamma R
 	{0x3B80, 1, {0x0037}}, // Set Gamma R
 	{0x3C80, 1, {0x0056}}, // Set Gamma R
@@ -317,6 +397,7 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0x9180, 1, {0x009B}},
 	{0x9280, 1, {0x0048}},
 	{0x9380, 1, {0x0062}},
+<<<<<<< HEAD
 #elif defined(GAMMA_1_DOT_8)
 	{0x2880, 1, {0x0009}}, // Set Gamma R
 	{0x2980, 1, {0x001D}}, // Set Gamma R
@@ -863,16 +944,31 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0x9280, 1, {0x0048}},
 	{0x9380, 1, {0x0062}},
 #endif
+=======
+>>>>>>> vendor-vs660-froyo
 #if defined(USE_TENTATIVE_COMMAND)
 	{0x2780, 1, {0x0033}},
 #endif
 	{0x1580, 1, {0x00AA}}, // Lock CMD2
 	{0xF200, 1, {0x0001}}, // Cehck CMD status
+<<<<<<< HEAD
 	{REGFLAG_DELAY, 100, {}},
+=======
+>>>>>>> vendor-vs660-froyo
 #if defined(USE_TENTATIVE_COMMAND)
 	//{0x1100, 1, {0x0000}}, // sleep out
 	//{REGFLAG_DELAY, 100, {}},
 #endif
+<<<<<<< HEAD
+=======
+	{0x3B00, 1, {0x0043}}, // RGB Setup
+	{0x3B01, 1, {0x0004}},
+	{0x3B02, 1, {0x0004}},
+	{0x3B03, 1, {0x0008}},
+	{0x3B04, 1, {0x0007}},
+	/* LGE_CHANGE [james.jang@lge.com] 2010-06-18, off LEDPWM(7Fh -> 00h) */
+	//{0x5100, 1, {0x007F}}, // Output LEDPWM=50% Duty
+>>>>>>> vendor-vs660-froyo
 	{0x5100, 1, {0x0000}}, // Output LEDPWM=0% Duty
 	{0x5300, 1, {0x002C}}, // Output LEDPWM=50% Duty
 
@@ -888,9 +984,17 @@ static struct display_table mddi_novatek_initialize[] = {
 	{0x2b03, 1, {0x01df}}, // YEA, 480-1
 
 	{0x3600, 1, {0x0008}}, // Set RGB
+<<<<<<< HEAD
 	{0x3A00, 1, {0x0055}}, // Set RGB565
 	{0x3800, 1, {0x0000}}, // Set Idle Mode Off
 	{0x3500, 1, {0x0000}}, // TE On, Vsync On
+=======
+	{0x3800, 1, {0x0000}}, // Set Idle Mode Off
+	{0x3A00, 1, {0x0055}}, // Set RGB565
+
+	{0x3500, 1, {0x0000}}, // TE On, Vsync On
+
+>>>>>>> vendor-vs660-froyo
 	{0x2900, 1, {0x0000}}, // Display On
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
@@ -908,7 +1012,11 @@ void display_table(struct display_table *table, unsigned int count)
 			
             case REGFLAG_DELAY :
                 msleep(table[i].count);
+<<<<<<< HEAD
 				        EPRINTK("%s() : delay %d msec\n", __func__, table[i].count);
+=======
+				EPRINTK("%s() : delay %d msec\n", __func__, table[i].count);
+>>>>>>> vendor-vs660-froyo
                 break;
 				
             case REGFLAG_END_OF_TABLE :
@@ -916,18 +1024,55 @@ void display_table(struct display_table *table, unsigned int count)
 				
             default:
                 mddi_host_register_cmds_write32(reg, table[i].count, table[i].val_list, 1, 0, 0);
+<<<<<<< HEAD
                 //EPRINTK("%s: reg : 0x%04X, val : 0x%04X\n", __func__, reg, table[i].val_list[0]);
+=======
+		//EPRINTK("%s: reg : %x, val : %x.\n", __func__, reg, table[i].val_list[0]);
+>>>>>>> vendor-vs660-froyo
        	}
     }
 	
 }
 
+<<<<<<< HEAD
 static void mddi_novatek_vsync_set_handler(msm_fb_vsync_handler_type handler,	
+=======
+static void compare_table(struct display_table *table, unsigned int count)
+{
+	unsigned int i;
+
+    for(i = 0; i < count; i++) {
+		
+        unsigned reg;
+        reg = table[i].reg;
+		
+        switch (reg) {
+			
+            case REGFLAG_DELAY :              
+                break;
+				
+            case REGFLAG_END_OF_TABLE :
+                break;
+				
+            default:
+                mddi_host_register_cmds_write32(reg, table[i].count, table[i].val_list, 0, 0, 0);
+		EPRINTK("%s: reg : %x, val : %x.\n", __func__, reg, table[i].val_list[0]);
+       	}
+    }	
+}
+
+
+static void mddi_novatek_vsync_set_handler(msm_fb_vsync_handler_type handler,	/* ISR to be executed */
+>>>>>>> vendor-vs660-froyo
 					 void *arg)
 {
 	boolean error = FALSE;
 	unsigned long flags;
 
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE [neo.kang@lge.com] 2009-11-26, change debugging api */
+>>>>>>> vendor-vs660-froyo
 	printk("%s : handler = %x\n", 
 			__func__, (unsigned int)handler);
 
@@ -958,25 +1103,129 @@ static void mddi_novatek_vsync_set_handler(msm_fb_vsync_handler_type handler,
 
 static void mddi_novatek_lcd_vsync_detected(boolean detected)
 {
+<<<<<<< HEAD
 	mddi_vsync_detect_enabled = TRUE;;
 }
 
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT
 extern int ts_set_vreg(unsigned char onoff);
 #endif
+=======
+	/* static timetick_type start_time = 0; */
+	static struct timeval start_time;
+	static boolean first_time = TRUE;
+	/* unit32 mdp_cnt_val = 0; */
+	/* timetick_type elapsed_us; */
+	struct timeval now;
+	uint32 elapsed_us;
+	uint32 num_vsyncs;
+
+	mddi_vsync_detect_enabled = TRUE;;
+
+#if 0 /* Block temporaly till vsync implement */
+	mddi_queue_register_write_int(0x2C00, 0);
+
+	if ((detected) || (mddi_novatek_vsync_attempts > 5)) {
+		if ((detected) || (mddi_novatek_monitor_refresh_value)) {
+			/* if (start_time != 0) */
+			if (!first_time) {
+				jiffies_to_timeval(jiffies, &now);
+				elapsed_us =
+					(now.tv_sec - start_time.tv_sec) * 1000000 +
+					now.tv_usec - start_time.tv_usec;
+				/*
+				 * LCD is configured for a refresh every usecs,
+				 *  so to determine the number of vsyncs that
+				 *  have occurred since the last measurement
+				 *  add half that to the time difference and
+				 *  divide by the refresh rate.
+				 */
+				num_vsyncs = (elapsed_us +
+						(mddi_novatek_rows_per_refresh >>
+						 1))/
+					mddi_novatek_rows_per_refresh;
+				/*
+				 * LCD is configured for * hsyncs (rows) per
+				 * refresh cycle. Calculate new rows_per_second
+				 * value based upon these new measuerments.
+				 * MDP can update with this new value.
+				 */
+				mddi_novatek_rows_per_second =
+					(mddi_novatek_rows_per_refresh * 1000 *
+					 num_vsyncs) / (elapsed_us / 1000);
+			}
+			/* start_time = timetick_get();*/
+			first_time = FALSE;
+			jiffies_to_timeval(jiffies, &start_time);
+			if (mddi_novatek_report_refresh_measurements) {
+				(void)mddi_queue_register_read_int(VPOS,
+									&mddi_novatek_curr_vpos);
+				/* mdp_cnt_val = MDP_LINE_COUNT; */
+			}
+		}
+		/* if detected = TRUE, client initiated wakeup was detected */
+		if (mddi_novatek_vsync_handler != NULL) {
+			(*mddi_novatek_vsync_handler)
+				(mddi_novatek_vsync_handler_arg);
+			mddi_novatek_vsync_handler = NULL;
+		}
+		mddi_vsync_detect_enabled = FALSE;
+		mddi_novatek_vsync_attempts = 0;
+		/* need to disable the interrupt wakeup */
+		if (!mddi_queue_register_write_int(INTMSK, 0x0001))
+			printk("Vsync interrupt disable failed!\n");
+		if (!detected) {
+			/* give up after 5 failed attempts but show error */
+			printk("Vsync detection failed!\n");
+		} else if ((mddi_novatek_monitor_refresh_value) &&
+				(mddi_novatek_report_refresh_measurements)) {
+			printk("  Last Line Counter=%d!\n",
+					mddi_novatek_curr_vpos);
+			/* MDDI_MSG_NOTICE("  MDP Line Counter=%d!\n",mdp_cnt_val); */
+			printk("  Lines Per Second=%d!\n",
+					mddi_novatek_rows_per_second);
+		}
+		/* clear the interrupt */
+		if (!mddi_queue_register_write_int(INTFLG, 0x0001))
+			printk("Vsync interrupt clear failed!\n");
+	} else {
+		/* if detected = FALSE, we woke up from hibernation, but did not
+		 * detect client initiated wakeup.
+		 */
+		mddi_novatek_vsync_attempts++;
+	}
+#endif
+}
+>>>>>>> vendor-vs660-froyo
 
 static int mddi_novatek_lcd_on(struct platform_device *pdev)
 {
 	EPRINTK("%s: started.\n", __func__);
 
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE_S, [munyoung@lge.com] workaround blink issue when first call of lcd_on */
+>>>>>>> vendor-vs660-froyo
 	if(is_lcd_on == -1) {
 		is_lcd_on = TRUE;
 		return 0;
 	}
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE_E */
+
+	/* LGE_CHANGE [dojip.kim@lge.com] 2010-05-11, from mddi_hitachi_hvga.c */
+	/* LGE_CHANGE
+	 * Define new structure named 'msm_panel_hitachi_pdata' 
+	 * to use LCD initialization Flag (.initialized).
+	 * 2010-04-21, minjong.gong@lge.com
+	 */
+>>>>>>> vendor-vs660-froyo
 	if (system_state == SYSTEM_BOOTING && mddi_novatek_pdata->initialized) {
 		is_lcd_on = TRUE;
 	}
 
+<<<<<<< HEAD
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT
 	ts_set_vreg(1);
 #endif
@@ -985,6 +1234,12 @@ static int mddi_novatek_lcd_on(struct platform_device *pdev)
 	mddi_novatek_lcd_panel_poweron();	
 	display_table(mddi_novatek_initialize, sizeof(mddi_novatek_initialize)/sizeof(struct display_table));
 	// display_table(mddi_novatek_display_on, sizeof(mddi_novatek_display_on) / sizeof(struct display_table));
+=======
+	// LCD HW Reset
+	mddi_novatek_lcd_panel_poweron();	
+	display_table(mddi_novatek_initialize, sizeof(mddi_novatek_initialize)/sizeof(struct display_table));
+	display_table(mddi_novatek_display_on, sizeof(mddi_novatek_display_on) / sizeof(struct display_table));
+>>>>>>> vendor-vs660-froyo
 	is_lcd_on = TRUE;
 	return 0;
 }
@@ -997,24 +1252,35 @@ static int mddi_novatek_lcd_off(struct platform_device *pdev)
 	return 0;
 }
 
+<<<<<<< HEAD
 ssize_t mddi_novatek_lcd_show_onoff(struct device *dev, struct device_attribute *attr,
 		char *buf)
+=======
+ssize_t mddi_novatek_lcd_show_onoff(struct platform_device *pdev)
+>>>>>>> vendor-vs660-froyo
 {
 	EPRINTK("%s : strat\n", __func__);
 	return 0;
 }
 
+<<<<<<< HEAD
 ssize_t mddi_novatek_lcd_store_onoff(struct device *dev, struct device_attribute *attr, 
 		const char *buf, size_t count)
 {
 	int onoff;
 	struct platform_device *pdev = to_platform_device(dev); 
 
+=======
+ssize_t mddi_novatek_lcd_store_onoff(struct platform_device *pdev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	int onoff; // = simple_strtol(buf, NULL, count);
+>>>>>>> vendor-vs660-froyo
 	sscanf(buf, "%d", &onoff);
 
 	EPRINTK("%s: onoff : %d\n", __func__, onoff);
 	
 	if(onoff) {
+<<<<<<< HEAD
 		mddi_novatek_lcd_on(pdev);
 	}
 	else {
@@ -1022,12 +1288,27 @@ ssize_t mddi_novatek_lcd_store_onoff(struct device *dev, struct device_attribute
 	}
 
 	return count;
+=======
+		is_lcd_on = TRUE;
+		display_table(mddi_novatek_display_on, sizeof(mddi_novatek_display_on) / sizeof(struct display_table));
+	}
+	else {
+		is_lcd_on = FALSE;
+		display_table(mddi_novatek_display_off, sizeof(mddi_novatek_display_off) / sizeof(struct display_table));
+	}
+
+	return 0;
+>>>>>>> vendor-vs660-froyo
 }
 
 int mddi_novatek_position(void)
 {
+<<<<<<< HEAD
 	display_table(mddi_novatek_position_table, 
 			ARRAY_SIZE(mddi_novatek_position_table));
+=======
+	display_table(mddi_novatek_position_table, ARRAY_SIZE(mddi_novatek_position_table));
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 EXPORT_SYMBOL(mddi_novatek_position);
@@ -1083,6 +1364,7 @@ static int mddi_novatek_lcd_init(void)
 	id = mddi_get_client_id();
 
 	/* TODO: Check client id */
+<<<<<<< HEAD
 #endif
 
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
@@ -1094,6 +1376,10 @@ static int mddi_novatek_lcd_init(void)
 	g_mddi_lcd_probe = 1;
 #endif
 
+=======
+
+#endif
+>>>>>>> vendor-vs660-froyo
 	ret = platform_driver_register(&this_driver);
 	if (!ret) {
 		pinfo = &novatek_panel_data0.panel_info;
@@ -1121,6 +1407,10 @@ static int mddi_novatek_lcd_init(void)
 		pinfo->bl_max = 4;
 		pinfo->bl_min = 1;
 
+<<<<<<< HEAD
+=======
+    /* LGE_CHANGE [james.jang@lge.com] 2010-06-07, set the MDDI host clock rate */
+>>>>>>> vendor-vs660-froyo
 		pinfo->clk_rate = 122880000;
 		pinfo->clk_min =   120000000;
 		pinfo->clk_max =   130000000;
@@ -1145,6 +1435,16 @@ extern unsigned fb_height;
 
 static void mddi_novatek_lcd_panel_poweron(void)
 {
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE [dojip.kim@lge.com] 2010-05-11, from mddi_hitachi_hvga.c */
+	/* LGE_CHANGE
+	 * Define new structure named 'msm_panel_hitachi_pdata' 
+	 * to use LCD initialization Flag (.initialized).
+	 * 2010-04-21, minjong.gong@lge.com
+	 */
+	//struct msm_panel_common_pdata *pdata = mddi_novatek_pdata;
+>>>>>>> vendor-vs660-froyo
 	struct msm_panel_novatek_pdata *pdata = mddi_novatek_pdata;
 
 	EPRINTK("%s: started.\n", __func__);
@@ -1156,12 +1456,26 @@ static void mddi_novatek_lcd_panel_poweron(void)
 		gpio_set_value(pdata->gpio, 1);
 		mdelay(10);
 		gpio_set_value(pdata->gpio, 0);
+<<<<<<< HEAD
 		mdelay(15); /* wait for more than 10ms */
 		gpio_set_value(pdata->gpio, 1);
 		mdelay(30); /* wait for more than 20ms */
 	}
 }
 
+=======
+		mdelay(10);
+		gpio_set_value(pdata->gpio, 1);
+		mdelay(20);
+	}
+}
+
+/* LGE_CHANGE
+  * Add new function to reduce current comsumption in sleep mode.
+  * In sleep mode disable LCD by assertion low on reset pin.
+  * 2010-06-07, minjong.gong@lge.com
+  */
+>>>>>>> vendor-vs660-froyo
 static void mddi_novatek_lcd_panel_poweroff(void)
 {
 	struct msm_panel_novatek_pdata *pdata = mddi_novatek_pdata;

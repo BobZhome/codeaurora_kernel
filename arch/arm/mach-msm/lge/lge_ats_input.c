@@ -32,7 +32,10 @@ struct input_dev *get_ats_input_dev(void)
 	return ats_input_dev;
 }
 EXPORT_SYMBOL(get_ats_input_dev);
+<<<<<<< HEAD
 
+=======
+>>>>>>> vendor-vs660-froyo
 static int  __init ats_input_probe(struct platform_device *pdev)
 {
 	int rc = 0;
@@ -74,7 +77,11 @@ static struct platform_driver ats_input_driver = {
 		.name = DRIVER_NAME,
 		.owner = THIS_MODULE,
 	},
+<<<<<<< HEAD
 	.probe = ats_input_probe,
+=======
+	.probe	 = ats_input_probe,
+>>>>>>> vendor-vs660-froyo
 	.remove = ats_input_remove,
 };
 

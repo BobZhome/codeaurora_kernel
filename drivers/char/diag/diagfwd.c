@@ -95,9 +95,15 @@ int diag_device_write(void *buf, int proc_num)
 			(diagmem_alloc(driver, sizeof(struct diag_request),
 				 POOL_TYPE_USB_STRUCT));
 
+<<<<<<< HEAD
         	if(!driver->usb_write_ptr_svc)
 				return -1;
 
+=======
+			if (!driver->usb_write_ptr_svc)
+				return -ENOMEM;
+			
+>>>>>>> vendor-vs660-froyo
 			driver->usb_write_ptr_svc->length = driver->used;
 			driver->usb_write_ptr_svc->buf = buf;
 			err = diag_write(driver->usb_write_ptr_svc);
@@ -394,7 +400,7 @@ static int diag_process_apps_pkt(unsigned char *buf, int len)
 		subsys_cmd_code = *(uint16_t *)temp;
 		temp += 2;
 
-		for (i = 0; i < REG_TABLE_SIZE; i++) {
+		for (i = 0; i < diag_max_registration; i++) {
 			if (driver->table[i].process_id != 0) {
 				if (driver->table[i].cmd_code ==
 				     cmd_code && driver->table[i].subsys_id ==
@@ -440,7 +446,7 @@ static int diag_process_apps_pkt(unsigned char *buf, int len)
 					}
 				} /* end of else-if */
 			} /* if(driver->table[i].process_id != 0) */
-		}  /* for (i = 0; i < REG_TABLE_SIZE; i++) */
+		}  /* for (i = 0; i < diag_max_registration; i++) */
 	} /* else */
 		return packet_type;
 }
@@ -734,11 +740,15 @@ void diagfwd_init(void)
 	if (driver->buf_tbl == NULL)
 		goto err;
 	if (driver->data_ready == NULL &&
+<<<<<<< HEAD
 			(driver->data_ready = kzalloc(driver->num_clients * 4,
+=======
+	     (driver->data_ready = kzalloc(driver->num_clients * 4,
+>>>>>>> vendor-vs660-froyo
 					    GFP_KERNEL)) == NULL)
 		goto err;
 	if (driver->table == NULL &&
-	     (driver->table = kzalloc(REG_TABLE_SIZE*
+	     (driver->table = kzalloc(diag_max_registration*
 				      sizeof(struct diag_master_table),
 				       GFP_KERNEL)) == NULL)
 		goto err;

@@ -489,6 +489,13 @@ static int msm_batt_get_batt_chg_status(void)
 		be32_to_cpu_self(v1p->battery_id);
 		be32_to_cpu_self(v1p->battery_therm);
 #else
+<<<<<<< HEAD
+=======
+		/* suppress excessive debug message output
+		 * 2010-07-14, cleaneye.kim@lge.com
+		 */
+#if 0
+>>>>>>> vendor-vs660-froyo
 		DBG_LIMIT("%s() \n ----- charger / battery status --------\n", __func__);
 		DBG_LIMIT("\t charger_status=%d\n", v1p->charger_status);
 		DBG_LIMIT("\t charger_type=%d\n", v1p->charger_type);
@@ -499,6 +506,10 @@ static int msm_batt_get_batt_chg_status(void)
 		DBG_LIMIT("\t battery_soc=%d\n", v1p->battery_soc);
 #endif
 #endif
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> vendor-vs660-froyo
 	} else {
 		pr_err("%s: No battery/charger data in RPC reply\n", __func__);
 		return -EIO;
@@ -532,6 +543,7 @@ static void msm_batt_update_psy_status(void)
 	charger_status = rep_batt_chg.v1.charger_status;
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC
 	hw_type_from_usb = msm_hsusb_get_charger_type();
+<<<<<<< HEAD
 	if(hw_type_from_usb == CHG_HOST_PC)
 	{
 		charger_type = CHARGER_TYPE_USB_PC;
@@ -541,6 +553,13 @@ static void msm_batt_update_psy_status(void)
 		charger_type = CHARGER_TYPE_WALL;
 	}
 	else {
+=======
+	if (hw_type_from_usb == CHG_HOST_PC) {
+		charger_type = CHARGER_TYPE_USB_PC;
+	} else if (hw_type_from_usb == CHG_WALL) {
+		charger_type = CHARGER_TYPE_WALL;
+	} else {
+>>>>>>> vendor-vs660-froyo
 		charger_type = CHARGER_TYPE_NONE;
 	}
 #else
@@ -644,6 +663,13 @@ static void msm_batt_update_psy_status(void)
 		    charger_status == CHARGER_STATUS_WEAK) {
 			if (msm_batt_info.current_chg_source) {
 #ifdef CONFIG_LGE_FUEL_GAUGE
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGE
+		 * add for Full charging
+		 * 2010-05-04 baborobo@lge.com
+		 */
+>>>>>>> vendor-vs660-froyo
 			  if(battery_level == BATTERY_LEVEL_FULL)	{
 					DBG_LIMIT("BATT: FULL.\n");
 					msm_batt_info.batt_status =
@@ -667,6 +693,13 @@ static void msm_batt_update_psy_status(void)
 					supp = &msm_psy_usb;
 			}
 #ifdef CONFIG_LGE_FUEL_GAUGE
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGE
+		 * add for unpluged status of battery
+		 * 2010-04-28 baborobo@lge.com
+		 */
+>>>>>>> vendor-vs660-froyo
 			if (battery_status == BATTERY_STATUS_INVALID	&&
 				battery_level == BATTERY_LEVEL_INVALID) {	
 				DBG_LIMIT("BATT: No Battery.\n");
@@ -682,6 +715,13 @@ static void msm_batt_update_psy_status(void)
 		}
 	} else {
 #ifdef CONFIG_LGE_FUEL_GAUGE
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGE
+		 * add for unpluged status of battery
+		 * 2010-04-07 baborobo@lge.com
+		 */
+>>>>>>> vendor-vs660-froyo
 		if (battery_status == BATTERY_STATUS_INVALID	&&
 			battery_level == BATTERY_LEVEL_INVALID) {	
 			DBG_LIMIT("BATT: No Battery\n");
@@ -693,6 +733,13 @@ static void msm_batt_update_psy_status(void)
 		if (charger_type != CHARGER_TYPE_INVALID &&
 		    charger_status == CHARGER_STATUS_GOOD) {
 #ifdef CONFIG_LGE_FUEL_GAUGE
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGE
+		 * add for Full charging
+		 * 2010-05-04 baborobo@lge.com
+		 */
+>>>>>>> vendor-vs660-froyo
 		  if(battery_level == BATTERY_LEVEL_FULL)	{
 				DBG_LIMIT("BATT: FULL\n");
 				msm_batt_info.batt_status =
@@ -793,7 +840,11 @@ static void msm_batt_update_psy_status(void)
 	msm_batt_info.battery_status 	= battery_status;
 	msm_batt_info.battery_level 	= battery_level;
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC
+<<<<<<< HEAD
 	msm_batt_info.battery_temp 	= battery_temp*10;
+=======
+	msm_batt_info.battery_temp 	= battery_temp * 10;
+>>>>>>> vendor-vs660-froyo
 	msm_batt_info.valid_battery_id  = battery_id;
 	msm_batt_info.battery_therm     = battery_therm;
 #else
@@ -805,6 +856,12 @@ static void msm_batt_update_psy_status(void)
 	msm_batt_info.battery_voltage  	= battery_voltage;
 	msm_batt_info.batt_capacity =
 		msm_batt_info.calculate_capacity(battery_soc);
+<<<<<<< HEAD
+=======
+
+	if (!supp)
+		supp = msm_batt_info.current_ps;
+>>>>>>> vendor-vs660-froyo
 #else
 	if(msm_batt_info.battery_voltage != battery_voltage) {
 		msm_batt_info.battery_voltage = battery_voltage;
@@ -950,6 +1007,7 @@ static int msm_batt_modify_client(u32 client_handle, u32 desired_batt_voltage,
 
 void msm_batt_early_suspend(struct early_suspend *h)
 {
+#ifndef CONFIG_MACH_MSM7X27_THUNDERG
 	int rc;
 
 	pr_debug("%s: enter\n", __func__);
@@ -970,10 +1028,12 @@ void msm_batt_early_suspend(struct early_suspend *h)
 	}
 
 	pr_debug("%s: exit\n", __func__);
+#endif
 }
 
 void msm_batt_late_resume(struct early_suspend *h)
 {
+#ifndef CONFIG_MACH_MSM7X27_THUNDERG
 	int rc;
 
 	pr_debug("%s: enter\n", __func__);
@@ -997,8 +1057,67 @@ void msm_batt_late_resume(struct early_suspend *h)
 #endif
 
 	pr_debug("%s: exit\n", __func__);
+#else
+	pr_debug("%s: enter\n", __func__);
+
+	msm_batt_update_psy_status();
+
+	pr_debug("%s: exit\n", __func__);
+#endif
 }
 #endif
+
+#if defined CONFIG_MACH_MSM7X27_THUNDERG && defined CONFIG_PM
+static int msm_batt_suspend(struct platform_device *pdev, pm_message_t state)
+{
+	int rc;
+
+	pr_debug(KERN_INFO "[msm_battery] %s()...\n", __func__);
+
+	msm_batt_update_psy_status();
+
+	if (msm_batt_info.batt_handle != INVALID_BATT_HANDLE) {
+		rc = msm_batt_modify_client(msm_batt_info.batt_handle,
+				BATTERY_LOW, BATTERY_VOLTAGE_BELOW_THIS_LEVEL,
+				BATTERY_CB_ID_LOW_VOL, BATTERY_LOW);
+
+		if (rc < 0) {
+			pr_err("%s: msm_batt_modify_client. rc=%d\n",
+			       __func__, rc);
+			return 0;
+		}
+	} else {
+		pr_err("%s: ERROR. invalid batt_handle\n", __func__);
+		return 0;
+	}
+
+	return 0;
+}
+
+static int msm_batt_resume(struct platform_device *pdev)
+{
+	int rc;
+
+	pr_debug(KERN_INFO "[msm_battery] %s()...\n", __func__);
+
+	if (msm_batt_info.batt_handle != INVALID_BATT_HANDLE) {
+		rc = msm_batt_modify_client(msm_batt_info.batt_handle,
+				BATTERY_LOW, BATTERY_ALL_ACTIVITY,
+			       BATTERY_CB_ID_ALL_ACTIV, BATTERY_ALL_ACTIVITY);
+		if (rc < 0) {
+			pr_err("%s: msm_batt_modify_client FAIL rc=%d\n",
+			       __func__, rc);
+			return 0;
+		}
+	} else {
+		pr_err("%s: ERROR. invalid batt_handle\n", __func__);
+		return 0;
+	}
+
+	msm_batt_update_psy_status();
+	return 0;
+}
+#endif //#if defined CONFIG_MACH_MSM7X27_THUNDERG && defined CONFIG_PM
 
 struct msm_batt_vbatt_filter_req {
 	u32 batt_handle;
@@ -1551,7 +1670,7 @@ static int __devinit msm_batt_probe(struct platform_device *pdev)
 	}
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
-	msm_batt_info.early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN;
+	msm_batt_info.early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN - 45;
 	msm_batt_info.early_suspend.suspend = msm_batt_early_suspend;
 	msm_batt_info.early_suspend.resume = msm_batt_late_resume;
 	register_early_suspend(&msm_batt_info.early_suspend);
@@ -1600,6 +1719,10 @@ static int __devexit msm_batt_remove(struct platform_device *pdev)
 static struct platform_driver msm_batt_driver = {
 	.probe = msm_batt_probe,
 	.remove = __devexit_p(msm_batt_remove),
+#if defined CONFIG_MACH_MSM7X27_THUNDERG && defined CONFIG_PM
+	.suspend = msm_batt_suspend,
+	.resume = msm_batt_resume,
+#endif
 	.driver = {
 		   .name = "msm-battery",
 		   .owner = THIS_MODULE,

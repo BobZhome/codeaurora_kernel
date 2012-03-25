@@ -213,6 +213,10 @@ static long hw3d_wait_for_interrupt(struct hw3d_info *info, struct file *filp)
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+#define HW3D_REGS_LEN 0x100000
+>>>>>>> vendor-vs660-froyo
 static long hw3d_wait_for_revoke(struct hw3d_info *info, struct file *filp)
 {
 	struct hw3d_data *data = filp->private_data;

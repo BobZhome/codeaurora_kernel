@@ -21,15 +21,24 @@
 #define AMI304_H
 
 #include <linux/ioctl.h>
+<<<<<<< HEAD
 
 //new Addr=0x0E(Low), old Addr=0x0F(High)
 #define AMI304_I2C_ADDRESS 			0x0E  
+=======
+//#include <asm-arm/arch/regs-gpio.h>
+
+#define AMI304_I2C_ADDRESS 			0x0F  //new Addr=0x0E(Low), old Addr=0x0F(High)
+>>>>>>> vendor-vs660-froyo
 
 /* AMI304 Internal Register Address  (Please refer to AMI304 Specifications) */
 #define AMI304_REG_CTRL1			0x1B
 #define AMI304_REG_CTRL2			0x1C
 #define AMI304_REG_CTRL3			0x1D
+<<<<<<< HEAD
 #define AMI304_REG_CTRL4			0x5C
+=======
+>>>>>>> vendor-vs660-froyo
 #define AMI304_REG_DATAXH			0x10
 #define AMI304_REG_DATAXL			0x11
 #define AMI304_REG_DATAYH			0x12
@@ -48,6 +57,7 @@
 #define AMI304_CTRL3_NOFORCE_BIT		0x00
 #define AMI304_CTRL3_FORCE_BIT			0x40
 #define AMI304_CTRL3_B0_LO_CLR			0x00
+<<<<<<< HEAD
 #define AMI304_CTRL4_COMPASS_MODE	0x00
 #define AMI306_CTRL4_HIGHSPEED_MODE 0x80
 #define AMI304_WIA_VALUE			0x47
@@ -55,10 +65,16 @@
 
 /* IOCTLs for ami304 misc. device library */
 #define AMI304IO			   0x83
+=======
+
+/* IOCTLs for ami304 misc. device library */
+#define AMI304IO						   0x83
+>>>>>>> vendor-vs660-froyo
 #define AMI304_IOCTL_INIT                  _IO(AMI304IO, 0x01)
 #define AMI304_IOCTL_READ_CHIPINFO         _IOR(AMI304IO, 0x02, int)
 #define AMI304_IOCTL_READ_SENSORDATA       _IOR(AMI304IO, 0x03, int)
 #define AMI304_IOCTL_READ_POSTUREDATA      _IOR(AMI304IO, 0x04, int)
+<<<<<<< HEAD
 #define AMI304_IOCTL_WRITE_POSTUREDATA     _IOW(AMI304IO, 0x05, int)
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
 #define AMI304_IOCTL_READ_CALIDATA         _IOR(AMI304IO, 0x05, int)
@@ -111,12 +127,28 @@
 #define AMI304DAE_IOCTL_SET_I2CADDR        _IOW(AMI304DAEIO, 0x0e, int)
 #define AMI304DAE_IOCTL_GET_I2CDATA        _IOR(AMI304DAEIO, 0x0f, int)
 #endif
+=======
+#define AMI304_IOCTL_READ_CALIDATA         _IOR(AMI304IO, 0x05, int)
+#define AMI304_IOCTL_READ_CONTROL          _IOR(AMI304IO, 0x06, int)
+#define AMI304_IOCTL_SET_CONTROL           _IOW(AMI304IO, 0x07, int)
+#define AMI304_IOCTL_SET_MODE              _IOW(AMI304IO, 0x08, int)
+
+/* IOCTLs for AMI304 middleware misc. device library */
+#define AMI304MIDIO						   0x84
+#define AMI304MID_IOCTL_GET_SENSORDATA     _IOR(AMI304MIDIO, 0x01, int)
+#define AMI304MID_IOCTL_SET_POSTURE        _IOW(AMI304MIDIO, 0x02, int)
+#define AMI304MID_IOCTL_SET_CALIDATA       _IOW(AMI304MIDIO, 0x03, int)
+#define AMI304MID_IOCTL_SET_CONTROL        _IOW(AMI304MIDIO, 0x04, int)
+#define AMI304MID_IOCTL_GET_CONTROL        _IOR(AMI304MIDIO, 0x05, int)
+#define AMI304MID_IOCTL_SET_MODE           _IOW(AMI304MIDIO, 0x06, int)
+>>>>>>> vendor-vs660-froyo
 
 /* IOCTLs for AMI304 HAL misc. device library */
 #define AMI304HALIO						   0x85
 #define AMI304HAL_IOCTL_GET_SENSORDATA     _IOR(AMI304HALIO, 0x01, int)
 #define AMI304HAL_IOCTL_GET_POSTURE        _IOR(AMI304HALIO, 0x02, int)
 #define AMI304HAL_IOCTL_GET_CALIDATA       _IOR(AMI304HALIO, 0x03, int)
+<<<<<<< HEAD
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT_VM
 #define AMI304HAL_IOCTL_SET_ACTIVE         _IOW(AMI304HALIO, 0x04, int)
 #define AMI304HAL_IOCTL_SET_CONTROL        _IOW(AMI304HALIO, 0x05, int)
@@ -133,11 +165,18 @@
 
 #define AMI304_CHIPSET				0
 #define AMI306_CHIPSET				1
+=======
+#define AMI304HAL_IOCTL_SET_ACTIVE           _IOW(AMI304HALIO, 0x04, int)
+#define AMI304HAL_IOCTL_SET_CONTROL           _IOW(AMI304HALIO, 0x05, int)
+#define AMI304HAL_IOCTL_GET_CONTROL        _IOR(AMI304HALIO, 0x06, int)
+
+>>>>>>> vendor-vs660-froyo
 #define AMI304_BUFSIZE				256
 #define AMI304_NORMAL_MODE			0
 #define AMI304_FORCE_MODE			1
 #define AMI304_IRQ				IRQ_EINT9
 
+<<<<<<< HEAD
 /* Define items in Control-Byte */
 #define AMI304_CB_LENGTH			10
 #define AMI304_CB_LOOPDELAY			 0
@@ -177,4 +216,6 @@
 //#define AMIT_BIT_GYROSCOPE			(1<<AMIT_GYROSCOPE_SENSOR)
 //#define AMIT_BIT_PEDOMETER			(1<<AMIT_PEDOMETER_SENSOR)
 
+=======
+>>>>>>> vendor-vs660-froyo
 #endif

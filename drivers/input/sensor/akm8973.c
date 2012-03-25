@@ -3,7 +3,11 @@
  * Copyright (C) 2007-2008 HTC Corporation.
  * Author: Hou-Kun Chen <houkun.chen@gmail.com>
  *
+<<<<<<< HEAD
  * rework by hyesung.shin on 2010-1-21, for <Sensor driver structure>
+=======
+ * rework by hyesung.shin@lge.com on 2010-1-21, for <Sensor driver structure>
+>>>>>>> vendor-vs660-froyo
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -73,19 +77,33 @@ static atomic_t mv_flag;
 static atomic_t p_flag;
 static int first_start = 0 ;
 
+<<<<<<< HEAD
 static int powerDownOrOff=0; //For used current
+=======
+static int powerDownOrOff=0; //For used current //diyu@lge.com
+>>>>>>> vendor-vs660-froyo
 static int akm8973_set_vreg_check=  0;
 
 //static int failure_count = 0;
 
 static short akmd_delay = 0;
 
+<<<<<<< HEAD
 short pitch, roll;
+=======
+/* LGE_CHANGE_S [ey.cho@lge.com] 2010-02-22, for TestMode */
+short pitch, roll;
+/* LGE_CHANGE_E [ey.cho@lge.com] 2010-02-22*/
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_PM)
 static atomic_t suspend_flag = ATOMIC_INIT(0);
 #endif
 
+<<<<<<< HEAD
 static char akecs_power_mode; 
+=======
+static char akecs_power_mode; /* LGE_CHANGE [hyesung.shin@lge.com] on 2010-2-22, for <Sensor power consumption> */
+>>>>>>> vendor-vs660-froyo
 
 //static struct akm8973_platform_data *pdata;
 
@@ -111,6 +129,10 @@ static ssize_t name##_store(struct device *dev, struct device_attribute *attr, \
 static DEVICE_ATTR(name, S_IWUSR | S_IRUGO, name##_show, name##_store)
 
 config_ctrl_reg(ms1, AKECS_REG_MS1);
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [ey.cho@lge.com] 2010-02-22, for TestMode */
+>>>>>>> vendor-vs660-froyo
 static ssize_t p_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "%d\n", pitch);
@@ -126,6 +148,10 @@ static ssize_t r_show(struct device *dev, struct device_attribute *attr, char *b
 
 
 static DEVICE_ATTR(roll, S_IRUGO | S_IWUSR, r_show, NULL);
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [ey.cho@lge.com] 2010-02-22*/
+>>>>>>> vendor-vs660-froyo
 
 static int AKI2C_RxData(char *rxData, int length)
 {
@@ -322,6 +348,10 @@ static int AKECS_PowerDown(void)
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+//LGE_CHANGE_S diyu@lge.com.  To add for used current
+>>>>>>> vendor-vs660-froyo
 static int AKECS_PowerOff(void)
 {
 	//char buffer[2];
@@ -336,6 +366,10 @@ static int AKECS_PowerOff(void)
 	return 0;
 
 }
+<<<<<<< HEAD
+=======
+//LGE_CHANGE_E diyu@lge.com
+>>>>>>> vendor-vs660-froyo
 
 
 static int AKECS_StartE2PRead(void)
@@ -419,8 +453,15 @@ static void AKECS_Report_Value(short *rbuf)
 	}
 
 	input_sync(data->input_dev);
+<<<<<<< HEAD
 	pitch = rbuf[1];
 	roll = rbuf[2];
+=======
+/* LGE_CHANGE_S [ey.cho@lge.com] 2010-02-22, for TestMode */
+	pitch = rbuf[1];
+	roll = rbuf[2];
+/* LGE_CHANGE_E [ey.cho@lge.com] 2010-02-22*/
+>>>>>>> vendor-vs660-froyo
 }
 
 static int AKECS_GetOpenStatus(void)
@@ -601,7 +642,11 @@ akmd_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
 	char msg[RBUFF_SIZE + 1], rwbuf[16];
 	int ret = -1, status;
 	short mode, value[13], delay;
+<<<<<<< HEAD
 #if 1	
+=======
+#if 1	/* LGE_CHANGE [hyesung.shin@lge.com] on 2010-1-21, for <Sensor driver structure> */
+>>>>>>> vendor-vs660-froyo
 	char accel_dev_path[30];
 	int fdata_sign[7];
 	s16 *alayout;
@@ -678,6 +723,10 @@ akmd_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
 	case ECS_IOCTL_GET_DELAY:
 		delay = akmd_delay;
 		break;
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [hyesung.shin@lge.com] on 2010-1-21, for <Sensor driver structure> [start] */
+>>>>>>> vendor-vs660-froyo
 	case ECS_IOCTL_GET_ACCEL_PATH:
 		break;
 	case ECS_IOCTL_ACCEL_INIT:
@@ -686,6 +735,10 @@ akmd_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
 		break;
 	case ECS_IOCTL_GET_HLAYOUT_INIO:
 		break;
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [hyesung.shin@lge.com] on 2010-1-21, for <Sensor driver structure> [end] */
+>>>>>>> vendor-vs660-froyo
 
 	default:
 		return -ENOTTY;
@@ -710,6 +763,10 @@ akmd_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
 			return -EFAULT;
 		break;
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [hyesung.shin@lge.com] on 2010-1-21, for <Sensor driver structure> [start] */
+>>>>>>> vendor-vs660-froyo
 	case ECS_IOCTL_GET_ACCEL_PATH:
 		sprintf(accel_dev_path, "/dev/%s", ecom_pdata->accelerator_name);
 		if (copy_to_user(argp, accel_dev_path, sizeof(accel_dev_path)))
@@ -745,6 +802,10 @@ akmd_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
 		if (copy_to_user(argp, h_layout, sizeof(h_layout)))
 			return -EFAULT;
 		break;
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [hyesung.shin@lge.com] on 2010-1-21, for <Sensor driver structure> [end] */
+>>>>>>> vendor-vs660-froyo
 
 	default:
 		break;
@@ -986,8 +1047,15 @@ int akm8973_probe(struct i2c_client *client, const struct i2c_device_id * devid)
 		}
 
 	err = device_create_file(&client->dev, &dev_attr_ms1);
+<<<<<<< HEAD
 	err = device_create_file(&client->dev, &dev_attr_pitch);
 	err = device_create_file(&client->dev, &dev_attr_roll);
+=======
+/* LGE_CHANGE_S [ey.cho@lge.com] 2010-02-22, for TestMode */
+	err = device_create_file(&client->dev, &dev_attr_pitch);
+	err = device_create_file(&client->dev, &dev_attr_roll);
+/* LGE_CHANGE_E [ey.cho@lge.com] 2010-02-22*/
+>>>>>>> vendor-vs660-froyo
 
 	return 0;
 

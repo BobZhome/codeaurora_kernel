@@ -1,4 +1,5 @@
 /*
+<<<<<<< HEAD
  * Copyright (c) 2010 LGE. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
@@ -14,6 +15,15 @@
  * Author : khlee
  * Date : 2010.01.26
  */
+=======
+  Program : Screen Shot
+
+  Author : khlee
+
+  Date : 2010.01.26
+*/
+/* ==========================================================================*/
+>>>>>>> vendor-vs660-froyo
 #include <linux/module.h>
 #include <mach/lg_diag_screen_shot.h>
 #include <linux/fcntl.h> 
@@ -21,12 +31,28 @@
 #include <mach/lg_diagcmd.h>
 #include <linux/uaccess.h>
 
+<<<<<<< HEAD
 #define LCD_BUFFER_SIZE LCD_MAIN_WIDTH * LCD_MAIN_HEIGHT * 2
 
 extern PACK(void *) diagpkt_alloc (diagpkt_cmd_code_type code, unsigned int length);
 
 lcd_buf_info_type lcd_buf_info;
 
+=======
+
+/* ==========================================================================
+===========================================================================*/
+#define LCD_BUFFER_SIZE LCD_MAIN_WIDTH * LCD_MAIN_HEIGHT * 2
+/* ==========================================================================
+===========================================================================*/
+extern PACK(void *) diagpkt_alloc (diagpkt_cmd_code_type code, unsigned int length);
+/*==========================================================================*/
+/*==========================================================================*/
+
+lcd_buf_info_type lcd_buf_info;
+
+/*==========================================================================*/
+>>>>>>> vendor-vs660-froyo
 
 static void read_framebuffer(byte* pBuf)
 {
@@ -37,8 +63,15 @@ static void read_framebuffer(byte* pBuf)
 
   phMscd_Filp = filp_open("/dev/graphics/fb0", O_RDONLY |O_LARGEFILE, 0);
 
+<<<<<<< HEAD
   if( !phMscd_Filp)
 		printk("open fail screen capture \n" );
+=======
+  if( !phMscd_Filp) {
+		printk("open fail screen capture \n" );
+		return;
+  	}
+>>>>>>> vendor-vs660-froyo
 
   phMscd_Filp->f_op->read(phMscd_Filp, pBuf, LCD_BUFFER_SIZE, &phMscd_Filp->f_pos);
   filp_close(phMscd_Filp,NULL);
@@ -87,6 +120,13 @@ PACK (void *)LGF_ScreenShot (
         case SEQ_START:
           rsp_len = sizeof(diag_lcd_get_buf_req_type);
           rsp_ptr = (diag_screen_shot_type *)diagpkt_alloc(DIAG_LGF_SCREEN_SHOT_F, rsp_len - SCREEN_SHOT_PACK_LEN);
+<<<<<<< HEAD
+=======
+
+		  if (!rsp_ptr)
+		  	return 0;
+		  	
+>>>>>>> vendor-vs660-froyo
           rsp_ptr->lcd_buf.seq_flow = SEQ_START;
           //printk(KERN_ERR "[screen shot] start\n");
 
@@ -203,6 +243,7 @@ PACK (void *)LGF_ScreenShot (
 
   return (rsp_ptr);	
 }        
+<<<<<<< HEAD
 EXPORT_SYMBOL(LGF_ScreenShot);        
 
 PACK (void *)LGF_PartScreenShot (
@@ -398,3 +439,7 @@ PACK (void *)LGF_PartScreenShot (
 }
 EXPORT_SYMBOL(LGF_PartScreenShot);  
 
+=======
+
+EXPORT_SYMBOL(LGF_ScreenShot);        
+>>>>>>> vendor-vs660-froyo

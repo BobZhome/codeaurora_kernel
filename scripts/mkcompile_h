@@ -65,6 +65,7 @@ UTS_TRUNCATE="cut -b -$UTS_LEN"
 
   echo \#define LINUX_COMPILE_TIME \"`date +%T`\"
 
+<<<<<<< HEAD
 # LGE_CHANGE_S [dojip.kim@lge.com] 2010-07-16, merged from VS740
 # sean.hong@lge.com, 2010-02.28NJ
 # Check if BUILD_USER and BUILD_HOSTS varables are defined.
@@ -83,6 +84,13 @@ UTS_TRUNCATE="cut -b -$UTS_LEN"
     echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
   fi
 # LGE_CHANGE_E [dojip.kim@lge.com] 2010-07-16
+=======
+# LGE_CHANGE print lge instead of build person in kernel release version string
+# cleaneye.kim@lge.com, 2010-02-27
+  echo \#define LINUX_COMPILE_BY \"lg-electronics\"
+#  echo \#define LINUX_COMPILE_BY \"`whoami`\"
+  echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
+>>>>>>> vendor-vs660-froyo
 
   if [ -x /bin/dnsdomainname ]; then
     domain=`dnsdomainname 2> /dev/null`

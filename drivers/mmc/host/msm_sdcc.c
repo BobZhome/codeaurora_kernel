@@ -61,7 +61,20 @@
 #define BRCM_WLAN_SLOT 100 // give 50MHz for test
 #endif
 
+/* LGE_CHANGE_S [jisung.yang@lge.com] 2010-04-24, for gpio_to_irq */
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+#include <asm/gpio.h>
+/*LGE_CHANGE_S, [dongp.kim@lge.com], 2010-03-17, mmc_fmax is 24576000Hz for Wi-Fi */ 
+//#define BRCM_WLAN_SLOT 2 // give 25MHz to SDIO I/F
+#define BRCM_WLAN_SLOT 100 // give 50MHz to SDIO I/F
+/*LGE_CHANGE_E, [dongp.kim@lge.com], 2010-03-17, mmc_fmax is 24576000Hz for Wi-Fi */ 
+#endif
+/* LGE_CHANGE_E [jisung.yang@lge.com] 2010-04-24, for gpio_to_irq */
+
 #define DRIVER_NAME "msm-sdcc"
+#define TIME_STEP ( 4 * HZ / 5 )
+
+/* LGE_CHANGE [fred.cho@lge.com] 2010-08-05, Delay time for work-queue to rescan. */
 #define TIME_STEP ( 4 * HZ / 5 )
 
 #define DBG(host, fmt, args...)	\
@@ -126,6 +139,10 @@ msmsdcc_print_status(struct msmsdcc_host *host, char *hdr, uint32_t status)
 }
 #endif
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [jisung.yang@lge.com] 2010-04-24, Support Host Wakeup */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
 struct early_suspend dhdpm;
 EXPORT_SYMBOL(dhdpm);
@@ -152,6 +169,10 @@ void unregister_mmc_card_pm(void)
 }
 EXPORT_SYMBOL(unregister_mmc_card_pm);
 #endif
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [jisung.yang@lge.com] 2010-04-24, Support Host Wakeup */
+>>>>>>> vendor-vs660-froyo
 
 static void
 msmsdcc_start_command(struct msmsdcc_host *host, struct mmc_command *cmd,
@@ -751,6 +772,15 @@ msmsdcc_pio_irq(int irq, void *dev_id)
 		if (!(status & (MCI_TXFIFOHALFEMPTY | MCI_RXDATAAVLBL)))
 			break;
 
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGE
+		 * QCT SR Defect 00364002
+		 * Kernel Panic issue by Null Pointer
+		 * Exception handling
+		 * fred.cho@lge.com , 2010-08-26
+		 */
+>>>>>>> vendor-vs660-froyo
 
 		if(!host->curr.data)
 		{
@@ -772,11 +802,19 @@ msmsdcc_pio_irq(int irq, void *dev_id)
 		if (status & MCI_TXACTIVE)
 			len = msmsdcc_pio_write(host, buffer, remain, status);
 
+<<<<<<< HEAD
+=======
+/*LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-24, when PIO_irq, delay is given */ 
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 		if (host->mmc->card != NULL && host->mmc->card->type == MMC_TYPE_SDIO){ 
 			msmsdcc_delay(host);
 		}
 #endif	
+<<<<<<< HEAD
+=======
+/*LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-24, when PIO_irq, delay is given */ 
+>>>>>>> vendor-vs660-froyo
 		/* Unmap the buffer */
 		kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
 		local_irq_restore(flags);
@@ -1152,6 +1190,15 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 	}
 }
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE
+ * Func : check gpio pin status
+ * If the status is changed, go to rescan through delayed work queue.
+ * And still same status, just skip.
+ * fred.cho@lge.com, 2010-08-05
+ */
+>>>>>>> vendor-vs660-froyo
 static int msmsdcc_get_status(struct mmc_host *mmc)
 {
 	struct msmsdcc_host *host = mmc_priv(mmc);
@@ -1223,7 +1270,16 @@ static const struct mmc_host_ops msmsdcc_ops = {
 	.get_status = msmsdcc_get_status,
 };
 
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGE
+ * Func : check gpio pin status
+ * If the status is changed, go to rescan through delayed work queue.
+ * And still same status, just skip.
+ * fred.cho@lge.com, 2010-08-05
+ */
+>>>>>>> vendor-vs660-froyo
 static void
 msmsdcc_check_status(unsigned long data)
 {
@@ -1357,27 +1413,49 @@ static void msmsdcc_early_suspend(struct early_suspend *h)
 	struct msmsdcc_host *host =
 		container_of(h, struct msmsdcc_host, early_suspend);
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [jisung.yang@lge.com] 2010-04-24, don't do this to WLAN */
+	//printk(KERN_ERR "msmsdcc_early_suspend : start \n");
+>>>>>>> vendor-vs660-froyo
 #ifdef  CONFIG_BCM4325_GPIO_WL_RESET
 	if ( host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET) )
 #endif
 	{
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-10-24, don't do this to WLAN */
+>>>>>>> vendor-vs660-froyo
 	spin_lock_irqsave(&host->lock, flags);
 	host->polling_enabled = host->mmc->caps & MMC_CAP_NEEDS_POLL;
 	host->mmc->caps &= ~MMC_CAP_NEEDS_POLL;
 	spin_unlock_irqrestore(&host->lock, flags);
+<<<<<<< HEAD
 	}
 	//printk(KERN_ERR "msmsdcc_early_suspend : end \n");
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-10-24, don't do this to WLAN */
+	}
+	//printk(KERN_ERR "msmsdcc_early_suspend : end \n");
+/* LGE_CHANGE_S [jisung.yang@lge.com] 2010-04-24, don't do this to WLAN */
+>>>>>>> vendor-vs660-froyo
 };
 static void msmsdcc_late_resume(struct early_suspend *h)
 {
 	struct msmsdcc_host *host =
 		container_of(h, struct msmsdcc_host, early_suspend);
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [jisung.yang@lge.com] 2010-04-24, don't do this to WLAN */
+	//printk(KERN_ERR "msmsdcc_late_resume : start \n");
+>>>>>>> vendor-vs660-froyo
 #ifdef  CONFIG_BCM4325_GPIO_WL_RESET
 	if ( host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET) )
 #endif
 	{
+<<<<<<< HEAD
 	unsigned int status;
 
 	if (!host->plat->status) {
@@ -1395,13 +1473,23 @@ static void msmsdcc_late_resume(struct early_suspend *h)
 		host->oldstat = status;
 	}
 
+=======
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-10-24, don't do this to WLAN */
+>>>>>>> vendor-vs660-froyo
 	if (host->polling_enabled) {
 		spin_lock_irqsave(&host->lock, flags);
 		host->mmc->caps |= MMC_CAP_NEEDS_POLL;
 		mmc_detect_change(host->mmc, 0);
 		spin_unlock_irqrestore(&host->lock, flags);
 	}
+<<<<<<< HEAD
 	}
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-10-24, don't do this to WLAN */
+	}
+	//printk(KERN_ERR "msmsdcc_late_resume : END \n");
+/* LGE_CHANGE_S [jisung.yang@lge.com] 2010-04-24, don't do this to WLAN */
+>>>>>>> vendor-vs660-froyo
 };
 #endif
 
@@ -1531,13 +1619,21 @@ msmsdcc_probe(struct platform_device *pdev)
 	 */
 	mmc->ops = &msmsdcc_ops;
 	mmc->f_min = plat->msmsdcc_fmin;
+<<<<<<< HEAD
 
+=======
+/*LGE_CHANGE_S, [dongp.kim@lge.com], 2010-03-17, mmc_fmax is 24576000Hz for Wi-Fi */ 
+>>>>>>> vendor-vs660-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	mmc->f_max = plat->msmsdcc_fmax;
 #else
 	if (host->pdev_id == BRCM_WLAN_SLOT){ 
 		mmc->f_max = 24576000;
+<<<<<<< HEAD
 		printk("%s : slot set f_max [%u]\n",mmc_hostname(host->mmc),mmc->f_max);
+=======
+		printk("%s : slot set f_max [%d]\n",mmc_hostname(host->mmc),mmc->f_max);
+>>>>>>> vendor-vs660-froyo
 	}else{
 		mmc->f_max = plat->msmsdcc_fmax;
 	}
@@ -1555,6 +1651,10 @@ msmsdcc_probe(struct platform_device *pdev)
 		mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
 	}
 #endif	/* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/*LGE_CHANGE_E, [dongp.kim@lge.com], 2010-03-17, mmc_fmax is 24576000Hz for Wi-Fi */ 
+>>>>>>> vendor-vs660-froyo
 
 	if (plat->nonremovable)
 		mmc->caps |= MMC_CAP_NONREMOVABLE;
@@ -1767,6 +1867,9 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 	struct mmc_host *mmc = mmc_get_drvdata(dev);
 	struct msmsdcc_host *host = mmc_priv(mmc);
 	int rc = 0;
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-24 */
+	//printk(KERN_ERR "msmsdcc_suspend : start \n");
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-24 */
 
 
 #ifdef CONFIG_MMC_AUTO_SUSPEND
@@ -1779,7 +1882,11 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 
 		if (!mmc->card || mmc->card->type != MMC_TYPE_SDIO)
 			rc = mmc_suspend_host(mmc, state);
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-24, <never sleep policy - host wakeup> */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
 		//else if (mmc->card && mmc->card->type == MMC_TYPE_SDIO) {
 		else if (host->plat->status_irq == gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET)) {
@@ -1791,7 +1898,11 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 				printk("[WiFi] %s: dhdpm.suspend=NULL \n",__FUNCTION__);*/
 		}
 #endif
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-24, <never sleep policy - host wakeup> */
+>>>>>>> vendor-vs660-froyo
 		if (!rc) {
 			writel(0, host->base + MMCIMASK0);
 
@@ -1802,16 +1913,29 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
 				host->clks_on = 0;
 			}
 		}
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-04, <do not do for wifi> */
+>>>>>>> vendor-vs660-froyo
 #if 0
 		if (host->plat->sdiowakeup_irq) // original			
 #else
 		if (host->plat->sdiowakeup_irq && host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET))
 #endif			
+<<<<<<< HEAD
 
 			enable_irq(host->plat->sdiowakeup_irq);
 	}
 
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-04, <do not do for wifi> */			
+			enable_irq(host->plat->sdiowakeup_irq);
+	}
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-24 */
+	//printk(KERN_ERR "msmsdcc_suspend : end \n");
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-24 */
+>>>>>>> vendor-vs660-froyo
 	return rc;
 }
 
@@ -1822,7 +1946,13 @@ msmsdcc_resume(struct platform_device *dev)
 	struct msmsdcc_host *host = mmc_priv(mmc);
 	unsigned long flags;
 
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-24 */
+	//printk(KERN_ERR "msmsdcc_resume : start \n");
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-24 */
+>>>>>>> vendor-vs660-froyo
 
 #ifdef CONFIG_MMC_AUTO_SUSPEND
 	if (!test_and_clear_bit(0, &host->suspended))
@@ -1841,11 +1971,19 @@ msmsdcc_resume(struct platform_device *dev)
 
 		spin_unlock_irqrestore(&host->lock, flags);
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-04, <do not do for wifi> */
+>>>>>>> vendor-vs660-froyo
 #if 0
 		if (host->plat->sdiowakeup_irq) // original 		
 #else
 		if (host->plat->sdiowakeup_irq && host->plat->status_irq != gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET))
 #endif			
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-04, <do not do for wifi> */
+>>>>>>> vendor-vs660-froyo
 			disable_irq(host->plat->sdiowakeup_irq);
 
 		if (!mmc->card || mmc->card->type != MMC_TYPE_SDIO)
@@ -1853,6 +1991,10 @@ msmsdcc_resume(struct platform_device *dev)
 		if (host->plat->status_irq)
 			enable_irq(host->plat->status_irq);
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-24, <never sleep policy - host wakeup> */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
 		//if ( mmc->card && mmc->card->type == MMC_TYPE_SDIO) {
 		if (host->plat->status_irq == gpio_to_irq(CONFIG_BCM4325_GPIO_WL_RESET)) {
@@ -1866,8 +2008,16 @@ msmsdcc_resume(struct platform_device *dev)
 				printk("[WiFi] %s: dhdpm.suspend=NULL \n",__FUNCTION__);*/
 		}
 #endif	
+<<<<<<< HEAD
 	}
 
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-24, <never sleep policy - host wakeup> */
+	}
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-24 */
+	//printk(KERN_ERR "msmsdcc_resume : end \n");
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-24 */
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 #else

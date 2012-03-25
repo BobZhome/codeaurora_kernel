@@ -80,11 +80,14 @@ obj-$(CONFIG_FB_MSM_MDDI_SHARP_QVGA_128x128) += mddi_sharp.o
 obj-$(CONFIG_FB_MSM_MDDI_ORISE) += mddi_orise.o
 obj-$(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) += mddi_hitachi_hvga.o
 obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_HVGA) += mddi_novatek_hvga.o
+<<<<<<< HEAD
 endif
 
 ifeq ($(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA),y)
 obj-y += mddi_hitachi_hvga.o
 obj-y += mddi_novatek_hvga.o
+=======
+>>>>>>> vendor-vs660-froyo
 endif
 
 obj-$(CONFIG_FB_MSM_LCDC_PANEL) += lcdc_panel.o

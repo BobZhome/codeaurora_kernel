@@ -55,6 +55,10 @@
  *
  */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> vendor-vs660-froyo
 #include <linux/earlysuspend.h>
 #include <linux/err.h>
 #include <linux/module.h>
@@ -67,16 +71,27 @@
 #include <linux/workqueue.h>
 
 #include <asm/atomic.h>
+<<<<<<< HEAD
 
+=======
+>>>>>>> vendor-vs660-froyo
 #include <mach/msm_rpcrouter.h>
 #include <mach/msm_battery.h>
 #include <mach/msm_battery_thunderc.h>
 
 #include <mach/rpc_hsusb.h>
 
+<<<<<<< HEAD
 #if defined (CONFIG_MACH_MSM7X27_THUNDERC)
 #include <linux/wakelock.h>
 #endif
+=======
+/* LGE_CHANGE_S [woonghee.park@lge.com] 2010-03-18, ALARM */
+#if defined (CONFIG_MACH_MSM7X27_THUNDERC)
+#include <linux/wakelock.h>
+#endif
+/* LGE_CHANGE_E [woonghee.park@lge.com] 2010-03-18, ALARM */
+>>>>>>> vendor-vs660-froyo
 
 #define BATTERY_RPC_PROG	0x30000089
 #define BATTERY_RPC_VERS	0x00010001
@@ -128,24 +143,43 @@
 #define RPC_TYPE_REPLY   1
 #define RPC_REQ_REPLY_COMMON_HEADER_SIZE   (3 * sizeof(uint32_t))
 
+<<<<<<< HEAD
 #define DEBUG  0
+=======
+#define DEBUG  1
+>>>>>>> vendor-vs660-froyo
 
 #if DEBUG
 #define DBG(x...) printk(KERN_INFO x)
 #else
 #define DBG(x...) do {} while (0)
+<<<<<<< HEAD
 #endif
 
 #if defined(CONFIG_LGE_DETECT_PIF_PATCH)
+=======
+
+#endif
+
+/* LGE_CHANGE_S [woonghee.park@lge.com] 2010-03-18, ALARM */
+#if defined (CONFIG_MACH_MSM7X27_THUNDERC)
+>>>>>>> vendor-vs660-froyo
 extern int msm_chg_LG_cable_type(void);
 
 #define LG_FACTORY_CABLE_TYPE           3
 #define LG_FACTORY_CABLE_130K_TYPE      10
+<<<<<<< HEAD
 #endif
 
 #if defined (CONFIG_MACH_MSM7X27_THUNDERC)
 struct wake_lock battery_wake_lock;
 #endif
+=======
+
+struct wake_lock battery_wake_lock;
+#endif
+/* LGE_CHANGE_E [woonghee.park@lge.com] 2010-03-18, ALARM */
+>>>>>>> vendor-vs660-froyo
 
 enum {
 	BATTERY_REGISTRATION_SUCCESSFUL = 0,
@@ -176,9 +210,14 @@ enum {
 	CHG_UI_EVENT_NO_POWER,	/* No/Weak Battery + Weak Charger. */
 	CHG_UI_EVENT_VERY_LOW_POWER,	/* No/Weak Battery + Strong Charger. */
 	CHG_UI_EVENT_LOW_POWER,	/* Low Battery + Strog Charger.  */
+<<<<<<< HEAD
 	CHG_UI_EVENT_NORMAL_POWER,	/* Enough Power for most applications. */
 	CHG_UI_EVENT_DONE,	/* Done charging, batt full.  */
 	CHG_UI_EVENT_CHARGING_TIMER_EXPIRED,	/* charging timer expired, charging stopped */
+=======
+	CHG_UI_EVENT_NORMAL_POWER, /* Enough Power for most applications. */
+	CHG_UI_EVENT_DONE,	/* Done charging, batt full.  */
+>>>>>>> vendor-vs660-froyo
 	CHG_UI_EVENT_INVALID,
 	CHG_UI_EVENT_MAX32 = 0x7fffffff
 };
@@ -232,6 +271,7 @@ struct msm_battery_info {
 	u32 charger_valid;
 	u32 batt_valid;
 	u32 batt_capacity;
+<<<<<<< HEAD
 	u32 battery_temp;
 	u32 valid_battery_id;
 	u32 battery_therm;
@@ -242,6 +282,17 @@ struct msm_battery_info {
 #endif
 
 	 u32(*calculate_capacity) (u32 voltage);
+=======
+	/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_INFO_TEMP*/
+  u32 battery_temp;	
+	/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+	/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM*/
+  u32 valid_battery_id;
+  u32 battery_therm;
+	/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+
+	u32(*calculate_capacity) (u32 voltage);
+>>>>>>> vendor-vs660-froyo
 
 	s32 batt_handle;
 
@@ -277,6 +328,7 @@ static struct msm_battery_info msm_batt_info = {
 };
 
 static struct pseudo_batt_info_type pseudo_batt_info = {
+<<<<<<< HEAD
 	.mode = 0,
 };
 
@@ -285,6 +337,11 @@ static int block_charging_state = 1;  //1 : charging , 0: block charging
 #if defined(CONFIG_LGE_THERM_NO_STOP_CHARGING)
 static int no_stop_charging = 0;
 #endif
+=======
+  .mode = 0,
+};
+static int block_charging_state = 1;//1 : charging , 0: block charging
+>>>>>>> vendor-vs660-froyo
 
 static enum power_supply_property msm_power_props[] = {
 	POWER_SUPPLY_PROP_ONLINE,
@@ -294,11 +351,14 @@ static char *msm_power_supplied_to[] = {
 	"battery",
 };
 
+<<<<<<< HEAD
 extern void set_charging_timer(int);
 extern void get_charging_timer(int *);
 int charging_timer_enable = -1;
 
 
+=======
+>>>>>>> vendor-vs660-froyo
 static int msm_power_get_property(struct power_supply *psy,
 				  enum power_supply_property psp,
 				  union power_supply_propval *val)
@@ -358,6 +418,7 @@ static enum power_supply_property msm_batt_power_props[] = {
 	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
 	POWER_SUPPLY_PROP_CAPACITY,
+<<<<<<< HEAD
 	POWER_SUPPLY_PROP_TEMP,
 	POWER_SUPPLY_PROP_BATTERY_ID_CHECK,
 	POWER_SUPPLY_PROP_BATTERY_TEMP_ADC,
@@ -369,6 +430,17 @@ static enum power_supply_property msm_batt_power_props[] = {
 	POWER_SUPPLY_PROP_BATTERY_THRM_STATE,
 	POWER_SUPPLY_PROP_THERM_NO_STOP_CHARGING
 #endif
+=======
+  /* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_INFO_TEMP*/
+  POWER_SUPPLY_PROP_TEMP,
+  /* LGE_CHANGES_E [woonghee.park@lge.com]*/
+  /* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM*/
+  POWER_SUPPLY_PROP_BATTERY_ID_CHECK,
+  POWER_SUPPLY_PROP_BATTERY_TEMP_ADC,
+  POWER_SUPPLY_PROP_PSEUDO_BATT,
+  POWER_SUPPLY_PROP_BLOCK_CHARGING,
+  /* LGE_CHANGES_E [woonghee.park@lge.com]*/
+>>>>>>> vendor-vs660-froyo
 };
 
 static void msm_batt_update_psy_status(void);
@@ -385,15 +457,23 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 	switch (psp) {
 
 	case POWER_SUPPLY_PROP_STATUS:
+<<<<<<< HEAD
 		if (pseudo_batt_info.mode == 1)
 			val->intval = pseudo_batt_info.charging;
 		else
 			val->intval = msm_batt_info.batt_status;
+=======
+    if(pseudo_batt_info.mode == 1)
+      val->intval = pseudo_batt_info.charging;
+    else
+		  val->intval = msm_batt_info.batt_status;
+>>>>>>> vendor-vs660-froyo
 		break;
 	case POWER_SUPPLY_PROP_HEALTH:
 		val->intval = msm_batt_info.batt_health;
 		break;
 	case POWER_SUPPLY_PROP_PRESENT:
+<<<<<<< HEAD
 		if (pseudo_batt_info.mode == 1) {
 			if (pseudo_batt_info.id == 1
 			    || pseudo_batt_info.therm != 0)
@@ -407,6 +487,26 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 			else
 				val->intval = 0;
 		}
+=======
+		/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM*/
+    if(pseudo_batt_info.mode == 1)
+    {
+      if(pseudo_batt_info.id == 1 || pseudo_batt_info.therm != 0)
+        val->intval = 1;
+      else
+        val->intval = 0;
+    }
+    else
+    {
+      if(msm_batt_info.batt_valid == 1 || msm_batt_info.battery_therm != 0)    
+        val->intval = 1;
+      else
+        val->intval = 0;
+    }		
+    /* LGE_COMMENT_OUT
+         val->intval = msm_batt_info.batt_valid; */
+		/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+>>>>>>> vendor-vs660-froyo
 		break;
 	case POWER_SUPPLY_PROP_TECHNOLOGY:
 		val->intval = msm_batt_info.batt_technology;
@@ -418,6 +518,7 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 		val->intval = msm_batt_info.voltage_min_design;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+<<<<<<< HEAD
 		if (pseudo_batt_info.mode == 1)
 			val->intval = pseudo_batt_info.volt;
 		else
@@ -489,6 +590,53 @@ static int msm_batt_power_get_property(struct power_supply *psy,
 		return -EINVAL;
 	}
 
+=======
+    if(pseudo_batt_info.mode == 1)
+      val->intval = pseudo_batt_info.volt;
+    else
+		  val->intval = msm_batt_info.voltage_now;
+		break;
+	case POWER_SUPPLY_PROP_CAPACITY:
+    if(pseudo_batt_info.mode == 1)
+      val->intval = pseudo_batt_info.capacity;
+    else
+		  val->intval = msm_batt_info.batt_capacity;
+		break;
+
+	/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_INFO_TEMP*/
+  case POWER_SUPPLY_PROP_TEMP:
+    if(pseudo_batt_info.mode == 1)
+      val->intval = pseudo_batt_info.temp;
+    else
+      val->intval = msm_batt_info.battery_temp;
+    break;
+	/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+	/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM*/
+	case POWER_SUPPLY_PROP_BATTERY_ID_CHECK:
+    if(pseudo_batt_info.mode == 1)
+      val->intval = pseudo_batt_info.id;
+    else
+      val->intval = msm_batt_info.valid_battery_id;
+    break;
+	case POWER_SUPPLY_PROP_BATTERY_TEMP_ADC:
+    if(pseudo_batt_info.mode == 1)
+      val->intval = pseudo_batt_info.therm;
+    else
+      val->intval = msm_batt_info.battery_therm;
+    break;
+	/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+
+  case POWER_SUPPLY_PROP_PSEUDO_BATT:
+    val->intval = pseudo_batt_info.mode;
+    break;
+
+  case POWER_SUPPLY_PROP_BLOCK_CHARGING:
+    val->intval = block_charging_state;
+    break;
+	default:
+		return -EINVAL;
+	}
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 
@@ -501,7 +649,11 @@ static struct power_supply msm_psy_batt = {
 	.external_power_changed = msm_batt_external_power_changed,
 };
 
+<<<<<<< HEAD
 enum charger_type {		// it  comes from msm_hsusb.c
+=======
+enum charger_type {  // it  comes from msm_hsusb.c
+>>>>>>> vendor-vs660-froyo
 	CHG_HOST_PC,
 	CHG_WALL = 2,
 	CHG_UNDEFINED,
@@ -509,6 +661,7 @@ enum charger_type {		// it  comes from msm_hsusb.c
 
 int charger_hw_type;
 
+<<<<<<< HEAD
 extern void battery_info_get(struct batt_info *rsp);
 extern void pseudo_batt_info_set(struct pseudo_batt_info_type *);
 
@@ -536,6 +689,27 @@ int charging_timer_set(int intVal)
 }
 EXPORT_SYMBOL(charging_timer_set);
 
+=======
+/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM*/
+extern void battery_info_get(struct batt_info* rsp);
+extern void pseudo_batt_info_set(struct pseudo_batt_info_type*);
+
+int pseudo_batt_set(struct pseudo_batt_info_type* info)
+{
+  pseudo_batt_info.mode = info->mode;
+  pseudo_batt_info.id = info->id;
+  pseudo_batt_info.therm = info->therm;
+  pseudo_batt_info.temp = info->temp;
+  pseudo_batt_info.volt = info->volt;
+  pseudo_batt_info.capacity = info->capacity;
+  pseudo_batt_info.charging = info->charging;
+
+	power_supply_changed(&msm_psy_batt);
+  pseudo_batt_info_set(&pseudo_batt_info);
+  return 0;
+}
+EXPORT_SYMBOL(pseudo_batt_set);
+>>>>>>> vendor-vs660-froyo
 extern void block_charging_set(int);
 void batt_block_charging_set(int block)
 {
@@ -544,6 +718,7 @@ void batt_block_charging_set(int block)
 }
 EXPORT_SYMBOL(batt_block_charging_set);
 
+<<<<<<< HEAD
 // no stop charging even if hot or cold battery
 #if defined(CONFIG_LGE_THERM_NO_STOP_CHARGING)
 extern void set_charging_therm_no_stop_charging(int info);
@@ -574,15 +749,41 @@ struct rpc_reply_batt_chg {
 	u32 chg_current;
 	u32 batt_thrm_state;
 #endif
+=======
+struct batt_info batt_info_buf;
+/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+
+struct rpc_reply_batt_chg {
+	struct rpc_reply_hdr hdr;
+	u32 	more_data;
+
+	u32	battery_level;
+	u32  battery_voltage;
+  u32  battery_id;
+  u32  battery_therm;
+	u32	battery_temp;
+  u32  battery_valid;
+  u32  battery_charging;
+  u32  charger_valid;
+  u32  chg_batt_event;
+>>>>>>> vendor-vs660-froyo
 };
 
 static struct rpc_reply_batt_chg rep_batt_chg;
 
+<<<<<<< HEAD
 static int msm_batt_get_batt_chg_status_v1(u32 * batt_charging,
 					   u32 * charger_valid,
 					   u32 * chg_batt_event)
 {
 	int rc;
+=======
+static int msm_batt_get_batt_chg_status_v1(u32 *batt_charging,
+					u32 *charger_valid,
+					u32 *chg_batt_event)
+{
+	int rc ;
+>>>>>>> vendor-vs660-froyo
 	struct rpc_req_batt_chg {
 		struct rpc_request_hdr hdr;
 		u32 more_data;
@@ -607,6 +808,7 @@ static int msm_batt_get_batt_chg_status_v1(u32 * batt_charging,
 		       __func__, ONCRPC_LG_CHG_GET_GENERAL_STATUS_PROC, rc);
 		return rc;
 	} else if (be32_to_cpu(rep_batt_chg.more_data)) {
+<<<<<<< HEAD
 
 		//printk(KERN_ERR       "%s: rpc read batt general info\n", __func__);
 
@@ -659,6 +861,50 @@ static int msm_batt_get_batt_chg_status_v1(u32 * batt_charging,
 	} else {
 		printk(KERN_INFO "%s():No more data in batt_chg rpc reply\n",
 		       __func__);
+=======
+		
+		//printk(KERN_ERR	"%s: rpc read batt general info\n", __func__);
+
+		rep_batt_chg.battery_level =
+			be32_to_cpu(rep_batt_chg.battery_level);
+
+		rep_batt_chg.battery_voltage =
+			be32_to_cpu(rep_batt_chg.battery_voltage);
+
+		rep_batt_chg.battery_id =
+			be32_to_cpu(rep_batt_chg.battery_id);
+
+		rep_batt_chg.battery_therm =
+			be32_to_cpu(rep_batt_chg.battery_therm);
+
+		rep_batt_chg.battery_temp =
+			be32_to_cpu(rep_batt_chg.battery_temp);
+
+	  rep_batt_chg.battery_valid =
+		  be32_to_cpu(rep_batt_chg.battery_valid);
+	
+  	rep_batt_chg.battery_charging =
+  		be32_to_cpu(rep_batt_chg.battery_charging);
+
+  	rep_batt_chg.charger_valid =
+  		be32_to_cpu(rep_batt_chg.charger_valid);
+
+  	rep_batt_chg.chg_batt_event =
+  		be32_to_cpu(rep_batt_chg.chg_batt_event);
+
+    msm_batt_info.batt_capacity = rep_batt_chg.battery_level;
+    msm_batt_info.voltage_now = rep_batt_chg.battery_voltage;
+		batt_info_buf.valid_batt_id = rep_batt_chg.battery_id;
+    batt_info_buf.batt_therm = rep_batt_chg.battery_therm;
+    batt_info_buf.batt_temp = rep_batt_chg.battery_temp;
+    msm_batt_info.batt_valid = rep_batt_chg.battery_valid;
+    *batt_charging = rep_batt_chg.battery_charging;
+    *charger_valid = rep_batt_chg.charger_valid;
+    *chg_batt_event = rep_batt_chg.chg_batt_event;
+	} else {
+		printk(KERN_INFO "%s():No more data in batt_chg rpc reply\n",
+				__func__);
+>>>>>>> vendor-vs660-froyo
 		return -EIO;
 	}
 
@@ -666,9 +912,15 @@ static int msm_batt_get_batt_chg_status_v1(u32 * batt_charging,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int msm_batt_get_batt_chg_status(u32 * batt_charging,
 					u32 * charger_valid,
 					u32 * chg_batt_event)
+=======
+static int msm_batt_get_batt_chg_status(u32 *batt_charging,
+					u32 *charger_valid,
+					u32 *chg_batt_event)
+>>>>>>> vendor-vs660-froyo
 {
 	struct rpc_request_hdr req_batt_chg;
 	struct rpc_reply_batt_volt {
@@ -700,11 +952,19 @@ static int msm_batt_get_batt_chg_status(u32 * batt_charging,
 	}
 
 	{
+<<<<<<< HEAD
 		int temp;
 
 		temp = be32_to_cpu(rep_volt.voltage);
 		msm_batt_info.batt_capacity = temp & 0xFFFF;	//lower  2 bytes for capacity
 		msm_batt_info.voltage_now = (temp >> 16);	//upeer 2 bytes for voltage
+=======
+    	int temp;
+
+	    temp = be32_to_cpu(rep_volt.voltage);
+    	msm_batt_info.batt_capacity = temp & 0xFFFF; //lower  2 bytes for capacity
+	    msm_batt_info.voltage_now = (temp >> 16);  //upeer 2 bytes for voltage
+>>>>>>> vendor-vs660-froyo
 	}
 
 	rc = msm_rpc_call_reply(msm_batt_info.chg_ep,
@@ -759,7 +1019,15 @@ static int msm_batt_get_batt_chg_status(u32 * batt_charging,
 	}
 	*chg_batt_event = be32_to_cpu(rep_chg.chg_batt_data);
 
+<<<<<<< HEAD
 	battery_info_get((struct batt_info *)&batt_info_buf);
+=======
+	/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM*/
+  battery_info_get((struct batt_info*)&batt_info_buf);
+  //	printk(KERN_ERR "battery_info_get : auth_id=%d batt_therm_adc=%d batt_temp=%d\n",
+  //						batt_info_buf.valid_batt_id, batt_info_buf.batt_therm, batt_info_buf.batt_temp);	
+	/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+>>>>>>> vendor-vs660-froyo
 
 	charger_hw_type = msm_hsusb_get_charger_type();
 
@@ -771,6 +1039,7 @@ static void msm_batt_update_psy_status(void)
 	u32 batt_charging = 0;
 	u32 chg_batt_event = CHG_UI_EVENT_INVALID;
 	u32 charger_valid = 0;
+<<<<<<< HEAD
 #if defined(CONFIG_LGE_DETECT_PIF_PATCH)
 	static int pif_value = -1;
 
@@ -871,6 +1140,56 @@ static void msm_batt_update_psy_status(void)
 #else
 	if (msm_batt_info.batt_valid) {
 #endif
+=======
+
+  if (msm_batt_info.chg_api_version >= CHARGER_API_VERSION)
+  {
+    msm_batt_get_batt_chg_status_v1(&batt_charging, &charger_valid, &chg_batt_event);
+		batt_info_buf.valid_batt_id = rep_batt_chg.battery_id;
+		batt_info_buf.batt_therm = rep_batt_chg.battery_therm;
+		batt_info_buf.batt_temp = rep_batt_chg.battery_temp;
+  }
+  else
+  	msm_batt_get_batt_chg_status(&batt_charging, &charger_valid, &chg_batt_event);
+
+	DBG(KERN_INFO "batt_charging = %u  batt_valid = %u batt_volt = %u\n"
+			"batt_level = %u charger_valid = %u chg_batt_event = %u\n"
+      "batt_id = %u batt_therm = %u batt_temp = %u, chager_type=%u\n",
+			batt_charging, msm_batt_info.batt_valid,msm_batt_info.voltage_now,
+			msm_batt_info.batt_capacity, charger_valid, chg_batt_event,
+      batt_info_buf.valid_batt_id, batt_info_buf.batt_therm, batt_info_buf.batt_temp,charger_hw_type);
+
+	//printk(KERN_INFO "Previous charger valid status = %u"
+	//		"  current charger valid status = %u\n",
+	//		msm_batt_info.charger_valid, charger_valid);
+	
+  /* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM*/
+  msm_batt_info.valid_battery_id = batt_info_buf.valid_batt_id;
+	/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+
+	//NEED_TO_CHECK
+	if (msm_batt_info.charger_valid != charger_valid) {
+		/* LGE_CHANGE_S [woonghee.park@lge.com] 2010-03-18, ALARM */
+#if defined (CONFIG_MACH_MSM7X27_THUNDERC)
+			wake_lock_timeout(&battery_wake_lock, 5*HZ);
+#endif
+		/* LGE_CHANGE_E [woonghee.park@lge.com] 2010-03-18, ALARM */
+		msm_batt_info.charger_valid = charger_valid;
+		if (msm_batt_info.charger_valid && charger_hw_type == CHG_HOST_PC) {
+			msm_batt_info.current_chg_source |= USB_CHG;
+			msm_batt_info.current_chg_source &= ~AC_CHG;
+			power_supply_changed(&msm_psy_usb);			
+    	} else if (msm_batt_info.charger_valid && charger_hw_type == CHG_WALL) {
+			msm_batt_info.current_chg_source |= AC_CHG;
+			msm_batt_info.current_chg_source &= ~USB_CHG;
+			power_supply_changed(&msm_psy_ac);			
+	    } else {
+			msm_batt_info.current_chg_source &= ~(USB_CHG|AC_CHG);
+    	}
+	}
+
+	if (msm_batt_info.batt_valid) {
+>>>>>>> vendor-vs660-froyo
 
 		if (msm_batt_info.voltage_now >
 		    msm_batt_info.voltage_max_design)
@@ -883,6 +1202,7 @@ static void msm_batt_update_psy_status(void)
 		else
 			msm_batt_info.batt_health = POWER_SUPPLY_HEALTH_GOOD;
 
+<<<<<<< HEAD
 		if (batt_charging && msm_batt_info.charger_valid) {
 			msm_batt_info.batt_status =
 			    POWER_SUPPLY_STATUS_CHARGING;
@@ -891,10 +1211,16 @@ static void msm_batt_update_psy_status(void)
 				msm_batt_info.batt_capacity++;
 #endif
 		}
+=======
+		if (batt_charging && msm_batt_info.charger_valid)
+			msm_batt_info.batt_status =
+			    POWER_SUPPLY_STATUS_CHARGING;
+>>>>>>> vendor-vs660-froyo
 		else if (!batt_charging)
 			msm_batt_info.batt_status =
 			    POWER_SUPPLY_STATUS_DISCHARGING;
 
+<<<<<<< HEAD
 		if (chg_batt_event == CHG_UI_EVENT_DONE) {
 			msm_batt_info.batt_status = POWER_SUPPLY_STATUS_FULL;
 			msm_batt_info.batt_capacity = 100;
@@ -921,6 +1247,33 @@ static void msm_batt_update_psy_status(void)
 		msm_batt_info.chg_current = batt_info_buf.chg_current;
 		msm_batt_info.batt_thrm_state = batt_info_buf.batt_thrm_state;
 #endif
+=======
+		if (chg_batt_event == CHG_UI_EVENT_DONE)
+    {
+			msm_batt_info.batt_status = POWER_SUPPLY_STATUS_FULL;
+      msm_batt_info.batt_capacity = 100;
+    }
+
+  	/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM*/
+  	msm_batt_info.battery_temp = batt_info_buf.batt_temp * 10;
+  	msm_batt_info.battery_therm = batt_info_buf.batt_therm;	
+  	/* LGE_CHANGES_E [woonghee.park@lge.com]*/
+
+	} else {
+		msm_batt_info.batt_health = POWER_SUPPLY_HEALTH_UNKNOWN;
+		msm_batt_info.batt_status = POWER_SUPPLY_STATUS_UNKNOWN;
+		msm_batt_info.batt_capacity = 0;
+		/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740], LG_FW_BATT_ID_CHECK, LG_FW_BATT_THM
+		 * Edit by seonghwan.hong 2010-09-02
+		 * for imeplements displaing battery temp at battery overheat
+		 * Change 0 to batt_info_buf.batt_temp * 10
+		 */
+		msm_batt_info.battery_temp =  batt_info_buf.batt_temp * 10;
+
+		msm_batt_info.battery_therm = batt_info_buf.batt_therm;		
+		/* LGE_CHANGES_E [woonghee.park@lge.com] */
+
+>>>>>>> vendor-vs660-froyo
 	}
 
 	power_supply_changed(&msm_psy_batt);
@@ -987,7 +1340,11 @@ static int msm_batt_deregister(u32 handle)
 	}
 
 	if (be32_to_cpu(batt_deregister_rpc_reply.batt_error) !=
+<<<<<<< HEAD
 	    BATTERY_DEREGISTRATION_SUCCESSFUL) {
+=======
+			BATTERY_DEREGISTRATION_SUCCESSFUL) {
+>>>>>>> vendor-vs660-froyo
 
 		printk(KERN_ERR "%s: vBatt deregistration Failed "
 		       "  proce_num = %d,"
@@ -998,10 +1355,18 @@ static int msm_batt_deregister(u32 handle)
 	return 0;
 }
 
+<<<<<<< HEAD
 int batt_rpc_rx_count = 0;
 int batt_rpc_rx_err_count = 0;
 int batt_rpc_rx_reply_count = 0;
 int batt_rpc_rx_reply_err_count = 0;
+=======
+int batt_rpc_rx_count=0;
+int batt_rpc_rx_err_count =0;
+int batt_rpc_rx_reply_count=0;
+int batt_rpc_rx_reply_err_count=0;
+
+>>>>>>> vendor-vs660-froyo
 
 static void msm_batt_wait_for_batt_chg_event(struct work_struct *work)
 {
@@ -1015,7 +1380,11 @@ static void msm_batt_wait_for_batt_chg_event(struct work_struct *work)
 	//       " started.\n", __func__);
 
 	if (!atomic_read(&msm_batt_info.stop_cb_thread)) {
+<<<<<<< HEAD
 		batt_rpc_rx_count++;
+=======
+	    batt_rpc_rx_count++;
+>>>>>>> vendor-vs660-froyo
 		msm_batt_update_psy_status();
 	}
 }
@@ -1034,6 +1403,7 @@ static int msm_batt_stop_cb_thread(void)
 		spin_unlock_irqrestore(&msm_batt_info.lock, flags);
 
 		rc = wait_event_interruptible(msm_batt_info.wait_q,
+<<<<<<< HEAD
 					      atomic_read(&msm_batt_info.
 							  cb_thread_stopped));
 
@@ -1048,6 +1418,21 @@ static int msm_batt_stop_cb_thread(void)
 		else
 			printk(KERN_INFO "%s(): suspend thread wait returned "
 			       "rc =%d\n", __func__, rc);
+=======
+			atomic_read(&msm_batt_info.  cb_thread_stopped));
+
+		if (rc == -ERESTARTSYS)
+			printk(KERN_ERR "%s(): suspend thread got signal"
+				"while wating for batt thread to finish\n",
+				__func__);
+		else if (rc < 0)
+			printk(KERN_ERR "%s(): suspend thread wait returned "
+				"error while waiting for batt thread"
+				"to finish. rc =%d\n", __func__, rc);
+		else
+			printk(KERN_INFO "%s(): suspend thread wait returned "
+				"rc =%d\n", __func__, rc);
+>>>>>>> vendor-vs660-froyo
 
 		atomic_set(&msm_batt_info.cb_thread_stopped, 0);
 	} else {
@@ -1062,7 +1447,11 @@ static void msm_batt_start_cb_thread(void)
 {
 	atomic_set(&msm_batt_info.stop_cb_thread, 0);
 	atomic_set(&msm_batt_info.cb_thread_stopped, 0);
+<<<<<<< HEAD
 	queue_work(msm_batt_info.msm_batt_wq, &msm_batt_cb_work);
+=======
+  queue_work(msm_batt_info.msm_batt_wq, &msm_batt_cb_work);
+>>>>>>> vendor-vs660-froyo
 }
 
 static int msm_batt_cleanup(void)
@@ -1118,7 +1507,10 @@ static int msm_batt_cleanup(void)
 	return rc;
 }
 
+<<<<<<< HEAD
 #if defined(CONFIG_LGE_DETECT_PIF_PATCH)
+=======
+>>>>>>> vendor-vs660-froyo
 static ssize_t msm_batt_pif_show(struct device *dev, struct device_attribute *attr,
 		                 char *buf)
 {
@@ -1126,6 +1518,10 @@ static ssize_t msm_batt_pif_show(struct device *dev, struct device_attribute *at
 
 	if (pif_value < 0) {
 		pif_value = msm_chg_LG_cable_type();
+<<<<<<< HEAD
+=======
+		dev_info(dev, "%s : msm_chg_LG_cable_type = %d\n",__func__,pif_value);
+>>>>>>> vendor-vs660-froyo
 		if (pif_value == LG_FACTORY_CABLE_TYPE ||
 		    pif_value == LG_FACTORY_CABLE_130K_TYPE)
 			pif_value = 1;
@@ -1136,6 +1532,7 @@ static ssize_t msm_batt_pif_show(struct device *dev, struct device_attribute *at
 
 	return sprintf(buf, "%d\n", pif_value);
 }
+<<<<<<< HEAD
 
 static DEVICE_ATTR(pif, S_IRUGO, msm_batt_pif_show, NULL);
 #endif
@@ -1162,6 +1559,9 @@ static ssize_t msm_batt_modem_lpm_store(struct device *dev, struct device_attrib
 static DEVICE_ATTR(modem_lpm, 0220, NULL, msm_batt_modem_lpm_store);
 
 #if defined(CONFIG_LGE_GET_POWER_ON_STATUS)
+=======
+static DEVICE_ATTR(pif, S_IRUGO, msm_batt_pif_show, NULL);
+>>>>>>> vendor-vs660-froyo
 extern unsigned lge_get_power_on_status(void);
 static ssize_t msm_batt_power_on_status_show(struct device *dev, 
 		struct device_attribute *attr, char *buf)
@@ -1169,13 +1569,21 @@ static ssize_t msm_batt_power_on_status_show(struct device *dev,
 	unsigned power_on_status = 0;
 
 	power_on_status = lge_get_power_on_status();
+<<<<<<< HEAD
 	dev_info(dev, "%s : Power On Status (0x%x)\n", __func__, power_on_status);
+=======
+	dev_info(dev, "%s : Power On Status (%x)\n", __func__, power_on_status);
+>>>>>>> vendor-vs660-froyo
 
 	return sprintf(buf, "0x%x\n", power_on_status);
 }
 static DEVICE_ATTR(power_on_status, 0444, msm_batt_power_on_status_show, NULL);
+<<<<<<< HEAD
 #endif //CONFIG_LGE_GET_POWER_ON_STATUS
 
+=======
+// LGE_CHANGE [dojip.kim@lge.com] 2010-09-01
+>>>>>>> vendor-vs660-froyo
 extern void remote_set_charging_stat_realtime_update(int info);
 extern void remote_get_charging_stat_realtime_update(int *info);
 static ssize_t msm_batt_stat_realtime_update_store(
@@ -1208,6 +1616,7 @@ static ssize_t msm_batt_stat_realtime_update_show(
 }
 static DEVICE_ATTR(stat_realtime_update, 0666, msm_batt_stat_realtime_update_show, 
 		msm_batt_stat_realtime_update_store);
+<<<<<<< HEAD
 
 static struct attribute* dev_attrs[] = {
 #if defined(CONFIG_LGE_DETECT_PIF_PATCH)
@@ -1225,6 +1634,18 @@ static struct attribute_group dev_attr_grp = {
 	.attrs = dev_attrs,
 };
 
+=======
+static struct attribute* dev_attrs[] = {
+	&dev_attr_pif.attr,
+	&dev_attr_power_on_status.attr,
+// LGE_CHANGE [dojip.kim@lge.com] 2010-09-01
+	&dev_attr_stat_realtime_update.attr,
+	NULL
+};
+static struct attribute_group dev_attr_grp = {
+	.attrs = dev_attrs,
+};
+>>>>>>> vendor-vs660-froyo
 static int __devinit msm_batt_probe(struct platform_device *pdev)
 {
 	int rc;
@@ -1305,19 +1726,31 @@ static int __devinit msm_batt_probe(struct platform_device *pdev)
 
 	msm_batt_start_cb_thread();
 
+<<<<<<< HEAD
 #if defined (CONFIG_MACH_MSM7X27_THUNDERC)
 	wake_lock_init(&battery_wake_lock, WAKE_LOCK_SUSPEND, "msm_battery");
 #endif
 
+=======
+	/* LGE_CHANGE_S [woonghee.park@lge.com] 2010-03-18, ALARM */
+#if defined (CONFIG_MACH_MSM7X27_THUNDERC)
+		wake_lock_init(&battery_wake_lock, WAKE_LOCK_SUSPEND, "msm_battery");
+#endif
+	/* LGE_CHANGE_E [woonghee.park@lge.com] 2010-03-18, ALARM */
+>>>>>>> vendor-vs660-froyo
 	rc = sysfs_create_group(&pdev->dev.kobj, &dev_attr_grp);
 	if(rc < 0) {
 		dev_err(&pdev->dev, "%s: pif sysfs create failed rc=%d\n", __func__, rc);
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 
 int handle_batt_rpc_call(struct msm_rpc_server *server,
+<<<<<<< HEAD
 			 struct rpc_request_hdr *req, unsigned len)
 {
 	//printk(KERN_INFO "handle_batt_rpc_call: proc(0x%x)\n",
@@ -1332,20 +1765,46 @@ int handle_batt_rpc_call(struct msm_rpc_server *server,
 		}
 	default:
 		return -ENODEV;
+=======
+			   struct rpc_request_hdr *req, unsigned len)
+{
+	//printk(KERN_INFO "handle_batt_rpc_call: proc(0x%x)\n",
+	//			 req->procedure);
+
+	switch (req->procedure) {
+  	case BATTERY_CB_TYPE_PROC: {
+      //return success reply at  rpc_send_accepted_void_reply()
+      queue_work(msm_batt_info.msm_batt_wq, &msm_batt_cb_work);
+  		return 0;
+  	}
+  	default:
+  		return -ENODEV;
+>>>>>>> vendor-vs660-froyo
 	}
 }
 
 static struct msm_rpc_server rpc_server[] = {
 	{
+<<<<<<< HEAD
 	 .prog = BATTERY_RPC_CB_PROG,
 	 .vers = BATTERY_RPC_CB_VERS,
 	 .rpc_call = handle_batt_rpc_call,
 	 },
+=======
+		.prog = BATTERY_RPC_CB_PROG,
+		.vers = BATTERY_RPC_CB_VERS,
+		.rpc_call = handle_batt_rpc_call,
+	},
+>>>>>>> vendor-vs660-froyo
 };
 
 int msm_batt_get_charger_api_version(void)
 {
+<<<<<<< HEAD
 	int rc;
+=======
+	int rc ;
+>>>>>>> vendor-vs660-froyo
 	struct rpc_reply_hdr *reply;
 
 	struct rpc_req_chg_api_ver {
@@ -1363,6 +1822,7 @@ int msm_batt_get_charger_api_version(void)
 
 	struct rpc_rep_chg_api_ver *rep_chg_api_ver;
 
+<<<<<<< HEAD
 	req_chg_api_ver.more_data = cpu_to_be32(1);
 
 	msm_rpc_setup_req(&req_chg_api_ver.hdr, CHG_RPC_PROG, CHG_RPC_VERS,
@@ -1370,6 +1830,16 @@ int msm_batt_get_charger_api_version(void)
 
 	rc = msm_rpc_write(msm_batt_info.chg_ep, &req_chg_api_ver,
 			   sizeof(req_chg_api_ver));
+=======
+
+	req_chg_api_ver.more_data = cpu_to_be32(1);
+
+	msm_rpc_setup_req(&req_chg_api_ver.hdr, CHG_RPC_PROG, CHG_RPC_VERS,
+			 ONCRPC_CHARGER_API_VERSIONS_PROC);
+
+	rc = msm_rpc_write(msm_batt_info.chg_ep, &req_chg_api_ver,
+			sizeof(req_chg_api_ver));
+>>>>>>> vendor-vs660-froyo
 	if (rc < 0) {
 		printk(KERN_ERR
 		       "%s(): msm_rpc_write failed.  proc = 0x%08x rc = %d\n",
@@ -1378,15 +1848,27 @@ int msm_batt_get_charger_api_version(void)
 	}
 
 	for (;;) {
+<<<<<<< HEAD
 		rc = msm_rpc_read(msm_batt_info.chg_ep, (void *)&reply, -1,
 				  BATT_RPC_TIMEOUT);
+=======
+		rc = msm_rpc_read(msm_batt_info.chg_ep, (void *) &reply, -1,
+				BATT_RPC_TIMEOUT);
+>>>>>>> vendor-vs660-froyo
 		if (rc < 0)
 			return rc;
 		if (rc < RPC_REQ_REPLY_COMMON_HEADER_SIZE) {
 			printk(KERN_ERR "%s(): msm_rpc_read failed. read"
+<<<<<<< HEAD
 			       " returned invalid packet which is"
 			       " neither rpc req nor rpc reply. "
 			       "legnth of packet = %d\n", __func__, rc);
+=======
+					" returned invalid packet which is"
+					" neither rpc req nor rpc reply. "
+					"legnth of packet = %d\n",
+					__func__, rc);
+>>>>>>> vendor-vs660-froyo
 
 			rc = -EIO;
 			break;
@@ -1395,20 +1877,33 @@ int msm_batt_get_charger_api_version(void)
 		if (reply->type == RPC_TYPE_REQ) {
 
 			printk(KERN_ERR "%s(): returned RPC REQ packets while"
+<<<<<<< HEAD
 			       " waiting for RPC REPLY replay read \n",
 			       __func__);
+=======
+				" waiting for RPC REPLY replay read \n",
+				__func__);
+>>>>>>> vendor-vs660-froyo
 			kfree(reply);
 			continue;
 		}
 
 		/* If an earlier call timed out, we could get the (no
+<<<<<<< HEAD
 		 * longer wanted) reply for it.  Ignore replies that
+=======
+		 * longer wanted) reply for it.	 Ignore replies that
+>>>>>>> vendor-vs660-froyo
 		 * we don't expect
 		 */
 		if (reply->xid != req_chg_api_ver.hdr.xid) {
 
 			printk(KERN_ERR "%s(): returned RPC REPLY XID is not"
+<<<<<<< HEAD
 			       " equall to RPC REQ XID \n", __func__);
+=======
+					" equall to RPC REQ XID \n", __func__);
+>>>>>>> vendor-vs660-froyo
 			kfree(reply);
 			continue;
 		}
@@ -1416,7 +1911,12 @@ int msm_batt_get_charger_api_version(void)
 			rc = -EPERM;
 			break;
 		}
+<<<<<<< HEAD
 		if (reply->data.acc_hdr.accept_stat != RPC_ACCEPTSTAT_SUCCESS) {
+=======
+		if (reply->data.acc_hdr.accept_stat !=
+				RPC_ACCEPTSTAT_SUCCESS) {
+>>>>>>> vendor-vs660-froyo
 			rc = -EINVAL;
 			break;
 		}
@@ -1424,6 +1924,7 @@ int msm_batt_get_charger_api_version(void)
 		rep_chg_api_ver = (struct rpc_rep_chg_api_ver *)reply;
 
 		num_of_versions =
+<<<<<<< HEAD
 		    be32_to_cpu(rep_chg_api_ver->num_of_chg_api_versions);
 
 		rep_chg_api_ver->chg_api_versions = (u32 *)
@@ -1436,6 +1937,20 @@ int msm_batt_get_charger_api_version(void)
 		printk(KERN_INFO "%s(): num_of_chg_api_versions = %u"
 		       "  The chg api version = 0x%08x\n", __func__,
 		       num_of_versions, rc);
+=======
+			be32_to_cpu(rep_chg_api_ver->num_of_chg_api_versions);
+
+		rep_chg_api_ver->chg_api_versions =  (u32 *)
+			((u8 *) reply + sizeof(struct rpc_reply_hdr) +
+			sizeof(rep_chg_api_ver->num_of_chg_api_versions));
+
+		rc = be32_to_cpu(
+			rep_chg_api_ver->chg_api_versions[num_of_versions - 1]);
+
+		printk(KERN_INFO "%s(): num_of_chg_api_versions = %u"
+			"  The chg api version = 0x%08x\n", __func__,
+			num_of_versions, rc);
+>>>>>>> vendor-vs660-froyo
 		break;
 	}
 	kfree(reply);
@@ -1472,7 +1987,11 @@ static int __devinit msm_batt_init_rpc(void)
 	}
 
 	printk(KERN_INFO "battery rpc: ept : 0x%x, prog : 0x%x, vers : 0x%x\n",
+<<<<<<< HEAD
 	       (u32) msm_batt_info.batt_ep, BATTERY_RPC_PROG, BATTERY_RPC_VERS);
+=======
+					(u32)msm_batt_info.batt_ep, BATTERY_RPC_PROG ,BATTERY_RPC_VERS);
+>>>>>>> vendor-vs660-froyo
 
 	msm_batt_info.chg_ep =
 	    msm_rpc_connect_compatible(CHG_RPC_PROG, CHG_RPC_VERS, 0);
@@ -1489,24 +2008,41 @@ static int __devinit msm_batt_init_rpc(void)
 	}
 
 	printk(KERN_INFO "charger rpc: ept : 0x%x, prog : 0x%x, vers : 0x%x\n",
+<<<<<<< HEAD
 	       (u32) msm_batt_info.chg_ep, CHG_RPC_PROG, CHG_RPC_VERS);
 
 	msm_batt_info.chg_api_version = msm_batt_get_charger_api_version();
+=======
+					(u32)msm_batt_info.chg_ep, CHG_RPC_PROG ,CHG_RPC_VERS);
+
+	msm_batt_info.chg_api_version =  msm_batt_get_charger_api_version();
+>>>>>>> vendor-vs660-froyo
 
 	rc = platform_driver_register(&msm_batt_driver);
 
 	if (rc < 0) {
 		printk(KERN_ERR "%s: platform_driver_register failed for "
+<<<<<<< HEAD
 		       "batt driver. rc = %d\n", __func__, rc);
+=======
+			"batt driver. rc = %d\n", __func__, rc);
+>>>>>>> vendor-vs660-froyo
 		return rc;
 	}
 
 	init_waitqueue_head(&msm_batt_info.wait_q);
 
 	rc = msm_rpc_create_server(&rpc_server[0]);
+<<<<<<< HEAD
 	if (rc < 0) {
 		printk(KERN_ERR "%s: msm_rpc_create_server failed for "
 		       "batt driver. rc = %d\n", __func__, rc);
+=======
+	if(rc < 0)
+	{
+		printk(KERN_ERR "%s: msm_rpc_create_server failed for "
+             "batt driver. rc = %d\n", __func__, rc);
+>>>>>>> vendor-vs660-froyo
 		return rc;
 	}
 
@@ -1516,10 +2052,16 @@ static int __devinit msm_batt_init_rpc(void)
 static int __devexit msm_batt_remove(struct platform_device *pdev)
 {
 	int rc;
+<<<<<<< HEAD
 
 	sysfs_remove_group(&pdev->dev.kobj, &dev_attr_grp);
 
 	rc = msm_batt_cleanup();
+=======
+	sysfs_remove_group(&pdev->dev.kobj, &dev_attr_grp);
+	rc = msm_batt_cleanup();
+
+>>>>>>> vendor-vs660-froyo
 	if (rc < 0) {
 		dev_err(&pdev->dev,
 			"%s: msm_batt_cleanup  failed rc=%d\n", __func__, rc);
@@ -1532,9 +2074,15 @@ static struct platform_driver msm_batt_driver = {
 	.probe = msm_batt_probe,
 	.remove = __devexit_p(msm_batt_remove),
 	.driver = {
+<<<<<<< HEAD
 		.name = "msm-battery",
 		.owner = THIS_MODULE,
 	},
+=======
+		   .name = "msm-battery",
+		   .owner = THIS_MODULE,
+		   },
+>>>>>>> vendor-vs660-froyo
 };
 
 static int __init msm_batt_init(void)

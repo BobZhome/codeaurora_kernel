@@ -1,7 +1,11 @@
 /* drivers/misc/lge_ats_uevent.c
  *
  * Copyright (C) 2010 LGE.
+<<<<<<< HEAD
  * Author: Munyoung Hwang 
+=======
+ * Author: Munyoung Hwang <munyoung.hwang@lge.com>
+>>>>>>> vendor-vs660-froyo
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and

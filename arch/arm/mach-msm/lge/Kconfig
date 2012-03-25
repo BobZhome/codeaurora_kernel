@@ -9,6 +9,7 @@ config MACH_MSM7X27_THUNDERC
 	depends on ARCH_MSM7X27
 	depends on !MSM_STACKED_MEMORY
 	select MACH_LGE
+<<<<<<< HEAD
 	bool "MSM7x27 THUNDER CDMA"
 	help
 	  Support for the LGE MSM7x27 THUNDER CDMA board.
@@ -34,6 +35,11 @@ config MACH_MSM7X27_THUNDERC_SPRINT_VM
 	depends on MACH_MSM7X27_THUNDERC_SPRINT
 	help
 	  Support for the LGE MSM7x27 THUNDER CDMA Virgin Mobile board.
+=======
+	bool "MSM7x27 THUNDER Verizone"
+	help
+	  Support for the LGE MSM7x27 THUNDER Verizone board.
+>>>>>>> vendor-vs660-froyo
 
 config MACH_MSM7X27_THUNDERG
 	depends on ARCH_MSM7X27
@@ -43,6 +49,17 @@ config MACH_MSM7X27_THUNDERG
 	help
 	  Support for the LGE MSM7x27 THUNDER Global board.
 
+<<<<<<< HEAD
+=======
+config MACH_MSM7X27_THUNDERA
+	depends on ARCH_MSM7X27
+	depends on !MSM_STACKED_MEMORY
+	select MACH_LGE
+	bool "MSM7x27 THUNDER AT&T"
+	help
+	  Support for the LGE MSM7x27 THUNDER AT&T board.
+
+>>>>>>> vendor-vs660-froyo
 endmenu
 
 config LGE_SUPPORT_ERS
@@ -167,12 +184,28 @@ config LGE_ATS_INPUT_DEVICE
 	help
 	 Choose if use ATS input device used for generating input event from user space
 
+<<<<<<< HEAD
 config LGE_PCB_VERSION
 	bool "Support LGE PCB Version RAPI"
 	default n 
 	depends on MACH_LGE
 	help
 	  Choose if use PCB Version RAPI
+=======
+config LGE_FBCON_INACTIVE_CONSOLE
+	bool "Support LGE FBCON inactive console"
+	default n
+	depends on MACH_LGE
+	help
+	 Choose if inactive console
+
+config LGE_PWRSINK
+	bool "Support LGE Power Sink Driver"
+	default n
+	depends on MACH_LGE
+	help
+	 Choose if use Power sink driver
+>>>>>>> vendor-vs660-froyo
 
 menu "LGE specific patches"
 	depends on MACH_LGE
@@ -184,6 +217,7 @@ config LGE_TCP_IMPROVEMENT_PATCH
 	  This patch is used to improve tcp performance of vs740 model
 	  Disable tcp delayed ack for evdo networks
 
+<<<<<<< HEAD
 # LGE_CHANGE [dojip.kim@lge.com] 2010-07-30, sprint
 config LGE_TCP_MTU_1472
 	bool "tcp mtu patch for sprint"
@@ -191,6 +225,8 @@ config LGE_TCP_MTU_1472
 	help
 	  This patch is used to tcp mtu 1472 for sprint
 
+=======
+>>>>>>> vendor-vs660-froyo
 config LGE_UMS_WORKAROUND_PATCH
 	bool "Workaround patch about USB mass storage for vs740"
 	default n
@@ -247,7 +283,10 @@ config LGE_DETECT_PIF_PATCH
 	  This patch is added for detection of pif cable of factory
 	  If pif is once detected, that information will be passed through
 	  sysfs in battery driver
+<<<<<<< HEAD
 
+=======
+>>>>>>> vendor-vs660-froyo
 config LGE_DIAG_WMC
 	bool "Support LGE diag WMC"
 	default n
@@ -255,6 +294,7 @@ config LGE_DIAG_WMC
 	help
 	  LGE diag WMC enable
 
+<<<<<<< HEAD
 # LGE_CHANGE [dojip.kim@lge.com] 2010-08-04
 config LGE_GET_POWER_ON_STATUS
 	bool "LGE Getting Power On Status"
@@ -292,6 +332,8 @@ config LGE_BLOCK_HOTPLUG
 	help
 	  Android doesn't need a hotplug. So, block the hotplug to avoid the rooting
 
+=======
+>>>>>>> vendor-vs660-froyo
 config LGE_GRAM_REFRESH_PATCH
 	bool "LGE gram refresh patch"
 	default n
@@ -302,7 +344,10 @@ config LGE_GRAM_REFRESH_PATCH
 	  this can cause displaying broken screen in time of turning backlight on.
 	  for preventing this problem, add refreshing routine before turning 
 	  backlight on by using late resume mechanism.
+<<<<<<< HEAD
 
+=======
+>>>>>>> vendor-vs660-froyo
 endmenu
 
 endmenu

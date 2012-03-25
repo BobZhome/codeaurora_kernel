@@ -44,6 +44,13 @@ struct msm_camera_io_ext {
 	uint32_t csiirq;
 };
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [junyeong.han@lge.com] 2009-09-07, unified code for 7x27  */
+/* Add power on/off function pointers to devide driver and
+ * platform data which is dependent HW
+ */
+>>>>>>> vendor-vs660-froyo
 #if defined (CONFIG_MACH_LGE)
 struct msm_camera_device_platform_data {
 	void (*camera_gpio_on) (void);
@@ -59,7 +66,11 @@ struct msm_camera_device_platform_data {
 	struct msm_camera_io_ext ioext;
 };
 #endif
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGES_E [junyeong.han@lge.com] 2009-09-07 */
+>>>>>>> vendor-vs660-froyo
 enum msm_camera_csi_data_format {
 	CSI_8BIT,
 	CSI_10BIT,

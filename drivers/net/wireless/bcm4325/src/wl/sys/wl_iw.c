@@ -87,6 +87,12 @@ static bool ap_fw_loaded = FALSE;
 static bool ap_cfg_running = false;
 //static int ap_mode = 0;	//patch ROMTERM RC239 comment
 static int wl_iw_softap_deassoc_stations(struct net_device *dev);	//patch ROMTERM RC239 add
+<<<<<<< HEAD
+=======
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+bool ap_priv_running = FALSE;
+#endif
+>>>>>>> vendor-vs660-froyo
 #endif 
 
 #define WL_IW_IOCTL_CALL(func_call) \
@@ -100,11 +106,19 @@ static int		g_onoff = G_WLAN_SET_ON;
 extern bool wl_iw_conn_status_str(uint32 event_type, uint32 status,
 	uint32 reason, char* stringBuf, uint buflen);
 #include <bcmsdbus.h>
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-12-08, support start/stop */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 extern void dhd_customer_gpio_wlan_ctrl(int onoff, int irq_detect_ctrl);
 #else /* CONFIG_LGE_BCM432X_PATCH */
 extern void dhd_customer_gpio_wlan_ctrl(int onoff);
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-12-08, support start/stop */
+>>>>>>> vendor-vs660-froyo
 extern uint dhd_dev_reset(struct net_device *dev, uint8 flag);
 extern void dhd_dev_init_ioctl(struct net_device *dev);
 #endif 
@@ -157,9 +171,19 @@ static wlc_ssid_t g_specific_ssid;
 //#define CONFIG_BRCM_USE_GPIO_RESET
 #endif  /* !defined(CONFIG_BRCM_USE_DEEPSLEEP) */
 
+<<<<<<< HEAD
 extern bool PM_control;
 
 extern bool roam_off_control;
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-27, <Disable setting power save mode if PM is 0> */	
+extern bool PM_control;
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-27, <Disable setting power save mode if PM is 0> */	
+
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */	
+extern bool roam_off_control;
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */	
+>>>>>>> vendor-vs660-froyo
 
 static wlc_ssid_t g_ssid;
 
@@ -311,6 +335,10 @@ dev_wlc_ioctl(
 	struct ifreq ifr;
 	wl_ioctl_t ioc;
 	mm_segment_t fs;
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-04, <Check whether dev is null or not> */
+>>>>>>> vendor-vs660-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	int ret;
 #else
@@ -321,6 +349,10 @@ dev_wlc_ioctl(
 		return ret;
 	}
 #endif	/* !defined(CONFIG_LGE_BCM432X_PATCH) */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-04, <Check whether dev is null or not> */
+>>>>>>> vendor-vs660-froyo
 
 	WL_TRACE(("\n%s, PID:%x: send Local IOCTL -> dhd: cmd:0x%x, buf:%p, len:%d ,\n",
 		__FUNCTION__, current->pid, cmd, arg, len));
@@ -348,6 +380,10 @@ dev_wlc_ioctl(
 }
 
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+>>>>>>> vendor-vs660-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 static int
 dev_wlc_intvar_get_reg(
@@ -371,6 +407,10 @@ dev_wlc_intvar_get_reg(
 	return (error);
 }
 #endif	/* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+>>>>>>> vendor-vs660-froyo
 
 
 
@@ -518,9 +558,17 @@ wl_iw_set_active_scan(
 #endif 
 		error = dev_wlc_ioctl(dev, WLC_SET_PASSIVE_SCAN, &as, sizeof(as));
 #if defined(WL_IW_USE_ISCAN)
+<<<<<<< HEAD
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	else
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-04-15, fixed passive/active scan */
+#if !defined(CONFIG_LGE_BCM432X_PATCH)
+	else
+#endif /* CONFIG_LGE_BCM432X_PATCH */
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-04-15, fixed passive/active scan */
+>>>>>>> vendor-vs660-froyo
 		g_iscan->scan_flag = as;
 #endif 
 	p += snprintf(p, MAX_WX_STRING, "OK");
@@ -551,9 +599,17 @@ wl_iw_set_passive_scan(
 		}
 #if defined(WL_IW_USE_ISCAN)
 	}
+<<<<<<< HEAD
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	else
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-04-15, fixed passive/active scan */
+#if !defined(CONFIG_LGE_BCM432X_PATCH)
+	else
+#endif /* CONFIG_LGE_BCM432X_PATCH */
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-04-15, fixed passive/active scan */
+>>>>>>> vendor-vs660-froyo
 		g_iscan->scan_flag = ps;
 #endif 
 
@@ -589,6 +645,61 @@ wl_iw_get_macaddr(
 }
 
 #if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP) && defined(CONFIG_BRCM_LGE_WL_ARPOFFLOAD)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_s, [jisung.yang@lge.com], 2010-08-24, <Set listen interval and dtim listen> */
+uint wl_dtim_val = 0;		//by sjpark 100824
+
+int wl_iw_set_dtim_val(struct net_device *dev)	//hyeok	: 100824
+{
+	int ret, cal_dtim;
+	struct ether_addr bssid;
+	wl_bss_info_t *bi;
+	char buf[WLC_IOCTL_SMLEN]  = {0};
+	
+	if ((ret = dev_wlc_ioctl(dev, WLC_GET_BSSID, &bssid, ETHER_ADDR_LEN)) == 0) {
+		/* The adapter is associated. */
+		*(uint32*)buf = htod32(WLC_IOCTL_SMLEN);
+		//if ((ret = dev_wlc_ioctl(dev, WLC_GET_BSS_INFO, buf, WLC_IOCTL_SMLEN)) < 0)
+		if ((ret = dev_wlc_ioctl(dev, WLC_GET_BSS_INFO, buf, sizeof(buf))) < 0)
+			return ret;
+
+		bi = (wl_bss_info_t*)(buf + 4);
+		if (dtoh32(bi->version) == WL_BSS_INFO_VERSION )
+		{
+			printk("[hyeok] beacon_period[%d], dtim_period[%d]\n",bi->beacon_period,bi->dtim_period);
+			cal_dtim = (bi->beacon_period) * (bi->dtim_period);
+			if( cal_dtim <= 100)
+			{
+				wl_dtim_val = 3;
+				printk("[hyeok] wl dtim val set : %d",wl_dtim_val);
+			}
+			else if( (100 < cal_dtim) && (cal_dtim <= 200))
+			{
+				wl_dtim_val = 2;
+				printk("[hyeok] wl dtim val set : %d",wl_dtim_val);
+			}
+			else
+			{
+				wl_dtim_val = 1;
+				printk("[hyeok] wl dtim val set : %d",wl_dtim_val);
+			}
+		}
+		else
+			printk("Sorry, your driver has bss_info_version %d "
+					"but this program supports only version %d.\n",
+				bi->version, WL_BSS_INFO_VERSION);
+	} else {
+		printk("Not associated. Last associated with ");
+	}
+
+	return ret;
+
+}
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-08-24, <Set listen interval and dtim listen> */
+
+
+>>>>>>> vendor-vs660-froyo
 static int
 wl_iw_set_hostip(
 	struct net_device *dev,
@@ -635,6 +746,12 @@ wl_iw_set_hostip(
 	if( (ret= dev_wlc_ioctl(dev, WLC_SET_VAR, buf, len)) < 0)
 		printk(KERN_ERR "%s:arp_hostip set failed. ret[%d]\n",__FUNCTION__, ret);
 		
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_s, [jisung.yang@lge.com], 2010-08-24, <Set listen interval and dtim listen> */
+	wl_iw_set_dtim_val(dev);		//hyeok	: 100824
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-08-24, <Set listen interval and dtim listen> */
+>>>>>>> vendor-vs660-froyo
 
        p += snprintf(p, MAX_WX_STRING, "OK");
        wrqu->data.length = p - extra + 1;
@@ -686,6 +803,10 @@ exit:
 	return error;
 }
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+>>>>>>> vendor-vs660-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 static int
 wl_iw_set_btcoex_dhcp(
@@ -778,6 +899,10 @@ wl_iw_set_btcoex_dhcp(
 	return error;
 }
 #endif	/* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+>>>>>>> vendor-vs660-froyo
 
 int
 wl_format_ssid(char* ssid_buf, uint8* ssid, int ssid_len)
@@ -821,11 +946,19 @@ wl_iw_get_link_speed(
 		link_speed *= 500000;
 	}
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-04-07, showing the 5.5 Mbps */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 	if (link_speed == 5500000)
 		p += snprintf(p, MAX_WX_STRING, "LinkSpeed 5.5");
 	else
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-04-07, showing the 5.5 Mbps */
+>>>>>>> vendor-vs660-froyo
 	p += snprintf(p, MAX_WX_STRING, "LinkSpeed %d", link_speed/1000000);
 
 	wrqu->data.length = p - extra + 1;
@@ -836,7 +969,14 @@ wl_iw_get_link_speed(
 #ifndef SSID_FMT_BUF_LEN
 #define SSID_FMT_BUF_LEN	((4 * 32) + 1)
 #endif
+<<<<<<< HEAD
 int less_than_rssi = 0;
+=======
+/* BEGIN: 0005568 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005568: [WLAN] Wi-Fi will be disconnected if the RSSI value is lower than -92 */
+int less_than_rssi = 0;
+/* END: 0005568 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 static int
 wl_iw_get_rssi(
 	struct net_device *dev,
@@ -849,12 +989,31 @@ wl_iw_get_rssi(
 	static wlc_ssid_t ssid = {0};
 	int error = 0;
 	char *p = extra;
+<<<<<<< HEAD
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	static char ssidbuf[SSID_FMT_BUF_LEN];
 #endif /* CONFIG_LGE_BCM432X_PATCH */
 	scb_val_t scb_val;
 
 	memset(&ssid ,0 ,sizeof(wlc_ssid_t));
+=======
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2009-05-13,
+ * <some ssid use '<' character sometimes and it cause response discard
+ * in wpa_supplicant (wpa_ctrl_request())> */
+#if !defined(CONFIG_LGE_BCM432X_PATCH)
+	static char ssidbuf[SSID_FMT_BUF_LEN];
+#endif /* CONFIG_LGE_BCM432X_PATCH */
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2009-05-13,
+ * <some ssid use '<' character sometimes and it cause response discard
+ * in wpa_supplicant (wpa_ctrl_request())> */
+	scb_val_t scb_val;
+
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248459 */
+	memset(&ssid ,0 ,sizeof(wlc_ssid_t));
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 	bzero(&scb_val, sizeof(scb_val_t));
 
 	if (g_onoff == G_WLAN_SET_ON) {
@@ -867,13 +1026,28 @@ wl_iw_get_rssi(
 	}
 
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2009-05-13,
+ * <some ssid use '<' character sometimes and it cause response discard
+ * in wpa_supplicant (wpa_ctrl_request())> */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 	p += snprintf(p, MAX_WX_STRING, "ssid rssi %d", rssi);
 #else /* CONFIG_LGE_BCM432X_PATCH */
 	wl_format_ssid(ssidbuf, ssid.SSID, dtoh32(ssid.SSID_len));
 	p += snprintf(p, MAX_WX_STRING, "%s rssi %d ", ssidbuf, rssi);
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2009-05-13,
+ * <some ssid use '<' character sometimes and it cause response discard
+ * in wpa_supplicant (wpa_ctrl_request())> */
+	
+/* BEGIN: 0005568 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005568: [WLAN] Wi-Fi will be disconnected if the RSSI value is lower than -92 */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 	if( rssi < -92 ){
 		less_than_rssi ++;
@@ -889,6 +1063,10 @@ wl_iw_get_rssi(
 		less_than_rssi =0 ;
 	}
 #endif	/* defined(CONFIG_LGE_BCM432X_PATCH) */
+<<<<<<< HEAD
+=======
+/* END: 0005568 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	wrqu->data.length = p - extra + 1;
 
@@ -921,15 +1099,30 @@ wl_iw_send_priv_event(
 	return 0;
 }
 
+<<<<<<< HEAD
 #if defined(CONFIG_LGE_BCM432X_PATCH) && defined(CONFIG_BRCM_USE_DEEPSLEEP)
 extern int dhd_deep_sleep(struct net_device *dev, int flag);
 #endif /* CONFIG_LGE_BCM432X_PATCH && CONFIG_BRCM_USE_DEEPSLEEP */
 
 #if !defined(CONFIG_LGE_BCM432X_PATCH) || defined(CONFIG_BRCM_USE_GPIO_RESET) || defined(CONFIG_BRCM_USE_DEEPSLEEP)
+=======
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2009-11-19, Use deepsleep instead of dhd_dev_reset when driver start or stop */
+#if defined(CONFIG_LGE_BCM432X_PATCH) && defined(CONFIG_BRCM_USE_DEEPSLEEP)
+extern int dhd_deep_sleep(struct net_device *dev, int flag);
+#endif /* CONFIG_LGE_BCM432X_PATCH && CONFIG_BRCM_USE_DEEPSLEEP */
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2009-11-19, Use deepsleep instead of dhd_dev_reset when driver start or stop */
+
+#if !defined(CONFIG_LGE_BCM432X_PATCH) || defined(CONFIG_BRCM_USE_GPIO_RESET) || defined(CONFIG_BRCM_USE_DEEPSLEEP)
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2010-01-27, successive power key press lock up */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 int wl_off_flags=0;
 struct semaphore wl_off_sem;
 #endif	/* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2010-01-27, successive power key press lock up */
+>>>>>>> vendor-vs660-froyo
 
 static int
 _wl_control_sysioc_thread_wl_off(void *data)
@@ -959,6 +1152,10 @@ _wl_control_sysioc_thread_wl_off(void *data)
 		g_iscan->iscan_state = ISCAN_STATE_IDLE;
 #endif
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2009-11-19, Use deepsleep instead of dhd_dev_reset when driver start or stop */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_BRCM_USE_DEEPSLEEP)
 		/* Use Deep Sleep instead of WL Reset*/
 		dhd_deep_sleep(wl_ctl->dev, TRUE);
@@ -987,16 +1184,28 @@ _wl_control_sysioc_thread_wl_off(void *data)
 		dhd_customer_gpio_wlan_ctrl(WLAN_RESET_OFF);
 #endif /* CONFIG_LGE_BCM432X_PATCH */
 #endif /* CONFIG_BRCM_USE_DEEPSLEEP */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2009-11-19, Use deepsleep instead of dhd_dev_reset when driver start or stop */
+>>>>>>> vendor-vs660-froyo
 
 		wl_iw_send_priv_event(wl_ctl->dev, "STOP");
 
 		break;
 	}
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2010-01-27, successive power key press lock up */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 	up(&wl_off_sem);
 	wl_off_flags = 0;
 	down(&wl_off_sem);
 #endif	/* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2010-01-27, successive power key press lock up */
+>>>>>>> vendor-vs660-froyo
 	WL_TRACE(("%s Exited\n", __FUNCTION__));
 
 #if defined(BCMDONGLEHOST)
@@ -1034,6 +1243,10 @@ wl_iw_control_wl_off(
 
 	WL_TRACE(("Enter %s\n", __FUNCTION__));
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2010-01-27, successive power key press lock up */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 	up(&wl_off_sem);
         if( wl_off_flags == 1){
@@ -1043,6 +1256,10 @@ wl_iw_control_wl_off(
                 wl_off_flags = 1;
 	down(&wl_off_sem);
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2010-01-27, successive power key press lock up */	
+>>>>>>> vendor-vs660-froyo
 	
 	ctl.timer = &timer;
 	ctl.dev = dev;
@@ -1085,9 +1302,18 @@ wl_iw_control_wl_off(
 
 	return ret;
 }
+<<<<<<< HEAD
 #if defined(CONFIG_LGE_BCM432X_PATCH) && defined(CONFIG_BRCM_USE_GPIO_RESET)
 #include <linux/sched.h>
 #endif
+=======
+/* BEGIN: 0004683 mingi.sung@lge.com 2010-03-05 */
+/* MOD 0004683: [WLAN] change sdio irq policy */
+#if defined(CONFIG_LGE_BCM432X_PATCH) && defined(CONFIG_BRCM_USE_GPIO_RESET)
+#include <linux/sched.h>
+#endif	/* defined(CONFIG_LGE_BCM432X_PATCH) && defined(CONFIG_BRCM_USE_GPIO_RESET) */
+/* END: 0004683 mingi.sung@lge.com 2010-03-05 */
+>>>>>>> vendor-vs660-froyo
 static int
 wl_iw_control_wl_on(
 	struct net_device *dev,
@@ -1099,6 +1325,10 @@ wl_iw_control_wl_on(
 	WL_TRACE(("Enter %s \n", __FUNCTION__));
 
 	if (g_onoff == G_WLAN_SET_OFF) {
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2009-11-19, Use deepsleep instead of dhd_dev_reset when driver start or stop */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_BRCM_USE_DEEPSLEEP)
 		/* Use Deep Sleep instead of WL RESET */
 		dhd_deep_sleep(dev, FALSE);
@@ -1121,6 +1351,11 @@ wl_iw_control_wl_on(
 		 sdioh_start(NULL, 1);
 #endif
 #else
+<<<<<<< HEAD
+=======
+/* BEGIN: 0004683 mingi.sung@lge.com 2010-03-05 */
+/* MOD 0004683: [WLAN] change sdio irq policy */
+>>>>>>> vendor-vs660-froyo
 #if defined(BCMLXSDMMC)
 		sdioh_start(NULL, 1);
 #endif
@@ -1128,6 +1363,10 @@ wl_iw_control_wl_on(
 		dhd_dev_reset(dev, 0);
 
 		schedule_timeout((100*HZ)/1000);
+<<<<<<< HEAD
+=======
+/* END: 0004683 mingi.sung@lge.com 2010-03-05 */
+>>>>>>> vendor-vs660-froyo
 #endif	/* !defined(CONFIG_LGE_BCM432X_PATCH) */
 
 		 dhd_dev_init_ioctl(dev);
@@ -1137,6 +1376,7 @@ wl_iw_control_wl_on(
 		 printk("Exited %s \n", __FUNCTION__);
 #endif	/* defined(CONFIG_BRCM_USE_GPIO_RESET) */ /* Do not use GPIO Reset at On/Off. Use mpc. */
 #endif /* CONFIG_BRCM_USE_DEEPSLEEP */
+<<<<<<< HEAD
 
 		g_onoff = G_WLAN_SET_ON;
 	}
@@ -1145,15 +1385,40 @@ wl_iw_control_wl_on(
 #endif	 	
 	wl_iw_send_priv_event(dev, "START");
 	 
+=======
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2009-11-19, Use deepsleep instead of dhd_dev_reset when driver start or stop */
+
+		g_onoff = G_WLAN_SET_ON;
+	}
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-08-12, Do not send START here */
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+	 else
+#endif	 	
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-08-12, Do not send START here */
+	wl_iw_send_priv_event(dev, "START");
+	 
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-08-12, Hidden SSID */	
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 /* If do broadscan here, specific scan fail */
 	//wl_iw_iscan_set_scan_broadcast_prep(dev, 0);
 	g_first_broadcast_scan = BROADCAST_SCAN_FIRST_RESULT_CONSUMED;
 #endif
+<<<<<<< HEAD
 
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 //	 bcm_mdelay(1000);
 #endif
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-08-12, Hidden SSID */
+
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-06-08, Hidden SSID */	
+/* Because of bcm_mdelay(1000), touch could not process event for a while */
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+//	 bcm_mdelay(1000);
+#endif
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-06-08, Hidden SSID */
+>>>>>>> vendor-vs660-froyo
 
 	WL_TRACE(("Exited %s \n", __FUNCTION__));
 
@@ -1501,7 +1766,13 @@ static int iwpriv_set_ap_config(struct net_device *dev,
 	}
 
 
+<<<<<<< HEAD
 	set_ap_cfg(dev, ap_cfg);
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+	res = set_ap_cfg(dev, ap_cfg);
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+>>>>>>> vendor-vs660-froyo
 	kfree(extra);
 
 	return res;
@@ -1694,7 +1965,15 @@ wl_iw_config_commit(
 
 	WL_TRACE(("%s: SIOCSIWCOMMIT\n", dev->name));
 
+<<<<<<< HEAD
 	memset(&ssid ,0 ,sizeof(wlc_ssid_t));
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248460 */
+	memset(&ssid ,0 ,sizeof(wlc_ssid_t));
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	if ((error = dev_wlc_ioctl(dev, WLC_GET_SSID, &ssid, sizeof(ssid))))
 		return error;
@@ -1792,7 +2071,15 @@ wl_iw_get_freq(
 
 	WL_TRACE(("%s: SIOCGIWFREQ\n", dev->name));
 
+<<<<<<< HEAD
 	memset(&ci ,0 ,sizeof(channel_info_t));
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248461 */
+	memset(&ci ,0 ,sizeof(channel_info_t));
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	if ((error = dev_wlc_ioctl(dev, WLC_GET_CHANNEL, &ci, sizeof(ci))))
 		return error;
@@ -1890,7 +2177,15 @@ wl_iw_get_range(
 	dwrq->length = sizeof(struct iw_range);
 	memset(range, 0, sizeof(range));
 
+<<<<<<< HEAD
 	memset(&rateset, 0, sizeof(wl_rateset_t));
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248462, 248463 */
+	memset(&rateset, 0, sizeof(wl_rateset_t));
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 	
 	range->min_nwid = range->max_nwid = 0;
 
@@ -2111,6 +2406,10 @@ wl_iw_set_wap(
 		return 0;
 	}
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-06-04, <Association timeout> */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 	{
 		scb_val_t scbval;
@@ -2119,6 +2418,10 @@ wl_iw_set_wap(
 	}
 	bcm_mdelay(10);
 #endif
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-06-04, <Association timeout> */
+>>>>>>> vendor-vs660-froyo
 
 	memset(&join_params, 0, sizeof(join_params));
 
@@ -2295,7 +2598,15 @@ wl_iw_iscan_get_aplist(
 
 	WL_TRACE(("%s: SIOCGIWAPLIST\n", dev->name));
 
+<<<<<<< HEAD
 	memset(qual, 0, (sizeof(struct iw_quality)*IW_MAX_AP));
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248464 */
+	memset(qual, 0, (sizeof(struct iw_quality)*IW_MAX_AP));
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	if (!extra)
 		return -EINVAL;
@@ -2917,7 +3228,13 @@ wl_iw_set_scan(
 	
 	if ((error = dev_wlc_ioctl(dev, WLC_SCAN, &g_specific_ssid, sizeof(g_specific_ssid)))) {
 		WL_TRACE(("#### Set SCAN for %s failed with %d\n", g_specific_ssid.SSID, error));
+<<<<<<< HEAD
 		g_scan_specified_ssid = 0;
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-06-15, <The following prevent scan failure in case of successive scan command> */		
+		g_scan_specified_ssid = 0;
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-06-15, <The following prevent scan failure in case of successive scan command> */				
+>>>>>>> vendor-vs660-froyo
 		return -EBUSY;
 	}
 
@@ -3274,7 +3591,15 @@ wl_iw_get_scan(
 
 	WL_TRACE(("%s: buflen_from_user %d: \n", dev->name, buflen_from_user));
 
+<<<<<<< HEAD
 	memset(&ci, 0, sizeof(channel_info_t));
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248477 */
+	memset(&ci, 0, sizeof(channel_info_t));
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	if (!extra) {
 		WL_TRACE(("%s: wl_iw_get_scan return -EINVAL\n", dev->name));
@@ -3323,6 +3648,10 @@ wl_iw_get_scan(
 	if ((error = dev_wlc_ioctl(dev, WLC_SCAN_RESULTS, list, len))) {
 		WL_TRACE(("%s: %s : Scan_results ERROR %d\n", dev->name, __FUNCTION__, len));
 		dwrq->length = len;
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-08-16, fix the getting ISCAN/SCAN results */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 		if (g_scan_specified_ssid) {
 			list->count = 0;
@@ -3334,7 +3663,13 @@ wl_iw_get_scan(
 			kfree(list);
 		return 0;
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
 	}
+=======
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-08-16, fix the getting ISCAN/SCAN results */
+	}
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-08-16, fix the getting ISCAN/SCAN results */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 	else {
 #endif /* CONFIG_LGE_BCM432X_PATCH */		
@@ -3641,7 +3976,15 @@ wl_iw_get_essid(
 
 	WL_TRACE(("%s: SIOCGIWESSID\n", dev->name));
 
+<<<<<<< HEAD
 	memset(&ssid ,0 ,sizeof(wlc_ssid_t));
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248466, 248467 */
+	memset(&ssid ,0 ,sizeof(wlc_ssid_t));
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	if (!extra)
 		return -EINVAL;
@@ -3721,7 +4064,15 @@ static int wl_iw_set_rate(
 
 	WL_TRACE(("%s: SIOCSIWRATE\n", dev->name));
 
+<<<<<<< HEAD
 	memset(&rateset, 0, sizeof(wl_rateset_t));
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248468, 248469 */
+	memset(&rateset, 0, sizeof(wl_rateset_t));
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 	
 	if ((error = dev_wlc_ioctl(dev, WLC_GET_CURR_RATESET, &rateset, sizeof(rateset))))
 		return error;
@@ -3777,7 +4128,15 @@ static int wl_iw_get_rate(
 	char *extra
 )
 {
+<<<<<<< HEAD
 	int error = 0, rate = 0;
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248470 */
+	int error = 0, rate = 0;
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	WL_TRACE(("%s: SIOCGIWRATE\n", dev->name));
 
@@ -3932,7 +4291,15 @@ wl_iw_get_txpow(
 	char *extra
 )
 {
+<<<<<<< HEAD
 	int error = 0, disable = 0, txpwrdbm = 0;
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248471 */
+	int error = 0, disable = 0, txpwrdbm = 0;
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 	uint8 result;
 
 	WL_TRACE(("%s: SIOCGIWTXPOW\n", dev->name));
@@ -3995,7 +4362,15 @@ wl_iw_get_retry(
 	char *extra
 )
 {
+<<<<<<< HEAD
 	int error = 0, lrl = 0, srl = 0;
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248472, 248473 */
+	int error = 0, lrl = 0, srl = 0;
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	WL_TRACE(("%s: SIOCGIWRETRY\n", dev->name));
 
@@ -4133,7 +4508,15 @@ wl_iw_get_encode(
 {
 	wl_wsec_key_t key;
 
+<<<<<<< HEAD
 	int error = 0, val = 0, wsec = 0, auth = 0;
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248474, 248475 */
+	int error = 0, val = 0, wsec = 0, auth = 0;
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	WL_TRACE(("%s: SIOCGIWENCODE\n", dev->name));
 
@@ -4216,7 +4599,15 @@ wl_iw_get_power(
 	char *extra
 )
 {
+<<<<<<< HEAD
 	int error = 0, pm = 0;
+=======
+/* BEGIN: 0005533 mingi.sung@lge.com 2010-03-27 */
+/* MOD 0005533: [WLAN] Fixing WBT issues on Wi-Fi driver */
+/* WBT Fix TD# 248476 */
+	int error = 0, pm = 0;
+/* END: 0005533 mingi.sung@lge.com 2010-03-27 */
+>>>>>>> vendor-vs660-froyo
 
 	WL_TRACE(("%s: SIOCGIWPOWER\n", dev->name));
 
@@ -4686,7 +5077,13 @@ wl_iw_get_wpaauth(
 }
 #endif 
 
+<<<<<<< HEAD
 #if defined(CONFIG_LGE_BCM432X_PATCH)
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-05-14, support private command */
+#if defined(CONFIG_LGE_BCM432X_PATCH)
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+>>>>>>> vendor-vs660-froyo
 #if 1 /* "POWERMODE"applied from Raptor2 RC60 */
 static int
 wl_iw_set_powermode(
@@ -4714,6 +5111,10 @@ wl_iw_set_powermode(
 	return error;
 }
 #endif /* "POWERMODE"applied from Raptor2 RC60 */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+>>>>>>> vendor-vs660-froyo
 
 static int
 wl_iw_set_scan_channels(
@@ -4786,6 +5187,10 @@ wl_iw_set_roam_off(
 	return error;
 }
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-05-14, support private command */
+>>>>>>> vendor-vs660-froyo
 
 #ifdef SOFTAP
 
@@ -5001,6 +5406,94 @@ static int thr_wait_for_2nd_eth_dev(void *data)
 
 	return 0;
 }
+<<<<<<< HEAD
+=======
+
+//by sjpark 100818	{
+#ifndef AP_ONLY
+static int last_auto_channel = 6;
+#endif
+static int get_softap_auto_channel(struct net_device *dev, struct ap_profile *ap)
+{
+        int chosen = 0;
+        wl_uint32_list_t request;
+        int rescan = 0;
+        int retry = 0;
+        int updown = 0;
+        int ret = 0;
+        wlc_ssid_t null_ssid;
+        int res = 0;
+#ifndef AP_ONLY
+        int iolen = 0;
+        int mkvar_err = 0;
+        int bsscfg_index = 1;
+        char buf[WLC_IOCTL_SMLEN];
+#endif
+        WL_SOFTAP(("Enter %s\n", __FUNCTION__));
+
+#ifndef AP_ONLY
+        if (ap_cfg_running) {
+                ap->channel = last_auto_channel;
+                return res;
+        }
+#endif
+        memset(&null_ssid, 0, sizeof(wlc_ssid_t));
+        memset(&request, 0, sizeof(request));           //by sjpark 100818
+        res |= dev_wlc_ioctl(dev, WLC_UP, &updown, sizeof(updown));
+#ifdef AP_ONLY
+        res |= dev_wlc_ioctl(dev, WLC_SET_SSID, &null_ssid, sizeof(null_ssid));
+#else
+        iolen = wl_bssiovar_mkbuf("ssid", bsscfg_index, (char *)(&null_ssid), \
+                        null_ssid.SSID_len+4, buf, sizeof(buf), &mkvar_err);
+        ASSERT(iolen);
+        res |= dev_wlc_ioctl(dev, WLC_SET_VAR, buf, iolen);
+#endif
+
+        auto_channel_retry:
+                        request.count = htod32(0);
+                        ret = dev_wlc_ioctl(dev, WLC_START_CHANNEL_SEL, &request, sizeof(request));
+                        if (ret < 0) {
+                                WL_ERROR(("can't start auto channel scan. ret = %d\n",ret));
+                                goto fail;
+                        }
+
+        get_channel_retry:
+                        bcm_mdelay(500);
+
+                        ret = dev_wlc_ioctl(dev, WLC_GET_CHANNEL_SEL, &chosen, sizeof(chosen));
+                        if (ret < 0 || dtoh32(chosen) == 0) {
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+                                if (retry++ < 5)
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+                                        goto get_channel_retry;
+                                else {
+                                        WL_ERROR(("can't get auto channel sel, err = %d, \
+                                                chosen = %d\n", ret, chosen));
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+					res = -1;
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+                                        goto fail;
+                                }
+                        }
+                        if ((chosen == 1) && (!rescan++))
+                                goto auto_channel_retry;
+                        WL_SOFTAP(("Set auto channel = %d\n", chosen));
+                        ap->channel = chosen;
+                        if ((res = dev_wlc_ioctl(dev, WLC_DOWN, &updown, sizeof(updown))) < 0) {
+                                WL_ERROR(("%s fail to set up err =%d\n", __FUNCTION__, ret));
+                                goto fail;
+                        }
+#ifndef AP_ONLY
+        if (!res)
+                last_auto_channel = ap->channel;
+#endif
+
+fail :
+        return res;
+} 
+
+//by sjpark 100818	}
+>>>>>>> vendor-vs660-froyo
 #endif 
 
 
@@ -5011,7 +5504,11 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 	int channel = 0;
 
 	wlc_ssid_t ap_ssid;
+<<<<<<< HEAD
 	wlc_ssid_t null_ssid;
+=======
+	//wlc_ssid_t null_ssid;
+>>>>>>> vendor-vs660-froyo
 	int max_assoc = 8;
 	int mpc = 0;    
 
@@ -5023,7 +5520,11 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 	char buf[WLC_IOCTL_SMLEN];
 
 
+<<<<<<< HEAD
 	memset(&null_ssid, 0, sizeof(wlc_ssid_t));
+=======
+	//memset(&null_ssid, 0, sizeof(wlc_ssid_t));
+>>>>>>> vendor-vs660-froyo
 	WL_SOFTAP(("wl_iw: set ap profile:\n"));
 	WL_SOFTAP(("	ssid = '%s'\n", ap->ssid));
 	WL_SOFTAP(("	security = '%s'\n", ap->sec));
@@ -5035,12 +5536,32 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 	if (ap_cfg_running == FALSE) {	//patch ROMTERM RC239 - add
 	
 	sema_init(&ap_eth_sema, 0);
+<<<<<<< HEAD
 
 	mpc = 0;
 	dev_wlc_intvar_set(dev, "mpc", mpc);
 
 	updown = 0;
 	dev_wlc_ioctl(dev, WLC_DOWN, &updown, sizeof(updown));
+=======
+#ifdef CONFIG_MACH_MSM7X27_THUNDERC
+        ap_priv_running = TRUE;
+#endif	/* CONFIG_MACH_MSM7X27_THUNDERC */
+
+	mpc = 0;
+	if ((res = dev_wlc_intvar_set(dev, "mpc", mpc))) {
+		WL_ERROR(("%s fail to set mpc\n", __FUNCTION__));
+		goto fail;
+	}
+//	dev_wlc_intvar_set(dev, "mpc", mpc);
+
+	updown = 0;
+	if ((res = dev_wlc_ioctl(dev, WLC_DOWN, &updown, sizeof(updown)))) {
+		WL_ERROR(("%s fail to set updown\n", __FUNCTION__));
+		goto fail;
+	}
+//	dev_wlc_ioctl(dev, WLC_DOWN, &updown, sizeof(updown));
+>>>>>>> vendor-vs660-froyo
 
 #ifdef AP_ONLY
 	
@@ -5056,20 +5577,41 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 	iolen = wl_bssiovar_mkbuf("apsta",
 		bsscfg_index,  &apsta_var, sizeof(apsta_var)+4, buf, sizeof(buf), &mkvar_err);
 	ASSERT(iolen);
+<<<<<<< HEAD
 	res = dev_wlc_ioctl(dev, WLC_SET_VAR, buf, iolen);
+=======
+	if ((res = dev_wlc_ioctl(dev, WLC_SET_VAR, buf, iolen)) < 0) {
+		WL_ERROR(("%s fail to set apsta \n", __FUNCTION__));
+		goto fail;
+	}
+//	res = dev_wlc_ioctl(dev, WLC_SET_VAR, buf, iolen);
+>>>>>>> vendor-vs660-froyo
 	WL_TRACE(("\n>in %s: apsta set result: %d \n", __FUNCTION__, res));
 #endif 
 
 	updown = 1;
+<<<<<<< HEAD
 	dev_wlc_ioctl(dev, WLC_UP, &updown, sizeof(updown));
+=======
+	if ((res = dev_wlc_ioctl(dev, WLC_UP, &updown, sizeof(updown))) < 0) {
+		WL_ERROR(("%s fail to set apsta \n", __FUNCTION__));
+		goto fail;
+	}
+//	dev_wlc_ioctl(dev, WLC_UP, &updown, sizeof(updown));
+>>>>>>> vendor-vs660-froyo
 	WL_TRACE(("\n:%s >>>> dev_wlc_ioctl(WLC_UP) updown:%d, \n", __FUNCTION__, updown));
 # if 1	//patch ROMTERM RC239 S
 	} else {
 		
 		if (!ap_net_dev) {
 			WL_ERROR(("%s: ap_net_dev is null\n", __FUNCTION__));
+<<<<<<< HEAD
 			//goto fail;
 			return -1;
+=======
+			goto fail;
+		//	return -1;
+>>>>>>> vendor-vs660-froyo
 		}
 
 		res = wl_iw_softap_deassoc_stations(ap_net_dev);
@@ -5077,6 +5619,7 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 		
 		if ((res = dev_iw_write_cfg1_bss_var(dev, 0)) < 0) {
 			WL_ERROR(("%s fail to set bss down\n", __FUNCTION__));
+<<<<<<< HEAD
 			//goto fail;
 			return res;
 		}
@@ -5121,6 +5664,32 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 
 	channel = ap->channel;
 	dev_wlc_ioctl(dev, WLC_SET_CHANNEL, &channel, sizeof(channel));
+=======
+			goto fail;
+		//	return res;
+		}
+	}
+#endif	//patch ROMTERM RC239 E
+
+	WL_SOFTAP(("~~~~START SET AUTO CHANNEL~~~~[channel = %d]\n",ap->channel ));	//by sjpark 100818
+
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+//	ap->channel = 0;	//by sjpakr 100819 : for set auto channel
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+	if ((ap->channel == 0) && (get_softap_auto_channel(dev, ap) < 0)) {
+		ap->channel = 1;
+		WL_ERROR(("%s auto channel failed, pick up channel=%d\n", \
+			__FUNCTION__, ap->channel));
+
+	}
+	WL_SOFTAP(("~~~~END SET AUTO CHANNEL~~~~ [channel : %d]\n",ap->channel));	//by sjpark 100818
+	
+	channel = ap->channel;
+	if ((res = dev_wlc_ioctl(dev, WLC_SET_CHANNEL, &channel, sizeof(channel)))) {
+			WL_ERROR(("%s fail to set channel\n", __FUNCTION__));
+			goto fail;
+	}
+>>>>>>> vendor-vs660-froyo
 
 #if 0	//patch ROMTERM RC239 S
 	updown = 0;
@@ -5130,14 +5699,27 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 		updown = 0;
 		if ((res = dev_wlc_ioctl(dev, WLC_UP, &updown, sizeof(updown)))) {
 			WL_ERROR(("%s fail to set up\n", __FUNCTION__));
+<<<<<<< HEAD
 			//goto fail;
 			return res;
+=======
+			goto fail;
+			//return res;
+>>>>>>> vendor-vs660-froyo
 		}
 	}
 #endif	//patch ROMTERM RC239 E
 
 	max_assoc = ap->max_scb;
+<<<<<<< HEAD
 	dev_wlc_intvar_set(dev, "maxassoc", max_assoc);
+=======
+//	dev_wlc_intvar_set(dev, "maxassoc", max_assoc);
+	if ((res = dev_wlc_intvar_set(dev, "maxassoc", max_assoc))) {
+			WL_ERROR(("%s fail to set maxassoc\n", __FUNCTION__));
+			goto fail;
+	}
+>>>>>>> vendor-vs660-froyo
 
 	ap_ssid.SSID_len = strlen(ap->ssid);
 	strncpy(ap_ssid.SSID, ap->ssid, ap_ssid.SSID_len);
@@ -5146,8 +5728,17 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 	iolen = wl_bssiovar_mkbuf("ssid", bsscfg_index, (char *)(&ap_ssid),
 		ap_ssid.SSID_len+4, buf, sizeof(buf), &mkvar_err);
 	ASSERT(iolen);
+<<<<<<< HEAD
 	res = dev_wlc_ioctl(dev, WLC_SET_VAR, buf, iolen);
 
+=======
+//	res = dev_wlc_ioctl(dev, WLC_SET_VAR, buf, iolen);
+	if ((res = dev_wlc_ioctl(dev, WLC_SET_VAR, buf, iolen)) != 0) {
+		WL_ERROR(("ERROR:%d in:%s, Security & BSS reconfiguration is skipped\n", \
+		res, __FUNCTION__));
+		goto fail;
+	}
+>>>>>>> vendor-vs660-froyo
 #if 0	//patch ROMTERM RC239 S
 	kernel_thread(thr_wait_for_2nd_eth_dev, 0, 0);
 #else
@@ -5159,8 +5750,13 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 		
 		if (ap_net_dev == NULL) {
 			WL_ERROR(("%s ERROR: ap_net_dev is NULL !!!\n", __FUNCTION__));
+<<<<<<< HEAD
 			//goto fail;
 			return res;
+=======
+			goto fail;
+		//	return res;
+>>>>>>> vendor-vs660-froyo
 		}
 
 		WL_ERROR(("%s: %s Configure security & restart AP bss \n", \
@@ -5169,19 +5765,34 @@ static int set_ap_cfg(struct net_device *dev, struct ap_profile *ap)
 		
 		if ((res = wl_iw_set_ap_security(ap_net_dev, &my_ap)) < 0) {
 			WL_ERROR(("%s fail to set security : %d\n", __FUNCTION__, res));
+<<<<<<< HEAD
 			//goto fail;
 			return res;
+=======
+			goto fail;
+			//return res;
+>>>>>>> vendor-vs660-froyo
 		}
 
 		
 		if ((res = dev_iw_write_cfg1_bss_var(dev, 1)) < 0) {
 			WL_ERROR(("%s fail to set bss up\n", __FUNCTION__));
+<<<<<<< HEAD
 			//goto fail;
 			return res;
 		}
 	}
 #endif	//patch ROMTERM RC239 E
 
+=======
+			goto fail;
+			//return res;
+		}
+	}
+#endif	//patch ROMTERM RC239 E
+fail:
+	WL_SOFTAP(("%s exit with %d\n", __FUNCTION__, res));
+>>>>>>> vendor-vs660-froyo
 	return res;
 }
 #endif 
@@ -5773,7 +6384,13 @@ int wl_iw_process_private_ascii_cmd(
 				WL_ERROR(("ERROR: SoftAP CFG prams !\n"));
 				ret = -1;
 		} else {
+<<<<<<< HEAD
 			set_ap_cfg(dev, &my_ap);
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+			ret = set_ap_cfg(dev, &my_ap);
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-11-01, <Error case of failing auto channel> */
+>>>>>>> vendor-vs660-froyo
 		}
 
 	} else if (strnicmp(sub_cmd, "AP_BSS_START", strlen("AP_BSS_START")) == 0) {
@@ -5816,6 +6433,10 @@ static int wl_iw_set_priv(
 	int ret = 0;
 	char * extra;
 #if defined(CONFIG_LGE_BCM432X_PATCH)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-04, <Check whether dev is null or not> */
+>>>>>>> vendor-vs660-froyo
 	wl_iw_t *iw;
 
 	if (!dev) {
@@ -5823,6 +6444,10 @@ static int wl_iw_set_priv(
 		return -EFAULT;
 	}
 	iw = *(wl_iw_t **)netdev_priv(dev);
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-04, <Check whether dev is null or not> */
+>>>>>>> vendor-vs660-froyo
 #else
 #if defined(BCMDONGLEHOST)
 	wl_iw_t *iw = *(wl_iw_t **)netdev_priv(dev);
@@ -5848,6 +6473,10 @@ static int wl_iw_set_priv(
 		WAKE_LOCK(iw->pub, WAKE_LOCK_PRIV);
 #endif 
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-07-09, send wl_iw_send_priv_event  */
+>>>>>>> vendor-vs660-froyo
 /* only if receiving regular START command */
 #if defined(CONFIG_LGE_BCM432X_PATCH)
 		if (g_onoff == G_WLAN_SET_OFF) {
@@ -5859,6 +6488,14 @@ static int wl_iw_set_priv(
 				return -EFAULT;
 			} else {
 				ret = wl_iw_control_wl_on(dev, info);
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [jisung.yang@lge.com] 2010-04-24, START event will be sent in wl_iw_control_wl_on()  */								
+/* If MPC mode is not used during suspend, this part should be enabled */
+//				if(ret == 0 )
+//					wl_iw_send_priv_event(dev, "START");
+/* LGE_CHANGE_E [jisung.yang@lge.com] 2010-04-24, START event will be sent in wl_iw_control_wl_on()  */				
+>>>>>>> vendor-vs660-froyo
 				WL_TRACE(("%s, Received regular START command\n", __FUNCTION__));
 			}
 		} else if(strnicmp(extra, "START", strlen("START")) == 0) {
@@ -5884,6 +6521,10 @@ static int wl_iw_set_priv(
 			}
 		}
 #endif /* CONFIG_LGE_BCM432X_PATCH */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-07-09, send wl_iw_send_priv_event only if receiving regular START command */		
+>>>>>>> vendor-vs660-froyo
 
 	    if (strnicmp(extra, "SCAN-ACTIVE", strlen("SCAN-ACTIVE")) == 0) {
 #ifdef ENABLE_ACTIVE_PASSIVE_SCAN_SUPPRESS
@@ -5912,14 +6553,26 @@ static int wl_iw_set_priv(
 #endif	/* defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP) && defined(CONFIG_BRCM_LGE_WL_ARPOFFLOAD) */
 	    else if (strnicmp(extra, "STOP", strlen("STOP")) == 0)
 			ret = wl_iw_control_wl_off(dev, info);
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+>>>>>>> vendor-vs660-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	    else if (strnicmp(extra, "POWERMODE", strlen("POWERMODE")) == 0)
 			ret = wl_iw_set_btcoex_dhcp(dev, info, (union iwreq_data *)dwrq, extra);
 #endif
+<<<<<<< HEAD
 #ifdef SOFTAP
 	    else if (strnicmp(extra, "ASCII_CMD", strlen("ASCII_CMD")) == 0) {
 	        
 		    wl_iw_process_private_ascii_cmd(dev, info, (union iwreq_data *)dwrq, extra);
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-05-14, support private command */
+#ifdef SOFTAP
+	    else if (strnicmp(extra, "ASCII_CMD", strlen("ASCII_CMD")) == 0) {
+		    ret = wl_iw_process_private_ascii_cmd(dev, info, (union iwreq_data *)dwrq, extra);
+>>>>>>> vendor-vs660-froyo
 	    }
 		else if (strnicmp(extra, "AP_MAC_LIST_SET", strlen("AP_MAC_LIST_SET")) == 0) {
 			WL_SOFTAP(("penguin, set AP_MAC_LIST_SET\n"));
@@ -5927,34 +6580,74 @@ static int wl_iw_set_priv(
 	    }
 #endif 
 #if defined(CONFIG_LGE_BCM432X_PATCH)
+<<<<<<< HEAD
 #if 1 /* "POWERMODE"applied from Raptor2 RC60 */
 		else if (strnicmp(extra, "POWERMODE", 9) == 0){
 			if ( PM_control	== TRUE )
 			ret = wl_iw_set_powermode(dev, info, (union iwreq_data *)dwrq, extra);
 		}	
 #endif /* "POWERMODE"applied from Raptor2 RC60 */
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+#if 1 /* "POWERMODE"applied from Raptor2 RC60 */
+		else if (strnicmp(extra, "POWERMODE", 9) == 0){
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-27, <Disable setting power save mode if PM is 0> */	
+			if ( PM_control	== TRUE )
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-27, <Disable setting power save mode if PM is 0> */			
+			ret = wl_iw_set_powermode(dev, info, (union iwreq_data *)dwrq, extra);
+		}	
+#endif /* "POWERMODE"applied from Raptor2 RC60 */
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-04-28, <Fixing wl_iw_set_priv function> */
+>>>>>>> vendor-vs660-froyo
 		else if (strnicmp(extra, "SCAN-CHANNELS", 13) == 0)
 			ret = wl_iw_set_scan_channels(dev, info,
 					(union iwreq_data *)dwrq, extra);
 		else if (strnicmp(extra, "ROAM-OFF", 8) == 0)
 			ret = wl_iw_set_roam_off(dev, info,
 					(union iwreq_data *)dwrq, extra);		
+<<<<<<< HEAD
 		else if (strnicmp(extra, "BTCOEXSCAN-START", 16) == 0){
 			if ( roam_off_control == TRUE ) {
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-19, <Set roam_off to 1 during A2DP> */
+		else if (strnicmp(extra, "BTCOEXSCAN-START", 16) == 0){
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */	
+			if ( roam_off_control == TRUE ) {
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */				
+>>>>>>> vendor-vs660-froyo
 			sprintf(extra, "ROAM-OFF %d", 1);
 			dwrq->length = strlen(extra) + 1;
 			ret = wl_iw_set_roam_off(dev, info,
 					(union iwreq_data *)dwrq, extra);	
+<<<<<<< HEAD
 			}
 		}
 		else if (strnicmp(extra, "BTCOEXSCAN-STOP", 15) == 0){
 			if ( roam_off_control == TRUE ) {
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */	
+			}
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */				
+		}
+		else if (strnicmp(extra, "BTCOEXSCAN-STOP", 15) == 0){
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */	
+			if ( roam_off_control == TRUE ) {
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */				
+>>>>>>> vendor-vs660-froyo
 			sprintf(extra, "ROAM-OFF %d", 0);
 			dwrq->length = strlen(extra) + 1;
 			ret = wl_iw_set_roam_off(dev, info,
 					(union iwreq_data *)dwrq, extra);	
+<<<<<<< HEAD
 			}
 		}
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */	
+			}
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-30, <Disable setting roam_offe if roam_off is 1> */				
+		}
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-05-19, <Set roam_off to 1 during A2DP> */
+>>>>>>> vendor-vs660-froyo
 		else if (strnicmp(extra, "DEV-STATS", 9) == 0) { /* 2009-09-29 get TX/RX bytes */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 31)
 			struct net_device_stats *stats = dev->get_stats(dev);
@@ -5996,6 +6689,10 @@ static int wl_iw_set_priv(
 		else if (strnicmp(extra, "WAKEUP-RESUME", 13) == 0)
 			wl_iw_hostwakeup_resume(dev, info, (union iwreq_data *)dwrq, extra);
 #endif	/* CONFIG_BRCM_LGE_WL_HOSTWAKEUP_IOCTL */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E [yoohoo@lge.com] 2009-05-14, support private command */ 
+>>>>>>> vendor-vs660-froyo
 	    else {
 			printk("Unkown PRIVATE command , ignored (%s)\n", extra); /* yoohoo */
 			snprintf(extra, MAX_WX_STRING, "OK");
@@ -7051,11 +7748,19 @@ int wl_iw_attach(struct net_device *dev, void * dhdp)
 	g_iscan = iscan;
 	iscan->dev = dev;
 	iscan->iscan_state = ISCAN_STATE_IDLE;
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S, [jisung.yang@lge.com], 2010-06-08, Hidden SSID */	
+>>>>>>> vendor-vs660-froyo
 #if !defined(CONFIG_LGE_BCM432X_PATCH)
 	g_first_broadcast_scan = BROADCAST_SCAN_FIRST_IDLE;
 #else
 	g_first_broadcast_scan = BROADCAST_SCAN_FIRST_RESULT_CONSUMED;
 #endif
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E, [jisung.yang@lge.com], 2010-06-08, Hidden SSID */
+>>>>>>> vendor-vs660-froyo
 
 	g_iscan->scan_flag = 0;
 
@@ -7072,9 +7777,17 @@ int wl_iw_attach(struct net_device *dev, void * dhdp)
 		return -ENOMEM;
 #endif 
 
+<<<<<<< HEAD
 #if defined(CONFIG_LGE_BCM432X_PATCH) && ( defined(CONFIG_BRCM_USE_GPIO_RESET) || defined(CONFIG_BRCM_USE_DEEPSLEEP))
         sema_init(&wl_off_sem , 0);
 #endif	/* defined(CONFIG_LGE_BCM432X_PATCH) && ( defined(CONFIG_BRCM_USE_GPIO_RESET) || defined(CONFIG_BRCM_USE_DEEPSLEEP)) */
+=======
+/* LGE_CHANGE_S, [yoohoo@lge.com], 2010-01-27, successive power key press lock up */
+#if defined(CONFIG_LGE_BCM432X_PATCH) && ( defined(CONFIG_BRCM_USE_GPIO_RESET) || defined(CONFIG_BRCM_USE_DEEPSLEEP))
+        sema_init(&wl_off_sem , 0);
+#endif	/* defined(CONFIG_LGE_BCM432X_PATCH) && ( defined(CONFIG_BRCM_USE_GPIO_RESET) || defined(CONFIG_BRCM_USE_DEEPSLEEP)) */
+/* LGE_CHANGE_E, [yoohoo@lge.com], 2010-01-27, successive power key press lock up */
+>>>>>>> vendor-vs660-froyo
 #if defined(BCMDONGLEHOST)
 	iw = *(wl_iw_t **)netdev_priv(dev);
 	iw->pub = (dhd_pub_t *)dhdp;
@@ -7144,6 +7857,10 @@ void wl_iw_detach(void)
 #endif 
 
 }
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-11-19, Support Host Wakeup */
+>>>>>>> vendor-vs660-froyo
 #if defined(CONFIG_BRCM_LGE_WL_HOSTWAKEUP)
 int del_wl_timers(void)
 {
@@ -7164,3 +7881,7 @@ int del_wl_timers(void)
 	return 0;
 }
 #endif /* CONFIG_BRCM_LGE_WL_HOSTWAKEUP */
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [yoohoo@lge.com] 2009-11-19, Support Host Wakeup */
+>>>>>>> vendor-vs660-froyo

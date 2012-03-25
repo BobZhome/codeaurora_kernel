@@ -31,17 +31,31 @@
 #include "diagmem.h"
 #include "diagchar.h"
 #include <linux/timer.h>
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [woonghee@lge.com] 2009-12-29, [VS740] kernel diag service */
+>>>>>>> vendor-vs660-froyo
 #if defined (CONFIG_LGE_DIAGTEST)
 #include <linux/platform_device.h>
 #include <mach/lg_diagcmd.h>
 #endif
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_E [woonghee@lge.com] 2009-12-29, [VS740] */
+>>>>>>> vendor-vs660-froyo
 
 MODULE_DESCRIPTION("Diag Char Driver");
 MODULE_LICENSE("GPL v2");
 MODULE_VERSION("1.0");
 
 struct diagchar_dev *driver;
+<<<<<<< HEAD
 
+=======
+/* The following variables can be specified by module options */
+ /* for copy buffer */
+/* LG_FW khlee 2010.01.29 - screen capture needs large heap ( lg_diag_screen_capture.c)*/
+>>>>>>> vendor-vs660-froyo
 #if defined (CONFIG_MACH_MSM7X27_THUNDERC) || defined (LG_FW_DIAG_SCREEN_CAPTURE) || defined (LG_FW_MTC)
 static unsigned int itemsize = 4096; /*Size of item in the mempool */
 #else
@@ -54,9 +68,12 @@ static unsigned int poolsize_hdlc = 8;  /*Number of items in the mempool */
 /* for usb structure buffer */
 static unsigned int itemsize_usb_struct = 20; /*Size of item in the mempool */
 static unsigned int poolsize_usb_struct = 8; /*Number of items in the mempool */
-/* This is the maximum number of user-space clients supported */
+/* LGE_CHANGES_S [woonghee@lge.com] 2009-12-29, [VS740] kernel diag service */
+#if defined (CONFIG_LGE_DIAGTEST)
+/* This is the max number of user-space clients supported at initialization*/
 static unsigned int max_clients = 15;
 static unsigned int threshold_client_limit = 30;
+<<<<<<< HEAD
 /* Timer variables */
 struct timer_list drain_timer;
 int timer_in_progress;
@@ -68,6 +85,33 @@ extern 	void lg_diag_cmd_dev_unregister(struct lg_diag_cmd_dev *sdev);
 #endif
 
 static void *buf_hdlc;
+=======
+/* This is the maximum number of pkt registrations supported at initialization*/
+unsigned int diag_max_registration = 25;
+unsigned int diag_threshold_registration = 100;
+/* Timer variables */
+struct timer_list drain_timer;
+int timer_in_progress;
+
+extern void lgfw_diag_kernel_service_init(int);
+extern int lg_diag_cmd_dev_register(struct lg_diag_cmd_dev *sdev);
+extern 	void lg_diag_cmd_dev_unregister(struct lg_diag_cmd_dev *sdev);
+#else
+/* This is the max number of user-space clients supported at initialization*/
+static unsigned int max_clients = 15;
+static unsigned int threshold_client_limit = 30;
+/* This is the maximum number of pkt registrations supported at initialization*/
+unsigned int diag_max_registration = 25;
+unsigned int diag_threshold_registration = 100;
+
+/* Timer variables */
+static struct timer_list drain_timer;
+static int timer_in_progress;
+#endif
+/* LGE_CHANGES_E [woonghee@lge.com] 2009-12-29, [VS740] */
+
+void *buf_hdlc;
+>>>>>>> vendor-vs660-froyo
 module_param(itemsize, uint, 0);
 module_param(poolsize, uint, 0);
 module_param(max_clients, uint, 0);
@@ -176,6 +220,7 @@ static int diagchar_open(struct inode *inode, struct file *file)
 					, i, driver->client_map[i].name,
 					 driver->client_map[i].pid);
 					driver->display_alert = 0;
+<<<<<<< HEAD
 
 					{
 					char comm[sizeof(current->comm)];
@@ -183,6 +228,8 @@ static int diagchar_open(struct inode *inode, struct file *file)
 							task_pid_nr(current), 
 							get_task_comm(comm, current));
 					}
+=======
+>>>>>>> vendor-vs660-froyo
 				}
 				return -ENOMEM;
 			}
@@ -210,10 +257,11 @@ static int diagchar_close(struct inode *inode, struct file *file)
 		diagfwd_connect();
 	}
 	/* Delete the pkt response table entry for the exiting process */
-	for (i = 0; i < REG_TABLE_SIZE; i++)
+	for (i = 0; i < diag_max_registration; i++)
 			if (driver->table[i].process_id == current->tgid)
 					driver->table[i].process_id = 0;
 
+<<<<<<< HEAD
 	if (driver) {
 		mutex_lock(&driver->diagchar_mutex);
 		driver->ref_count--;
@@ -232,6 +280,18 @@ static int diagchar_close(struct inode *inode, struct file *file)
 				break;
 
 			}
+=======
+			if (driver) {
+				mutex_lock(&driver->diagchar_mutex);
+				driver->ref_count--;
+				diagmem_exit(driver);
+				for (i = 0; i < driver->num_clients; i++)
+					if (driver->client_map[i].pid ==
+					     current->tgid) {
+						driver->client_map[i].pid = 0;
+						break;
+					}
+>>>>>>> vendor-vs660-froyo
 		mutex_unlock(&driver->diagchar_mutex);
 		return 0;
 	}
@@ -241,31 +301,64 @@ static int diagchar_close(struct inode *inode, struct file *file)
 static int diagchar_ioctl(struct inode *inode, struct file *filp,
 			   unsigned int iocmd, unsigned long ioarg)
 {
-	int i, count_entries = 0, temp;
+	int i, j, count_entries = 0, temp;
 	int success = -1;
 
 	if (iocmd == DIAG_IOCTL_COMMAND_REG) {
 		struct bindpkt_params_per_process *pkt_params =
 			 (struct bindpkt_params_per_process *) ioarg;
 
-		for (i = 0; i < REG_TABLE_SIZE; i++) {
+		for (i = 0; i < diag_max_registration; i++) {
 			if (driver->table[i].process_id == 0) {
+				success = 1;
 				driver->table[i].cmd_code =
-					 pkt_params->params->cmd_code;
+					pkt_params->params->cmd_code;
 				driver->table[i].subsys_id =
-					 pkt_params->params->subsys_id;
+					pkt_params->params->subsys_id;
 				driver->table[i].cmd_code_lo =
-					 pkt_params->params->cmd_code_hi;
+					pkt_params->params->cmd_code_hi;
 				driver->table[i].cmd_code_hi =
-					 pkt_params->params->cmd_code_lo;
+					pkt_params->params->cmd_code_lo;
 				driver->table[i].process_id = current->tgid;
 				count_entries++;
 				if (pkt_params->count > count_entries)
 					pkt_params->params++;
 				else
-					return -EINVAL;
+					return success;
 			}
 		}
+		if (i < diag_threshold_registration) {
+			/* Increase table size by amount required */
+			diag_max_registration += pkt_params->count -
+							 count_entries;
+			/* Make sure size doesnt go beyond threshold */
+			if (diag_max_registration > diag_threshold_registration)
+				diag_max_registration =
+						 diag_threshold_registration;
+			driver->table = krealloc(driver->table,
+					 diag_max_registration*sizeof(struct
+					 diag_master_table), GFP_KERNEL);
+			for (j = i; j < diag_max_registration; j++) {
+				success = 1;
+				driver->table[j].cmd_code = pkt_params->
+							params->cmd_code;
+				driver->table[j].subsys_id = pkt_params->
+							params->subsys_id;
+				driver->table[j].cmd_code_lo = pkt_params->
+							params->cmd_code_hi;
+				driver->table[j].cmd_code_hi = pkt_params->
+							params->cmd_code_lo;
+				driver->table[j].process_id = current->tgid;
+				count_entries++;
+				if (pkt_params->count > count_entries)
+					pkt_params->params++;
+				else
+					return success;
+			}
+		} else
+			pr_err("Max size reached, Pkt Registration failed for"
+						" Process %d", current->tgid);
+
 		success = 0;
 	} else if (iocmd == DIAG_IOCTL_GET_DELAYED_RSP_ID) {
 		struct diagpkt_delay_params *delay_params =
@@ -763,6 +856,10 @@ static int diagchar_cleanup(void)
 }
 
 #if defined (CONFIG_LGE_DIAGTEST)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [woonghee@lge.com] 2009-12-29, [VS740] kernel diag service */
+>>>>>>> vendor-vs660-froyo
 extern int lg_diag_create_file(struct platform_device *pdev);
 extern int lg_diag_remove_file(struct platform_device *pdev);
 
@@ -846,10 +943,18 @@ static int __init diagchar_init(void)
 
 	printk(KERN_INFO "diagchar initialized\n");
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [woonghee@lge.com] 2009-12-29, [VS740] kernel diag service */
+>>>>>>> vendor-vs660-froyo
 #if defined (CONFIG_LGE_DIAGTEST)
 	platform_driver_register(&lg_diag_cmd_driver);
 	lgfw_diag_kernel_service_init((int)driver);
 #endif
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_E [woonghee@lge.com] 2009-12-29, [VS740] */
+>>>>>>> vendor-vs660-froyo
 
 	return 0;
 

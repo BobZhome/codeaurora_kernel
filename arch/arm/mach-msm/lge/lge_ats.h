@@ -108,18 +108,32 @@
 #define ATCMD_WLANWL	78
 
 #define ATCMD_ATD	  79
+<<<<<<< HEAD
 #define ATCMD_MTC	  80 
 
 //songth - more drm command 
 #define ATCMD_DRMINDEX		81
 
+=======
+#define ATCMD_MTC	  80 //LGE_CHANGE_S [seypark@lge.com] for AT+MTC
+
+//songth - more drm command 
+#define ATCMD_DRMINDEX		81 //LGE_CHANGE_S [kageki@lge.com] 
+
+//LGE_UPDATE_S 2009.07.07 [seypark@lge.com]
+>>>>>>> vendor-vs660-froyo
 #define ATCMD_FLIGHT		82
 #define ATCMD_LANG			83
 //LGE_UPDATE_E
 
 // yorong drm command
 #define ATCMD_DRMIMEI		84
+<<<<<<< HEAD
 #define ATCMD_POWERDOWN		85
+=======
+#define ATCMD_POWERDOWN		85  // LGE_CHANGE [jinwoonam@lge.com] Powerdown system when no battery
+#define ATCMD_MMCFORMAT    129
+>>>>>>> vendor-vs660-froyo
 
 //////////////////////////////////////////////////////////////////
 // at_cmd value end

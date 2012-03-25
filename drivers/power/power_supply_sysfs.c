@@ -28,6 +28,14 @@
  * (as a macro let's say).
  */
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) || defined (CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
+=======
+/* LGE_CHNAGE
+ * ADD THUNDERC feature to use VS740 BATT DRIVER IN THUNDERC
+ * 2010-05-13, taehung.kim@lge.com
+ */
+/* LGE_CHANGES_S [woonghee@lge.com] 2009-09-25, battery charging */
+>>>>>>> vendor-vs660-froyo
 #include <mach/msm_battery.h>
 #include <mach/msm_battery_thunderc.h>
 #endif
@@ -44,10 +52,19 @@
  * (as a macro let's say).
  */
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) || defined (CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
+=======
+/* LGE_CHNAGE
+ * ADD THUNDERC feature to use VS740 BATT DRIVER IN THUNDERC
+ * 2010-05-13, taehung.kim@lge.com
+ */
+/* LGE_CHANGES_S [woonghee@lge.com] 2009-09-25, battery charging */
+>>>>>>> vendor-vs660-froyo
 #define PSEUDO_BATT_ATTR(_name)					\
 {									\
 	.attr = { .name = #_name, .mode = 0666 },	\
 	.show = pseudo_batt_show_property,				\
+<<<<<<< HEAD
 	.store = pseudo_batt_store_property,				\
 }
 
@@ -58,10 +75,19 @@
 	.store = charging_timer_store_property,				\
 }
 
+=======
+	.store = pseudo_batt_store_property,							\
+}
+/* LGE_CHANGE
+ * Support block charging for Q-gate
+ * 2010-07-18, taehung.kim@lge.com
+ */
+>>>>>>> vendor-vs660-froyo
 #define BLOCK_CHARGING_ATTR(_name)					\
 {									\
 	.attr = { .name = #_name, .mode = 0666 },	\
 	.show = block_charging_show_property,				\
+<<<<<<< HEAD
 	.store = block_charging_store_property,				\
 }
 
@@ -74,6 +100,11 @@
 }
 #endif
 #endif
+=======
+	.store = block_charging_store_property,							\
+}
+#endif
+>>>>>>> vendor-vs660-froyo
 
 #define POWER_SUPPLY_ATTR(_name)					\
 {									\
@@ -129,6 +160,14 @@ static ssize_t power_supply_show_property(struct device *dev,
 	else if (off == POWER_SUPPLY_PROP_CAPACITY_LEVEL)
 		return sprintf(buf, "%s\n", capacity_level_text[value.intval]);
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) || defined (CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
+=======
+/* LGE_CHNAGE
+ * ADD THUNDERC feature to use VS740 BATT DRIVER IN THUNDERC
+ * 2010-05-13, taehung.kim@lge.com
+ */
+	/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740] */
+>>>>>>> vendor-vs660-froyo
 	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME && off <= POWER_SUPPLY_PROP_SERIAL_NUMBER)
 #else
 	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME)
@@ -323,6 +362,117 @@ static ssize_t therm_no_stop_charging_store_property(struct device *dev,
 #endif /* CONFIG_LGE_THERM_NO_STOP_CHARGING */
 #endif
 
+#if defined (CONFIG_MACH_MSM7X27_ALOHAV) || defined (CONFIG_MACH_MSM7X27_THUNDERC)
+/* LGE_CHNAGE
+ * ADD THUNDERC feature to use VS740 BATT DRIVER IN THUNDERC
+ * 2010-05-13, taehung.kim@lge.com
+ */
+
+/* LGE_CHANGES_S [woonghee@lge.com] 2009-09-25, battery charging */
+static ssize_t pseudo_batt_show_property(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t ret;
+	struct power_supply *psy = dev_get_drvdata(dev);
+	const ptrdiff_t off = attr - power_supply_attrs;
+	union power_supply_propval value;
+
+	static char *pseudo_batt[] = {
+		"NORMAL", "PSEUDO",
+	};
+
+	ret = psy->get_property(psy, off, &value);
+
+	if (ret < 0) {
+		if (ret != -ENODEV)
+			dev_err(dev, "driver failed to report `%s' property\n",
+					attr->attr.name);
+		return ret;
+	}
+	if (off == POWER_SUPPLY_PROP_PSEUDO_BATT)
+		return sprintf(buf, "[%s] \nusage: echo [mode] [ID] [therm] [temp] [volt] [cap] [charging] > pseudo_batt\n", pseudo_batt[value.intval]);
+
+	return 0;
+}
+
+extern int pseudo_batt_set(struct pseudo_batt_info_type*);
+
+static ssize_t pseudo_batt_store_property(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	int ret = -EINVAL;
+	struct pseudo_batt_info_type info;
+
+	if (sscanf(buf, "%d %d %d %d %d %d %d", &info.mode, &info.id, &info.therm,
+				&info.temp, &info.volt, &info.capacity, &info.charging) != 7)
+	{
+		if(info.mode == 1) //pseudo mode
+		{
+			printk(KERN_ERR "usage : echo [mode] [ID] [therm] [temp] [volt] [cap] [charging] > pseudo_batt");
+			goto out;
+		}
+	}
+	pseudo_batt_set(&info);
+	ret = count;
+out:
+	return ret;
+}
+
+/* LGE_CHNAGE
+ * Support block charging for Q-gate
+ * 2010-07-18, taehung.kim@lge.com
+ */
+extern void batt_block_charging_set(int);
+static ssize_t block_charging_store_property(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	int ret = -EINVAL;
+	int block;
+	
+
+	if(sscanf(buf, "%d",&block) != 1)
+	{
+		printk("%s:Too many argument\n",__func__);
+		goto out;
+	}
+	printk("%s:block charging=%d\n",__func__,block);
+	batt_block_charging_set(block);
+	ret = count;
+out:
+	return ret;
+}
+static ssize_t block_charging_show_property(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t ret;
+	struct power_supply *psy = dev_get_drvdata(dev);
+	const ptrdiff_t off = attr - power_supply_attrs;
+	union power_supply_propval value;
+
+	static char *block_charging_mode[] = {
+		"BLOCK CHARGING", "NORMAL",
+	};
+
+	ret = psy->get_property(psy, off, &value);
+
+	if (ret < 0) {
+		if (ret != -ENODEV)
+			dev_err(dev, "driver failed to report `%s' property\n",
+					attr->attr.name);
+		return ret;
+	}
+
+	if (off == POWER_SUPPLY_PROP_BLOCK_CHARGING)
+		return sprintf(buf, "[%s]", block_charging_mode[value.intval]);
+
+	return 0;
+}
+#endif
+
 /* Must be in the same order as POWER_SUPPLY_PROP_* */
 static struct device_attribute power_supply_attrs[] = {
 	/* Properties of type `int' */
@@ -338,6 +488,14 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(voltage_min_design),
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) || \
 	defined (CONFIG_MACH_MSM7X27_GISELE) || defined (CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
+=======
+/* LGE_CHNAGE
+ * ADD THUNDERC feature to use VS740 BATT DRIVER IN THUNDERC
+ * 2010-05-13, taehung.kim@lge.com
+ */
+	/* LGE_CHANGES_S [woonghee@lge.com]	2009-09-25, battery charging */
+>>>>>>> vendor-vs660-froyo
 	POWER_SUPPLY_ATTR(batt_vol),
 #else	/* origin */
 	POWER_SUPPLY_ATTR(voltage_now),
@@ -364,6 +522,15 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(capacity_level),
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) || \
 	defined (CONFIG_MACH_MSM7X27_GISELE) || defined (CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
+=======
+/* LGE_CHNAGE
+ * ADD THUNDERC feature to use VS740 BATT DRIVER IN THUNDERC
+ * 2010-05-13, taehung.kim@lge.com
+ */
+	/* LGE_CHANGES_S [woonghee@lge.com]	2009-09-25, battery charging */
+	/* need to match sysfs name, see BATTERY_TEMPERATURE_PATH */
+>>>>>>> vendor-vs660-froyo
 	POWER_SUPPLY_ATTR(batt_temp),
 #else
 	POWER_SUPPLY_ATTR(temp),
@@ -378,6 +545,7 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(manufacturer),
 	POWER_SUPPLY_ATTR(serial_number),
 #if defined (CONFIG_MACH_MSM7X27_ALOHAV) || defined (CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
 	POWER_SUPPLY_ATTR(valid_batt_id),
 	POWER_SUPPLY_ATTR(batt_therm),
 	PSEUDO_BATT_ATTR(pseudo_batt),
@@ -389,6 +557,21 @@ static struct device_attribute power_supply_attrs[] = {
 	THERM_NO_STOP_CHARGING_ATTR(therm_no_stop_charging),	
 #endif /* #if defined(CONFIG_LGE_THERM_NO_STOP_CHARGING) */
 #endif
+=======
+/* LGE_CHNAGE
+ * ADD THUNDERC feature to use VS740 BATT DRIVER IN THUNDERC
+ * 2010-05-13, taehung.kim@lge.com
+ */
+	/* LGE_CHANGES_S [woonghee.park@lge.com] 2010-02-09, [VS740] */
+	POWER_SUPPLY_ATTR(valid_batt_id),
+	POWER_SUPPLY_ATTR(batt_therm),
+	PSEUDO_BATT_ATTR(pseudo_batt),
+/* LGE_CHNAGE
+ * Support block charging for Q-gate
+ * 2010-07-18, taehung.kim@lge.com
+ */
+	BLOCK_CHARGING_ATTR(block_charging),//43
+>>>>>>> vendor-vs660-froyo
 #endif
 };
 

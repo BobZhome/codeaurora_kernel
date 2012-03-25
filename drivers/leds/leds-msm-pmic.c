@@ -30,7 +30,14 @@
 struct msm_pmic_leds_pdata *leds_pdata = 0;
 #endif
 
+<<<<<<< HEAD
 #define MAX_KEYPAD_BL_LEVEL	255 /* 1: 10 mA */
+=======
+/*LED has 15 steps (10mA per step). LED's  max power capacity is 150mA. (0~255 level)*/
+#define MAX_KEYPAD_BL_LEVEL	16	// 150mA
+#define TUNED_MAX_KEYPAD_BL_LEVEL	40	// 60mA
+
+>>>>>>> vendor-vs660-froyo
 
 static void msm_keypad_bl_led_set(struct led_classdev *led_cdev,
 	enum led_brightness value)
@@ -38,9 +45,23 @@ static void msm_keypad_bl_led_set(struct led_classdev *led_cdev,
 	int ret;
 
 #if defined (CONFIG_LGE_UNIFIED_LED)
+<<<<<<< HEAD
 	ret = leds_pdata->msm_keypad_led_set(value / MAX_KEYPAD_BL_LEVEL);
 #else	/* origin */
 	ret = pmic_set_led_intensity(LED_KEYPAD, value / MAX_KEYPAD_BL_LEVEL);
+=======
+	ret = leds_pdata->msm_keypad_led_set(value / TUNED_MAX_KEYPAD_BL_LEVEL);
+#else	/* origin */
+#ifdef CONFIG_MACH_MSM7X27_THUNDERA
+	/* jinkyu.choi@lge.com
+	 * P505, use the android led interface values, 255,127,0
+	 * LED current is controlled by arm9 AMSS with the given values.
+	 */
+	ret = pmic_set_led_intensity(LED_KEYPAD, value);
+#else
+	ret = pmic_set_led_intensity(LED_KEYPAD, value / TUNED_MAX_KEYPAD_BL_LEVEL);
+#endif /* end of CONFIG_MACH_MSM7X27_THUNDERA */
+>>>>>>> vendor-vs660-froyo
 #endif
 	if (ret)
 		dev_err(led_cdev->dev, "can't set keypad backlight\n");
@@ -58,6 +79,14 @@ static int msm_pmic_led_probe(struct platform_device *pdev)
 #if defined (CONFIG_LGE_UNIFIED_LED)
 	leds_pdata = pdev->dev.platform_data;
 #endif
+<<<<<<< HEAD
+=======
+
+#ifndef CONFIG_LGE_UNIFIED_LED
+	if (pdev->dev.platform_data)
+		msm_kp_bl_led.name = pdev->dev.platform_data;
+#endif
+>>>>>>> vendor-vs660-froyo
 
 	rc = led_classdev_register(&pdev->dev, &msm_kp_bl_led);
 	if (rc) {

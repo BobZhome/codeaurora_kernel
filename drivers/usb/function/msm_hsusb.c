@@ -133,6 +133,11 @@ static void usb_chg_stop(struct work_struct *w);
 
 #if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB) || \
 	defined(CONFIG_USB_SUPPORT_LGE_SERIAL_FROM_ARM9_MEID)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [khlee@lge.com] 2010-01-04 */
+/* to supports FS USB in the Factory ( LT cable will be connected) */
+>>>>>>> vendor-vs660-froyo
 extern int msm_chg_LG_cable_type(void);
 #endif
 
@@ -154,6 +159,11 @@ extern int msm_chg_LG_cable_type(void);
 
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB) || \
 	defined(CONFIG_USB_SUPPORT_LGE_SERIAL_FROM_ARM9_MEID)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [khlee@lge.com] 2010-01-04, [VS740] usb switch */
+/* to supports FS USB in the Factory ( LT cable will be connected) */
+>>>>>>> vendor-vs660-froyo
 #define LG_FACTORY_CABLE_TYPE 3
 #define LT_ADB_CABLE 0xff
 #define LG_FACTORY_USB_PID 0x6000
@@ -354,6 +364,10 @@ static void usb_chg_legacy_detect(struct work_struct *w)
 	int ret = 0;
 
 #if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [khlee@lge.com] 2010-01-04, [VS740] usb charging */
+>>>>>>> vendor-vs660-froyo
 	int cable_type;
 
 	cable_type = msm_chg_LG_cable_type();
@@ -372,6 +386,10 @@ static void usb_chg_legacy_detect(struct work_struct *w)
 	}
 
 #if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [khlee@lge.com] 2010-01-04, [VS740] usb charging */
+>>>>>>> vendor-vs660-froyo
 	if( cable_type == LG_FACTORY_CABLE_TYPE) {
 		ui->chg_type = temp = USB_CHG_TYPE__WALLCHARGER;
 		goto chg_legacy_det_out;
@@ -1975,6 +1993,11 @@ static int usb_hw_reset(struct usb_info *ui)
 	writel(ui->dma, USB_ENDPOINTLISTADDR);
 
 #if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [khlee@lge.com] 2010-01-04, [VS740] usb switch */
+/* to supports FS USB in the Factory ( LT cable will be connected) */
+>>>>>>> vendor-vs660-froyo
 	if( msm_chg_LG_cable_type() == LG_FACTORY_CABLE_TYPE) {
 		unsigned tmp = 0; 
 
@@ -1991,6 +2014,10 @@ static int usb_hw_reset(struct usb_info *ui)
 }
 
 #if defined (CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_S [kyuhyung.lee@lge.com] - 2010.02.04 */  
+>>>>>>> vendor-vs660-froyo
 static void lgfw_change_PID(struct usb_info *ui, int pid)
 {
   int i;
@@ -2463,6 +2490,13 @@ void usb_function_enable(const char *function, int enable)
 		return;
 	}
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE_S [kyuhyung.lee@lge.com] 10.02.04 */
+	/* LG_FW khlee 2010.01.21 - In the LG driver state,   
+	 * we do not want to be change the state by ADB menu.  
+	 * PID will not be changed when LT cable is connected.*/
+>>>>>>> vendor-vs660-froyo
 	if (nCableType == 3) {
 		if (pid == 0x6001) 
 			pid = 0x6000;
@@ -2620,6 +2654,10 @@ static void usb_do_work(struct work_struct *w)
 					msm_pm_app_enable_usb_ldo(0);
 				ui->state = USB_STATE_OFFLINE;
 #if defined(CONFIG_USB_SUPPORT_LGDRIVER)
+<<<<<<< HEAD
+=======
+				/* LGE_CHANGES_S [khlee@lge.com] 2009-09-25 [VS740] to fix the DUN bug */
+>>>>>>> vendor-vs660-froyo
 				switch_set_state(&ui->sdev, ui->online);
 				enable_irq(ui->irq);
 #else	/* origin */
@@ -3111,6 +3149,12 @@ static void usb_configure_device_descriptor(struct usb_info *ui)
 	if (!strcmp(df_serialno,"00000000000000"))
 		ui->pdata->serial_number = NULL;
 
+<<<<<<< HEAD
+=======
+	/* In CTS test in korea, they will not use MEID but need to use serial
+	 * khlee@lge.com 2010-02-23, [VS740] usb switch 
+	 */
+>>>>>>> vendor-vs660-froyo
 	if (msm_chg_LG_cable_type() == LT_ADB_CABLE) {
 		sprintf(df_serialno,"%s","LGE_ANDROID_DE");
 		ui->pdata->serial_number = df_serialno;
@@ -3118,6 +3162,10 @@ static void usb_configure_device_descriptor(struct usb_info *ui)
 #endif
 
 #if(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE_S [kyuhyung.lee] 2010.02.04 */
+>>>>>>> vendor-vs660-froyo
 	if (ui->composition->product_id == LG_FACTORY_USB_PID) {
 		desc_device.idProduct = ui->composition->product_id;
 		ui->pdata->serial_number = NULL;
@@ -3144,11 +3192,19 @@ static void usb_configure_device_descriptor(struct usb_info *ui)
 	} else
 #if defined(CONFIG_USB_SUPPORT_LGDRIVER)
 	{
+<<<<<<< HEAD
 		msm_hsusb_is_serial_num_null(TRUE);
 		desc_device.iSerialNumber = 0;
 	}
 #else   /* origin */
 		msm_hsusb_is_serial_num_null(TRUE);
+=======
+		msm_hsusb_is_serial_num_null(TRUE);
+		desc_device.iSerialNumber = 0;
+	}
+#else   /* origin */
+		msm_hsusb_is_serial_num_null(TRUE);
+>>>>>>> vendor-vs660-froyo
 #endif
 
 	msm_hsusb_send_productID(desc_device.idProduct);
@@ -3187,6 +3243,10 @@ static ssize_t msm_hsusb_show_compswitch(struct device *dev,
 	if (ui->composition)
 		i = scnprintf(buf, PAGE_SIZE,
 #if defined(CONFIG_USB_SUPPORT_LGDRIVER)
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGES_S [khlee@lge.com] 2009-09-25 [VS740]  to fix the DUN bug */
+>>>>>>> vendor-vs660-froyo
 				"%x\n",
 #else	/* origin */
 				"composition product id = %x\n",
@@ -3298,6 +3358,12 @@ static ssize_t  show_##function(struct device *dev,			\
 									\
 static DEVICE_ATTR(function, S_IRUGO, show_##function, NULL);
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [fred.cho@lge.com] 2010-02-18 */
+/* Host Request func driver in this order.  */
+/* It should be matched with function Map in Board.c */
+>>>>>>> vendor-vs660-froyo
 #if defined (CONFIG_USB_SUPPORT_LGDRIVER)
 msm_hsusb_func_attr(modem, 0);
 msm_hsusb_func_attr(diag, 1);
@@ -3335,6 +3401,10 @@ static struct attribute *msm_hsusb_func_attrs[] = {
 	NULL,
 };
 #endif
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_E [fred.cho@lge.com] 2010-02-18 */
+>>>>>>> vendor-vs660-froyo
 
 static struct attribute_group msm_hsusb_func_attr_grp = {
 	.name  = "functions",
@@ -3394,6 +3464,10 @@ static int __init usb_probe(struct platform_device *pdev)
 	ui->pdata = pdev->dev.platform_data;
 
 #if defined(CONFIG_USB_SUPPORT_LGE_FACTORY_USB)
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE_S [kyuhyung.lee@lge.com] 2010.02.04 */
+>>>>>>> vendor-vs660-froyo
 	if( msm_chg_LG_cable_type() == 3 )  //detect LT cable
 		pid = LG_FACTORY_USB_PID;
 #endif

@@ -30,7 +30,15 @@ extern uint8_t lgf_factor_key_test_rsp(char);
 
 int diag_log_status = 0;
 
+<<<<<<< HEAD
 int diag_key_list[]= {
+=======
+/* TODO :  need to modify key map for each model */
+#define ETA_KEY_MAX     8
+
+/* key list for VS660 */
+int diag_key_list[ETA_KEY_MAX]={
+>>>>>>> vendor-vs660-froyo
 	/* thunder keypad key */
 	KEY_MENU,
 	KEY_HOME,
@@ -40,17 +48,32 @@ int diag_key_list[]= {
 	KEY_VOLUMEDOWN,
 	/* 7k_handset key */
 	KEY_MEDIA,
+<<<<<<< HEAD
 	KEY_CHAT,
+=======
+>>>>>>> vendor-vs660-froyo
 	KEY_END,
 };
 
 static int diag_event_log_connect(struct input_handler *handler,struct input_dev *dev,const struct input_device_id *id)
 {
+<<<<<<< HEAD
 	//int i;
+=======
+	int i;
+>>>>>>> vendor-vs660-froyo
 	int ret;
 	struct input_handle *handle;
 	printk(" connect () %s \n\n",dev->name);
 
+<<<<<<< HEAD
+=======
+	for (i = 0 ; i < ETA_KEY_MAX - 1 ; i++){
+		if (!test_bit(diag_key_list[i], dev->keybit))
+			continue;
+	}
+	
+>>>>>>> vendor-vs660-froyo
 	handle = kzalloc(sizeof(*handle), GFP_KERNEL);
 	if(!handle)
 		return -ENOMEM;
@@ -69,7 +92,10 @@ static int diag_event_log_connect(struct input_handler *handler,struct input_dev
 		goto err_input_open_device;
 
 	return 0;
+<<<<<<< HEAD
 
+=======
+>>>>>>> vendor-vs660-froyo
 err_input_open_device:
 	input_unregister_handle(handle);
 err_input_register_handle:
@@ -93,8 +119,12 @@ static const struct input_device_id diag_event_log_ids[] = {
 	{ },
 };
 
+<<<<<<< HEAD
 static void diag_event_log_event(struct input_handle *handle, 
 		unsigned int type, unsigned int code, int value)
+=======
+static void diag_event_log_event(struct input_handle *handle, unsigned int type,unsigned int code, int value)
+>>>>>>> vendor-vs660-froyo
 {
 	if ( (type == EV_KEY)&& (value == 1) ){
 		lgf_factor_key_test_rsp((uint8_t)code);

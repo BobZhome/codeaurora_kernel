@@ -46,6 +46,10 @@ static struct ram_console_buffer *ram_console_buffer;
 static size_t ram_console_buffer_size;
 
 #if defined(CONFIG_LGE_SUPPORT_ERS) || defined(CONFIG_LGE_HANDLE_PANIC)
+<<<<<<< HEAD
+=======
+/* LGE_CHANGES_S [j.y.han@lge.com] 20090904, helper function */
+>>>>>>> vendor-vs660-froyo
 inline struct ram_console_buffer *get_ram_console_buffer(void)
 {
 	return ram_console_buffer;
@@ -151,6 +155,10 @@ static struct console ram_console = {
 	.name	= "ram",
 	.write	= ram_console_write,
 #if defined (CONFIG_MACH_LGE)	
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGES_S [lsy@lge.com] 2009-10-29, Do not reprint buffer */
+>>>>>>> vendor-vs660-froyo
 	.flags	= CON_ENABLED,
 #else	/* origin */
 	.flags	= CON_PRINTBUFFER | CON_ENABLED,
@@ -369,7 +377,11 @@ static int __init ram_console_module_init(void)
 }
 #endif
 
+<<<<<<< HEAD
 #if defined(CONFIG_LGE_RAM_CONSOLE_CLEAN)
+=======
+// LGE_CHANGE_S [dojip.kim@lge.com] 2010-08-04, clean the ram console when normal shutdown
+>>>>>>> vendor-vs660-froyo
 void ram_console_clean_buffer(void)
 {
 	struct ram_console_buffer *buffer = ram_console_buffer;
@@ -377,7 +389,11 @@ void ram_console_clean_buffer(void)
 	//memset(ram_console_buffer, 0, ram_console_buffer_size);
 }
 EXPORT_SYMBOL(ram_console_clean_buffer);
+<<<<<<< HEAD
 #endif
+=======
+// LGE_CHANGE_E [dojip.kim@lge.com] 2010-08-04
+>>>>>>> vendor-vs660-froyo
 
 static ssize_t ram_console_read_old(struct file *file, char __user *buf,
 				    size_t len, loff_t *offset)

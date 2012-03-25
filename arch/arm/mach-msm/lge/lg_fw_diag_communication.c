@@ -1,4 +1,5 @@
 /*
+<<<<<<< HEAD
  * Copyright (c) 2010 LGE. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
@@ -12,6 +13,12 @@
  *
  */
 
+=======
+ *   LG_FW_AUDIO_TESTMODE
+ *
+ *   kiwone creates this file for audio test mode, and the use of another function to send framework.
+*/
+>>>>>>> vendor-vs660-froyo
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -44,7 +51,11 @@ static int diagcmd_probe(struct platform_device *pdev)
 	int ret = 0;
 
 	if (!pdata){
+<<<<<<< HEAD
 		D("diagcmd_probe pdata is NULL\n");
+=======
+		D("diagcmd_probe pdata err:%s\n", pdata->name);
+>>>>>>> vendor-vs660-froyo
 		return -EBUSY;
 	}
 
@@ -101,7 +112,11 @@ static void __exit diagcmd_exit(void)
 module_init(diagcmd_init);
 module_exit(diagcmd_exit);
 
+<<<<<<< HEAD
 MODULE_AUTHOR("kiwone.seo");
+=======
+MODULE_AUTHOR("kiwone.seo@lge.com");
+>>>>>>> vendor-vs660-froyo
 MODULE_DESCRIPTION("lg_fw_diagcmd driver");
 MODULE_LICENSE("GPL");
 

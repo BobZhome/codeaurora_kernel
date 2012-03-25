@@ -1,4 +1,5 @@
 /*
+<<<<<<< HEAD
  * Copyright (c) 2010 LGE. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
@@ -15,12 +16,29 @@
  * Date : 2010.01.26
  */
 
+=======
+  Program : UDM 
+
+  Author : khlee
+
+  Date : 2010.01.26
+*/
+/* ==========================================================================
+===========================================================================*/
+>>>>>>> vendor-vs660-froyo
 #include <linux/module.h>
 #include <mach/lg_diag_udm.h>
 #include <mach/lg_diagcmd.h>
 #include <mach/lg_diag_testmode.h>
 
+<<<<<<< HEAD
 extern PACK(void *) diagpkt_alloc (diagpkt_cmd_code_type code, unsigned int length);
+=======
+/* ==========================================================================
+===========================================================================*/
+extern PACK(void *) diagpkt_alloc (diagpkt_cmd_code_type code, unsigned int length);
+/*==========================================================================*/
+>>>>>>> vendor-vs660-froyo
 
 PACK (void *)LGF_Udm (
         PACK (void	*)req_pkt_ptr,	/* pointer to request packet  */

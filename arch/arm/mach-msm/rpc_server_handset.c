@@ -59,6 +59,15 @@
 #define HS_REL_K		0xFF	/* key release */
 
 #ifndef CONFIG_MACH_MSM7X27_ALOHAV
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE
+ * for hook key
+ * 2010-03-03, junyeob.an
+ * for deskdock detect from muic
+ * 2010-04-19
+ */
+>>>>>>> vendor-vs660-froyo
 #define HS_ON_HOOK_K		0x01	/* headphone hook key */
 #define GPIO_EAR_SENSE_BIAS		0x1D
 #define HS_DESKDOCK_DETECT	0x02	/* deskdock detect */
@@ -239,12 +248,16 @@ static struct msm_handset *hs;
 static void (*deskdock_detect_callback)(int);
 
 #if defined(CONFIG_LGE_DIAGTEST)
+<<<<<<< HEAD
 /* for SLATE */
 extern void mtc_send_key_log_packet(unsigned long keycode, unsigned long state);
 
 /* fot MTC */
 extern void ats_eta_mtc_key_logging(int scancode, unsigned char keystate);
 
+=======
+/* LGE_CHANGES_S [woonghee@lge.com] 2010-01-23, [VS740] for key test */
+>>>>>>> vendor-vs660-froyo
 extern uint8_t if_condition_is_on_key_buffering;
 extern uint8_t lgf_factor_key_test_rsp(char);
 #endif
@@ -303,6 +316,7 @@ static void report_hs_key(uint32_t key_code, uint32_t key_parm)
 	case KEY_POWER:
 	case KEY_END:
 		input_report_key(hs->ipdev, key, (key_code != HS_REL_K));
+<<<<<<< HEAD
 #if defined (CONFIG_LGE_DIAGTEST)
 		mtc_send_key_log_packet((unsigned long)key, !(key_code != HS_REL_K));
     ats_eta_mtc_key_logging((int)key, (key_code != HS_REL_K));
@@ -310,6 +324,14 @@ static void report_hs_key(uint32_t key_code, uint32_t key_parm)
 		break;
 	case KEY_MEDIA:
 		if (gpio_get_value(GPIO_EAR_SENSE_BIAS) == 1) {
+=======
+		break;
+	case KEY_MEDIA:
+		if (gpio_get_value(GPIO_EAR_SENSE_BIAS) == 1) {
+			/* LGE_CHANGE
+			 * 2010-03-09, junyoub.an@lge.com To protect from wrong hook key operation
+			 */ 
+>>>>>>> vendor-vs660-froyo
 			input_report_key(hs->ipdev, key, (key_code != HS_REL_K));
 		}
 		break;
@@ -325,6 +347,13 @@ static void report_hs_key(uint32_t key_code, uint32_t key_parm)
 	case KEY_VOLUMEDOWN:
 		input_report_key(hs->ipdev, key, (key_code != HS_REL_K));
 #if defined(CONFIG_LGE_DIAGTEST)
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGES
+		 * [woonghee@lge.com] 2010-01-23, 
+		 * [VS740] for key test
+		 */
+>>>>>>> vendor-vs660-froyo
 		if(if_condition_is_on_key_buffering == HS_TRUE && key_code == 0/*press*/)
 			lgf_factor_key_test_rsp((uint8_t)key);
 #endif
@@ -336,6 +365,12 @@ static void report_hs_key(uint32_t key_code, uint32_t key_parm)
 		report_headset_switch(hs->ipdev, key, (key_code != HS_REL_K));
 #endif
 #if defined(CONFIG_LGE_DIAGTEST)
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGES
+		 * [woonghee@lge.com] 2010-01-23
+		 * [VS740] for key test */
+>>>>>>> vendor-vs660-froyo
 		if(if_condition_is_on_key_buffering == HS_TRUE && key_code == 0/*press*/)
 			lgf_factor_key_test_rsp((uint8_t)key);
 #endif

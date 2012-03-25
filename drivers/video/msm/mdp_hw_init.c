@@ -594,8 +594,15 @@ static void mdp_load_lut_param(void)
 }
 
 #if defined(CONFIG_MACH_MSM7X27_THUNDERG) || defined(CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
 
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA) || defined(CONFIG_FB_MSM_MDDI_HITACHI_HVGA)
+=======
+/* LGE_CHANGE_S
+  * Change code to apply new LUT for display quality. 2010-08-03. minjong.gong@lge.com 
+  * Below LUT Table was received from taeyun.kim@lge.com.
+  */
+>>>>>>> vendor-vs660-froyo
 static u32 thunder_lut_normal[256] = {
 	0x00000000, 0x00010101, 0x00010101, 0x00020202, 0x00030302, 0x00030303, 0x00040404, 0x00040504,
 	0x00050505, 0x00060606, 0x00060706, 0x00070707, 0x00080808, 0x00080908, 0x00090909, 0x000A0A09,
@@ -665,6 +672,7 @@ static u32 thunder_lut_camera[256] = {
 	0x00F2FCEE, 0x00F3FDEF, 0x00F4FEF0, 0x00F5FFF1, 0x00F6FFF2, 0x00F7FFF3, 0x00F8FFF4, 0x00F9FFF5,
 	0x00FAFFF6, 0x00FBFFF7, 0x00FDFFF8, 0x00FEFFF8, 0x00FFFFF9, 0x00FFFFFA, 0x00FFFFFB, 0x00FFFFFC
 };
+<<<<<<< HEAD
 #endif
 
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA) || defined(CONFIG_FB_MSM_MDDI_NOVATEK_HVGA)
@@ -740,26 +748,36 @@ static u32 thunder_lut_camera_novatek[256] = {
 	0x00F4F4F9, 0x00F5F5FA, 0x00F6F6FB, 0x00F6F6FB, 0x00F7F7FC, 0x00F8F8FD, 0x00F9F9FE, 0x00FAFAFF,
 };
 #endif
+=======
+>>>>>>> vendor-vs660-froyo
 
 void mdp_load_thunder_lut(int lut_type)
 {
 	int i=0;
+<<<<<<< HEAD
 
 	if (g_mddi_lcd_probe == 0) /* Hitachi LCD */
 		return;
 	
+=======
+>>>>>>> vendor-vs660-froyo
 	if(lut_type != 0)
 	{
 		/* MDP cmd block enable */
 		mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON, FALSE);
 
+<<<<<<< HEAD
 		/* bit4 : LUT Table is Post(After matrix convert), 
 		 * bit2:0  : disable 3 components table. 
 		 */
+=======
+		/* bit4 	: LUT Table is Post(After matrix convert), bit2:0  : disable 3 components table. */
+>>>>>>> vendor-vs660-froyo
 		MDP_OUTP(MDP_BASE + 0x90070, 0x10);
 
 		if(lut_type == 1)
 		{
+<<<<<<< HEAD
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)		
 			if (g_mddi_lcd_probe == 0) { /* Hitachi LCD */
 				for(i=0;i<256;i++) {
@@ -807,12 +825,28 @@ void mdp_load_thunder_lut(int lut_type)
 		/* bit4	: LUT Table is Post(After matrix convert), 
 		 * bit2:0  : enable 3 components table. 
 		 */
+=======
+			for(i=0;i<256;i++) {
+				outpdw(MDP_BASE + 0x93800 + i*4, thunder_lut_normal[i]); }
+		}
+		else if(lut_type ==2)
+		{
+			for(i=0;i<256;i++) {
+				outpdw(MDP_BASE + 0x93800 + i*4, thunder_lut_camera[i]); }			
+		}
+		
+		/* bit4 	: LUT Table is Post(After matrix convert), bit2:0  : enable 3 components table. */
+>>>>>>> vendor-vs660-froyo
 		MDP_OUTP(MDP_BASE + 0x90070, 0x17);
 
 		/* MDP cmd block disable */
 		mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);		
 	}
 }
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE_E */
+>>>>>>> vendor-vs660-froyo
 #endif
 
 #define   IRQ_EN_1__MDP_IRQ___M    0x00000800
@@ -882,7 +916,14 @@ void mdp_hw_init(void)
 #endif
 
 #if defined(CONFIG_MACH_MSM7X27_THUNDERG) || defined(CONFIG_MACH_MSM7X27_THUNDERC)
+<<<<<<< HEAD
 	mdp_load_thunder_lut(1);	/* type = 1 : Normal LUT */
+=======
+	/* LGE_CHANGE_S
+	  * Change code to apply new LUT for display quality. 2010-08-03. minjong.gong@lge.com 
+	  */
+	mdp_load_thunder_lut(1);	// nornal 
+>>>>>>> vendor-vs660-froyo
 #endif
 
 	/*

@@ -135,14 +135,21 @@ static void msm_enqueue(struct msm_device_queue *queue,
 	if (!list_empty(&__q->list)) {				\
 		__q->len--;					\
 		qcmd = list_first_entry(&__q->list,		\
+<<<<<<< HEAD
 				struct msm_queue_cmd, member);	\	
 	if ((qcmd) && (&qcmd->member) && (&qcmd->member.next))	\
 							list_del_init(&qcmd->member);					\
+=======
+				struct msm_queue_cmd, member);	\
+		if ((qcmd) && (&qcmd->member) && (&qcmd->member.next))	\
+			list_del_init(&qcmd->member);			\
+>>>>>>> vendor-vs660-froyo
 	}							\
 	spin_unlock_irqrestore(&__q->lock, flags);	\
 	qcmd;							\
 })
 
+<<<<<<< HEAD
  #define msm_delete_entry(queue, member, q_cmd) ({               \
          unsigned long flags;                                    \
          struct msm_device_queue *__q = (queue);                 \
@@ -158,6 +165,24 @@ static void msm_enqueue(struct msm_device_queue *queue,
          }                                                       \
          spin_unlock_irqrestore(&__q->lock, flags);              \
  })
+=======
+#define msm_delete_entry(queue, member, q_cmd) ({				\
+	unsigned long flags;									  \
+	struct msm_device_queue *__q = (queue); 				\
+	struct msm_queue_cmd *qcmd = 0;						  \
+	spin_lock_irqsave(&__q->lock, flags);					\
+	if (!list_empty(&__q->list)) {						  \
+		list_for_each_entry(qcmd, &__q->list, member)	\
+		if (qcmd == q_cmd) {							  \
+			__q->len--; 							\
+			list_del_init(&qcmd->member); 		  \
+			break;									\
+		} 											  \
+	}														\
+	spin_unlock_irqrestore(&__q->lock, flags);			  \
+})
+
+>>>>>>> vendor-vs660-froyo
 #define msm_queue_drain(queue, member) do {			\
 	unsigned long flags;					\
 	struct msm_device_queue *__q = (queue);			\
@@ -165,6 +190,7 @@ static void msm_enqueue(struct msm_device_queue *queue,
 	spin_lock_irqsave(&__q->lock, flags);			\
 	CDBG("%s: draining queue %s\n", __func__, __q->name);	\
 	while (!list_empty(&__q->list)) {			\
+<<<<<<< HEAD
                  __q->len--;                                     \
 		qcmd = list_first_entry(&__q->list,		\
 			struct msm_queue_cmd, member);		\
@@ -174,6 +200,17 @@ static void msm_enqueue(struct msm_device_queue *queue,
                        free_qcmd(qcmd);                                                                \
                }                       \
 	}							\
+=======
+		__q->len--;								\
+		qcmd = list_first_entry(&__q->list,		\
+			struct msm_queue_cmd, member);		\
+		if (qcmd) {								\
+			if ((&qcmd->member) && (&qcmd->member.next))	\
+				list_del_init(&qcmd->member);				\
+			free_qcmd(qcmd);								\
+		}													\
+	};							\
+>>>>>>> vendor-vs660-froyo
 	spin_unlock_irqrestore(&__q->lock, flags);		\
 } while (0)
 
@@ -466,6 +503,13 @@ static int __msm_get_frame(struct msm_sync *sync,
 	       goto err;
 	}
 
+       if ((!qcmd->command) && (qcmd->error_code & MSM_CAMERA_ERR_MASK)) {
+	   	frame->error_code = qcmd->error_code;
+		CDBG("%s: fake frame with camera error code = %d\n", __func__,
+			frame->error_code);
+	       goto err;
+	}
+	   
 	vdata = (struct msm_vfe_resp *)(qcmd->command);
 	pphy = &vdata->phy;
 
@@ -612,7 +656,11 @@ static struct msm_queue_cmd *__msm_control(struct msm_sync *sync,
 			rc = -ETIMEDOUT;
 		if (rc < 0) {
 			pr_err("%s: wait_event error %d\n", __func__, rc);
+<<<<<<< HEAD
                          msm_delete_entry(&sync->event_q, list_config, qcmd);
+=======
+			msm_delete_entry(&sync->event_q, list_config, qcmd);
+>>>>>>> vendor-vs660-froyo
 			return ERR_PTR(rc);
 		}
 	}
@@ -1906,6 +1954,10 @@ static long msm_ioctl_config(struct file *filep, unsigned int cmd,
 
 
 
+       case MSM_CAM_IOCTL_ERROR_CONFIG:
+	   	rc = msm_error_config(pmsm->sync, argp);
+		break;		
+
 	default:
 		rc = msm_ioctl_common(pmsm, cmd, argp);
 		break;
@@ -1993,32 +2045,47 @@ static int __msm_release(struct msm_sync *sync)
 	struct hlist_node *n;
 
 	mutex_lock(&sync->lock);
+<<<<<<< HEAD
 	#if defined (CONFIG_MACH_LGE)
     	   if (!sync->opencnt) {
                mutex_unlock(&sync->lock);
                return 0;
       	   }
 	#endif
+=======
+#if defined (CONFIG_MACH_LGE)
+/* [junyeong.han@lge.com] 2010-08-09
+ * When opencnt is 0, just return 0.
+ * below code has potential risk(run release twise),
+ * when opencnt value is 0 */
+	if (!sync->opencnt) {
+		mutex_unlock(&sync->lock);
+		return 0;
+	}
+#endif
+>>>>>>> vendor-vs660-froyo
 	if (sync->opencnt)
 		sync->opencnt--;
 	if (!sync->opencnt) {
 		/* need to clean up system resource */
 		if (sync->vfefn.vfe_release)
 			sync->vfefn.vfe_release(sync->pdev);
+<<<<<<< HEAD
 		/*sensor release*/
+=======
+		/*sensor release */
+>>>>>>> vendor-vs660-froyo
 		sync->sctrl.s_release();
 		msm_camio_sensor_clk_off(sync->pdev);
 		kfree(sync->cropinfo);
 		sync->cropinfo = NULL;
 		sync->croplen = 0;
-
 		hlist_for_each_entry_safe(region, hnode, n,
 				&sync->pmem_frames, list) {
 			hlist_del(hnode);
 			put_pmem_file(region->file);
 			kfree(region);
 		}
-
 		hlist_for_each_entry_safe(region, hnode, n,
 				&sync->pmem_stats, list) {
 			hlist_del(hnode);
@@ -2292,7 +2359,11 @@ static int __msm_open(struct msm_sync *sync, const char *const apps_id)
 			sync->get_pic_abort = 0;
 			rc = msm_camio_sensor_clk_on(sync->pdev);
 			if (rc < 0) {
+<<<<<<< HEAD
 				 pr_err("%s: setting sensor clocks failed: %d\n",
+=======
+				pr_err("%s: setting sensor clocks failed: %d\n",
+>>>>>>> vendor-vs660-froyo
 					__func__, rc);
 				goto msm_open_done;
 			}
@@ -2303,9 +2374,15 @@ static int __msm_open(struct msm_sync *sync, const char *const apps_id)
 				goto msm_open_done;
 			}
 			rc = sync->vfefn.vfe_init(&msm_vfe_s,
+<<<<<<< HEAD
 	 				sync->pdev);
  			if (rc < 0) {
  				pr_err("%s: vfe_init failed at %d\n",
+=======
+				sync->pdev);
+			if (rc < 0) {
+				pr_err("%s: vfe_init failed at %d\n",
+>>>>>>> vendor-vs660-froyo
 					__func__, rc);
 				goto msm_open_done;
 			}
@@ -2329,7 +2406,7 @@ msm_open_done:
 }
 
 static int msm_open_common(struct inode *inode, struct file *filep,
-			   int once)
+			int once)
 {
 	int rc;
 	struct msm_device *pmsm =
@@ -2353,9 +2430,7 @@ static int msm_open_common(struct inode *inode, struct file *filep,
 	rc = __msm_open(pmsm->sync, MSM_APPS_ID_PROP);
 	if (rc < 0)
 		return rc;
-
 	filep->private_data = pmsm;
-
 	CDBG("%s: rc %d\n", __func__, rc);
 	return rc;
 }
@@ -2385,9 +2460,7 @@ static int msm_open_control(struct inode *inode, struct file *filep)
 
 	if (!g_v4l2_opencnt)
 		g_v4l2_control_device = ctrl_pmsm;
-
 	g_v4l2_opencnt++;
-
 	CDBG("%s: rc %d\n", __func__, rc);
 	return rc;
 }

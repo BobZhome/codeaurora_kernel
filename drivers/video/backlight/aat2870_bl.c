@@ -37,10 +37,13 @@
 #include <linux/earlysuspend.h>
 #endif
 
+<<<<<<< HEAD
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT
 #define THUNDER_SPRINT_NO_ALC
 #endif
 
+=======
+>>>>>>> vendor-vs660-froyo
 /********************************************
  * Definition
  ********************************************/
@@ -50,8 +53,39 @@
 /* 9.00, 9.90, 10.8, 11.7, 12.6, 13.5, 14.4, 15.3, 16.2, 17.1, */
 /* 18.0, 18.9, 19.8, 20.7, 21.6, 22.5, 23.4, 24.3, 25.2, 26.1, */
 /* 27.0, 27.9 */
+<<<<<<< HEAD
 #define LCD_LED_MAX 17 /* 16.45mA */
 #define LCD_LED_MIN 0  /* 0.48mA */
+=======
+
+/* LGE_CHANGE
+  * AAT2862 has two parts of LEDs(Main and Sub)
+  * Added some definitions and modified I2C write command to control both Main and Sub LEDs.
+  * Added 'AAT2862BL_REG_BLS', changed members of structure 'aat28xx_reg_addrs'
+  * and modified 'aat28xx_write' to control two registers(AAT2862BL_REG_BLM and AAT2862BL_REG_BLS)
+  * 2010-04-22, minjong.gong@lge.com
+  */
+
+/* LGE_CHANGE
+  * If MEQS bit in AAT2862BL_REG_BLM is set, we don't need to write command to AAT2862BL_REG_BLS.
+  * So modify command array for AAT2862 and related functions. 
+  * And change default brightness and maximum brightness.
+  * 2010-05-18, minjong.gong@lge.com
+  */
+
+#ifdef CONFIG_MACH_MSM7X27_THUNDERA /* for P505 */
+#define LCD_LED_MAX 14 /* 13.55mA */
+#define LCD_LED_MIN 4  /* 3.87mA */
+#else
+/* LGE_CHANGE,
+  * Change the maximum brightness to reduce current consumption at MR version.
+  * Before : 21 step(20.32mA), After : 16 step(15.48mA)
+  * 2010.10.06, minjong.gong@lge.com
+  */
+#define LCD_LED_MAX 16 /* 15.48mA */
+#define LCD_LED_MIN 0  /* 0.48mA */
+#endif
+>>>>>>> vendor-vs660-froyo
 #define DEFAULT_BRIGHTNESS 13
 #define AAT28XX_LDO_NUM 4
 
@@ -143,6 +177,7 @@ struct aat28xx_driver_data {
 static unsigned int debug = 0;
 module_param(debug, uint, 0644);
 
+<<<<<<< HEAD
 static int bl_value[256] =
 {
 	0,
@@ -184,6 +219,23 @@ static int bl_value[256] =
 static struct aat28xx_ctrl_tbl aat2862bl_normal_tbl[] = {
 	// AAT2862 has no ALC mode and don't support ambient light sensor !!
 	{ 0x03, 0xF2 },  /* MEQS(7)=high, DISABLE FADE_MAIN(6)=high(disabled), LCD_ON(5)=high(On),  Brightness=Default (0x12, 13th setp)*/
+=======
+/* Set to Normal mode */
+static struct aat28xx_ctrl_tbl aat2862bl_normal_tbl[] = {
+#ifdef CONFIG_MACH_MSM7X27_THUNDERA /* for P505 */
+	/* 2010-07-23, hosung8009.kim@lge.com 
+	 * MEQS(7)=high, DISABLE FADE_MAIN(6)=high(disabled),
+	 * LCD_ON(5)=high(On),  Brightness=Default(0x09) 
+	 */
+	 { 0x03, 0xE9 },  
+#else
+	/* LGE_CHANGE. 
+	 * Change register value to do not turn on the bakclight at operatoin mode setting. (0xF2 -> 0xD2)
+	 * 2010-07-31. minjong.gong@lge.com 
+	 */
+	{ 0x03, 0xD2 },  /* MEQS(7)=high, DISABLE FADE_MAIN(6)=high(disabled), LCD_ON(5)=high(On),  Brightness=Default (0x12, 13th setp)*/
+#endif
+>>>>>>> vendor-vs660-froyo
 	{ 0xFF, 0xFE }	 /* end of command */
 };
 
@@ -399,19 +451,28 @@ int aat28xx_ldo_enable(struct device *dev, unsigned num, unsigned enable)
 		if ((adap=dev_get_drvdata(dev)) && (client=i2c_get_adapdata(adap))) {
 			drvdata = i2c_get_clientdata(client);
 			if (enable) {
+<<<<<<< HEAD
 				if (drvdata->ldo_ref[num-1] == 0) {
 					dprintk("ref count = 0, call aat28xx_set_ldos\n");
 					err = aat28xx_set_ldos(client, num, enable);
 					if (!err)
 						drvdata->ldo_ref[num-1]++;
+=======
+				if (drvdata->ldo_ref[num-1]++ == 0) {
+					dprintk("ref count = 0, call aat28xx_set_ldos\n");
+					err = aat28xx_set_ldos(client, num, enable);
+>>>>>>> vendor-vs660-froyo
 				}
 			}
 			else {
 				if (--drvdata->ldo_ref[num-1] == 0) {
 					dprintk("ref count = 0, call aat28xx_set_ldos\n");
 					err = aat28xx_set_ldos(client, num, enable);
+<<<<<<< HEAD
 					if (err)
 						drvdata->ldo_ref[num-1]++;
+=======
+>>>>>>> vendor-vs660-froyo
 				}
 			}
 			return err;
@@ -449,6 +510,10 @@ EXPORT_SYMBOL(aat28xx_ldo_set_level);
 static int aat28xx_set_table(struct aat28xx_driver_data *drvdata, struct aat28xx_ctrl_tbl *ptbl)
 {
 	unsigned int i = 0;
+<<<<<<< HEAD
+=======
+	unsigned long delay = 0;
+>>>>>>> vendor-vs660-froyo
 
 	if (ptbl == NULL) {
 		eprintk("input ptr is null\n");
@@ -457,8 +522,15 @@ static int aat28xx_set_table(struct aat28xx_driver_data *drvdata, struct aat28xx
 
 	for( ;;) {
 		if (ptbl->reg == 0xFF) {
+<<<<<<< HEAD
 			if (ptbl->val != 0xfe)
 				udelay(ptbl->val);
+=======
+			if (ptbl->val != 0xFE) {
+				delay = (unsigned long)ptbl->val;
+				udelay(delay);
+			}
+>>>>>>> vendor-vs660-froyo
 			else
 				break;
 		}	
@@ -494,6 +566,16 @@ static void aat28xx_go_opmode(struct aat28xx_driver_data *drvdata)
 			drvdata->state = NORMAL_STATE;
 			break;
 		case ALC_MODE:
+<<<<<<< HEAD
+=======
+			/* LGE_CHANGE
+			 * Remove ALC mode
+			 * 2010-07-26. minjong.gong@lge.com
+			 */
+			//aat28xx_set_table(drvdata, drvdata->cmds.alc);
+			//drvdata->state = NORMAL_STATE;
+			//break;
+>>>>>>> vendor-vs660-froyo
 		default:
 			eprintk("Invalid Mode\n");
 			break;
@@ -502,6 +584,17 @@ static void aat28xx_go_opmode(struct aat28xx_driver_data *drvdata)
 
 static void aat28xx_device_init(struct aat28xx_driver_data *drvdata)
 {
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE.
+  * Do not initialize aat28xx when system booting. The aat28xx is already initialized in oemsbl or LK !!
+  * 2010-08-16, minjong.gong@lge.com
+  */
+	if (system_state == SYSTEM_BOOTING) {
+		aat28xx_go_opmode(drvdata);
+		return;
+	}
+>>>>>>> vendor-vs660-froyo
 	aat28xx_hw_reset(drvdata);
 	aat28xx_go_opmode(drvdata);
 }
@@ -529,7 +622,10 @@ static void aat28xx_poweron(struct aat28xx_driver_data *drvdata)
 	}
 }
 
+<<<<<<< HEAD
 #if 0
+=======
+>>>>>>> vendor-vs660-froyo
 static void aat28xx_poweroff(struct aat28xx_driver_data *drvdata)
 {
 	if (!drvdata || drvdata->state == POWEROFF_STATE)
@@ -549,15 +645,21 @@ static void aat28xx_poweroff(struct aat28xx_driver_data *drvdata)
 	mdelay(6);
 	drvdata->state = POWEROFF_STATE;
 }
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> vendor-vs660-froyo
 
 /* This function provide sleep enter routine for power management. */
 static void aat28xx_sleep(struct aat28xx_driver_data *drvdata)
 {
+<<<<<<< HEAD
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC)
 	int cam_status;
 #endif
 
+=======
+>>>>>>> vendor-vs660-froyo
 	if (!drvdata || drvdata->state == SLEEP_STATE)
 		return;
 
@@ -570,17 +672,31 @@ static void aat28xx_sleep(struct aat28xx_driver_data *drvdata)
 			break;
 
 		case ALC_MODE:
+<<<<<<< HEAD
+=======
+			/* LGE_CHANGE
+			 * Remove ALC mode
+			 * 2010-07-26. minjong.gong@lge.com
+			 */
+			//drvdata->state = SLEEP_STATE;
+			//aat28xx_set_table(drvdata, drvdata->cmds.sleep);
+			//udelay(500);
+			//break;
+>>>>>>> vendor-vs660-froyo
 
 		default:
 			eprintk("Invalid Mode\n");
 			break;
 	}
+<<<<<<< HEAD
 #if defined(CONFIG_MACH_MSM7X27_THUNDERC)
 	cam_status = camera_status();
 	if (cam_status == CAMERA_POWER_OFF){
 	}
 #endif
 	
+=======
+>>>>>>> vendor-vs660-froyo
 }
 
 static void aat28xx_wakeup(struct aat28xx_driver_data *drvdata)
@@ -594,6 +710,7 @@ static void aat28xx_wakeup(struct aat28xx_driver_data *drvdata)
 
 	if (drvdata->state == POWEROFF_STATE) {
 		aat28xx_poweron(drvdata);
+<<<<<<< HEAD
 		aat28xx_go_opmode(drvdata);
 		if (drvdata->mode == NORMAL_MODE) {
 			if(drvdata->version == 2862) {
@@ -611,6 +728,21 @@ static void aat28xx_wakeup(struct aat28xx_driver_data *drvdata)
 	} else if (drvdata->state == SLEEP_STATE) {
 		if (drvdata->mode == NORMAL_MODE) {
 			if(drvdata->version == 2862) {
+=======
+		/* LGE_CHANGE
+		 * Because the aat28xx_go_opmode is called in the aat28xx_poweron above, so I remove below function.
+		 * If it is called two times when the previous state of AAT2862 is POWEROFF_STATE, it causes malfucction.
+		 * 2010-07-31. minjong.gong@lge.com
+		 */
+		//aat28xx_go_opmode(drvdata);
+	} else if (drvdata->state == SLEEP_STATE) {
+		if (drvdata->mode == NORMAL_MODE) {
+			if(drvdata->version == 2862) {
+				/* LGE_CHANGE
+				  * Using 'Fade in' function supported by AAT2862 when wakeup.
+				  * 2010-08-21, minjong.gong@lge.com
+				 */
+>>>>>>> vendor-vs660-froyo
 				aat28xx_write(drvdata->client, drvdata->reg_addrs.fade, 0x00);	/* Floor current : 0.48mA */
 				aat28xx_intensity = (~(drvdata->intensity)& 0x1F);	/* Invert BL control bits and Clear upper 3bits */
 				aat28xx_intensity |= 0xA0;							/* MEQS(7)=1, Disable Fade(6)=0, LCD_ON(5)=1*/
@@ -622,6 +754,15 @@ static void aat28xx_wakeup(struct aat28xx_driver_data *drvdata)
 			}
 			drvdata->state = NORMAL_STATE;
 		} else if (drvdata->mode == ALC_MODE) {
+<<<<<<< HEAD
+=======
+			/* LGE_CHANGE
+			 * Remove ALC mode
+			 * 2010-07-26. minjong.gong@lge.com
+			 */
+			//aat28xx_set_table(drvdata, drvdata->cmds.alc);
+			//drvdata->state = NORMAL_STATE;
+>>>>>>> vendor-vs660-froyo
 		}
 	}
 }
@@ -639,6 +780,13 @@ static int aat28xx_send_intensity(struct aat28xx_driver_data *drvdata, int next)
 
 		if (drvdata->state == NORMAL_STATE && drvdata->intensity != next)
 		{
+<<<<<<< HEAD
+=======
+			/* LGE_CHANGE
+			  * [To support two BL driver ICs(AAT2870 and AAT2862)]
+			  * 2010-04-20, minjong.gong@lge.com
+			*/
+>>>>>>> vendor-vs660-froyo
 			if(drvdata->version == 2862)
 			{
 				if(next != 0)
@@ -691,7 +839,10 @@ static void aat28xx_late_resume(struct early_suspend * h)
 						    early_suspend);
 
 	dprintk("start\n");
+<<<<<<< HEAD
 	msleep(30);
+=======
+>>>>>>> vendor-vs660-froyo
 	aat28xx_wakeup(drvdata);
 
 	return;
@@ -725,6 +876,14 @@ void aat28xx_switch_mode(struct device *dev, int next_mode)
 		return;
 
 	if (next_mode == ALC_MODE) {
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGE
+		 * Remove ALC mode
+		 * 2010-07-26. minjong.gong@lge.com
+		 */
+		//aat28xx_set_table(drvdata, drvdata->cmds.alc);
+>>>>>>> vendor-vs660-froyo
 	}
 	else if (next_mode == NORMAL_MODE) {
 		aat28xx_set_table(drvdata, drvdata->cmds.alc);
@@ -762,9 +921,12 @@ ssize_t aat28xx_store_alc(struct device *dev, struct device_attribute *attr, con
 	int alc;
 	int next_mode;
 
+<<<<<<< HEAD
 #ifdef THUNDER_SPRINT_NO_ALC
 	return -EINVAL;
 #endif
+=======
+>>>>>>> vendor-vs660-froyo
 	if (!count)
 		return -EINVAL;
 
@@ -816,6 +978,7 @@ ssize_t aat28xx_show_drvstat(struct device *dev, struct device_attribute *attr, 
 	return len;
 }
 
+<<<<<<< HEAD
 ssize_t aat28xx_lcd_backlight_onoff(struct device *dev, struct device_attribute *attr, const char * buf, size_t count)
 {
 	int onoff;
@@ -840,6 +1003,11 @@ DEVICE_ATTR(alc, 0664, aat28xx_show_alc, aat28xx_store_alc);
 DEVICE_ATTR(reg, 0444, aat28xx_show_reg, NULL);
 DEVICE_ATTR(drvstat, 0444, aat28xx_show_drvstat, NULL);
 DEVICE_ATTR(bl_onoff, 0666, NULL, aat28xx_lcd_backlight_onoff);
+=======
+DEVICE_ATTR(alc, 0664, aat28xx_show_alc, aat28xx_store_alc);
+DEVICE_ATTR(reg, 0444, aat28xx_show_reg, NULL);
+DEVICE_ATTR(drvstat, 0444, aat28xx_show_drvstat, NULL);
+>>>>>>> vendor-vs660-froyo
 
 static int aat28xx_set_brightness(struct backlight_device *bd)
 {
@@ -873,7 +1041,11 @@ static void leds_brightness_set(struct led_classdev *led_cdev, enum led_brightne
 
 	brightness = aat28xx_get_intensity(drvdata);
 
+<<<<<<< HEAD
 	next = bl_value[value * drvdata->max_intensity / LED_FULL];
+=======
+	next = value * drvdata->max_intensity / LED_FULL;
+>>>>>>> vendor-vs660-froyo
 	dprintk("input brightness value=%d]\n", next);
 
 	if (brightness != next) {
@@ -931,9 +1103,12 @@ static int __init aat28xx_probe(struct i2c_client *i2c_dev, const struct i2c_dev
 		return -ENODEV;
 	}
 
+<<<<<<< HEAD
 	if (drvdata->gpio)
 		gpio_direction_output(drvdata->gpio, 1);
 
+=======
+>>>>>>> vendor-vs660-froyo
 	bd = backlight_device_register("aat28xx-bl", &i2c_dev->dev, NULL, &aat28xx_ops);
 	if (bd == NULL) {
 		eprintk("entering aat28xx probe function error \n");
@@ -954,7 +1129,10 @@ static int __init aat28xx_probe(struct i2c_client *i2c_dev, const struct i2c_dev
 		err = device_create_file(drvdata->led->dev, &dev_attr_alc);
 		err = device_create_file(drvdata->led->dev, &dev_attr_reg);
 		err = device_create_file(drvdata->led->dev, &dev_attr_drvstat);
+<<<<<<< HEAD
 		err = device_create_file(drvdata->led->dev, &dev_attr_bl_onoff);
+=======
+>>>>>>> vendor-vs660-froyo
 	}
 #endif
 

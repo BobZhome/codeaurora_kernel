@@ -1,4 +1,5 @@
 /*
+<<<<<<< HEAD
  * Copyright (c) 2010 LGE. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
@@ -11,6 +12,12 @@
  * GNU General Public License for more details.
  *
  */
+=======
+ *   LG_FW_AUDIO_TESTMODE
+ *
+ *   kiwone creates this file for audio test mode, and the use of another function to send framework.
+*/
+>>>>>>> vendor-vs660-froyo
 
 #include <linux/module.h>
 #include <linux/types.h>
@@ -53,6 +60,16 @@ void update_diagcmd_state(struct diagcmd_dev *sdev, char *cmd, int state)
 	int env_offset = 0;
 	int length;
 
+<<<<<<< HEAD
+=======
+	/* 
+	 * 2010-08-12, jinkyu.choi@lge.com, Do not check the state
+	 * Now, each command has own state number which is the sub command number of testmode tools.
+	 * The sub commands can be same though the major commands are different.
+	 * It is result in not sending the commnad to Android Diag application
+	 */
+
+>>>>>>> vendor-vs660-froyo
 	//if (sdev->state != state) {
 		sdev->state = state;
 		sdev->name = cmd;
@@ -157,6 +174,10 @@ static void __exit lg_fw_diag_class_exit(void)
 module_init(lg_fw_diag_class_init);
 module_exit(lg_fw_diag_class_exit);
 
+<<<<<<< HEAD
 MODULE_AUTHOR("kiwone.seo");
+=======
+MODULE_AUTHOR("kiwone.seo@lge.com");
+>>>>>>> vendor-vs660-froyo
 MODULE_DESCRIPTION("lg_fw_diag class driver");
 MODULE_LICENSE("GPL");

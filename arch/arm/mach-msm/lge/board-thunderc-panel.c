@@ -22,8 +22,11 @@
 #include "devices.h"
 #include "board-thunderc.h"
 
+<<<<<<< HEAD
 #include <mach/board_lge.h>
 
+=======
+>>>>>>> vendor-vs660-froyo
 #define MSM_FB_LCDC_VREG_OP(name, op, level)			\
 do { \
 	vreg = vreg_get(0, name); \
@@ -72,6 +75,7 @@ static struct msm_panel_common_pdata mdp_pdata = {
 
 static void __init msm_fb_add_devices(void)
 {
+<<<<<<< HEAD
 	/* 
 	------------------------------------
 	   |  Rev C     |  Rev 1.0
@@ -84,11 +88,14 @@ static void __init msm_fb_add_devices(void)
 	if(lge_bd_rev >= 8) /* >= Rev 1.0 */
 		strcpy(msm_fb_vreg[1], "gp1");
 	
+=======
+>>>>>>> vendor-vs660-froyo
 	msm_fb_register_device("mdp", &mdp_pdata);
 	msm_fb_register_device("pmdh", &mddi_pdata);
 	msm_fb_register_device("lcdc", 0);
 }
 
+<<<<<<< HEAD
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HVGA) || \
 	defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
 static int mddi_novatek_pmic_backlight(int level)
@@ -114,6 +121,8 @@ static struct platform_device mddi_novatek_panel_device = {
 
 #if defined(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) || \
 	defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
+=======
+>>>>>>> vendor-vs660-froyo
 static int mddi_hitachi_pmic_backlight(int level)
 {
 	/* TODO: Backlight control here */
@@ -121,6 +130,13 @@ static int mddi_hitachi_pmic_backlight(int level)
 }
 
 #if 1
+<<<<<<< HEAD
+=======
+		/* LGE_CHANGE
+		  * Define new structure named 'msm_panel_hitachi_pdata' to use LCD initialization Flag (.initialized).
+		  * 2010-04-21, minjong.gong@lge.com
+		  */
+>>>>>>> vendor-vs660-froyo
 	static struct msm_panel_hitachi_pdata mddi_hitachi_panel_data = {
 		.gpio = 102,				/* lcd reset_n */
 		.pmic_backlight = mddi_hitachi_pmic_backlight,
@@ -139,7 +155,10 @@ static struct platform_device mddi_hitachi_panel_device = {
 		.platform_data = &mddi_hitachi_panel_data,
 	}
 };
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> vendor-vs660-froyo
 
 /* backlight device */
 static struct gpio_i2c_pin bl_i2c_pin[] = {
@@ -192,6 +211,7 @@ void __init thunderc_init_i2c_backlight(int bus_num)
 /* common functions */
 void __init lge_add_lcd_devices(void)
 {
+<<<<<<< HEAD
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
   platform_device_register(&mddi_novatek_panel_device);	
   platform_device_register(&mddi_hitachi_panel_device);	
@@ -202,6 +222,9 @@ void __init lge_add_lcd_devices(void)
 	platform_device_register(&mddi_hitachi_panel_device);
 #endif
 #endif /* CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA */
+=======
+	platform_device_register(&mddi_hitachi_panel_device);
+>>>>>>> vendor-vs660-froyo
 
 	msm_fb_add_devices();
 

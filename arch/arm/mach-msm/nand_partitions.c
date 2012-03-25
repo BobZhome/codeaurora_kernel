@@ -46,10 +46,20 @@ struct msm_ptbl_entry {
 	__u32 flags;
 };
 
+<<<<<<< HEAD
 #if defined(CONFIG_MACH_MSM7X27_THUNDERG)
 #define MSM_MAX_PARTITIONS 11
 #else /* original */
 #define MSM_MAX_PARTITIONS 9
+=======
+#if defined(CONFIG_MACH_MSM7X27_THUNDERG) || defined(CONFIG_MACH_MSM7X27_THUNDERA)
+/* increase max for fota
+ * hyunhui.park@lge.com 2010-06-15
+ */
+#define MSM_MAX_PARTITIONS 11
+#else /* original */
+#define MSM_MAX_PARTITIONS 10
+>>>>>>> vendor-vs660-froyo
 #endif
 
 static struct mtd_partition msm_nand_partitions[MSM_MAX_PARTITIONS];

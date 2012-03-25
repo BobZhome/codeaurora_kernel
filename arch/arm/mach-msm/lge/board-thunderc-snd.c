@@ -36,6 +36,7 @@ static struct snd_endpoint snd_endpoints_list[] = {
 	SND(SPEAKER_IN_CALL,28),
 	SND(CURRENT,30)
 #else
+<<<<<<< HEAD
 	SND(HANDSET, 5),
 	SND(HEADSET_LOOPBACK, 1),
 	SND(HEADSET, 2),
@@ -56,6 +57,31 @@ static struct snd_endpoint snd_endpoints_list[] = {
 	SND(HEADSET_VR, 20),
 	SND(BT_VR, 22),	
 	SND(CURRENT, 29),
+=======
+/* LGE_CHANGE_S, [junyoub.an] , 2010-02-12, Define sound device*/
+	SND(SPEAKER, 0),
+	SND(HEADSET_LOOPBACK, 1),
+	SND(HEADSET, 2),
+	SND(HEADSET_STEREO, 3),
+	SND(HANDSET_LOOPBACK,5),
+	SND(HANDSET, 6),
+	SND(SPEAKER_IN_CALL, 7),
+	SND(SPEAKER_RING, 8),
+	SND(HEADSET_AND_SPEAKER, 8),
+	SND(VOICE_RECORDER, 9),
+	SND(FM_HEADSET, 10),
+	SND(FM_SPEAKER, 11),
+	SND(BT, 13),
+	SND(TTY_HEADSET, 15),
+	SND(TTY_VCO, 16),
+	SND(TTY_HCO, 17),
+	SND(TTY_HCO_SPEAKER, 18),
+	SND(HANDSET_VR, 20),
+	SND(HEADSET_VR, 21),
+	SND(BT_VR, 23),
+	SND(CURRENT, 29),
+/* LGE_CHANGE_E, [junyoub.an] , 2010-02-12, Define sound device*/
+>>>>>>> vendor-vs660-froyo
 
 #endif
 };
@@ -73,7 +99,12 @@ struct platform_device msm_device_snd = {
 		.platform_data = &msm_device_snd_endpoints
 	},
 };
+<<<<<<< HEAD
 
+=======
+/* LGE_CHANGE: [sungyoung.lee@lge.com] 2010-02-25, request by QCT */
+/* It is related that CASE 284824 which vdec_open failed */
+>>>>>>> vendor-vs660-froyo
 #if 1
 #define DEC0_FORMAT ((1<<MSM_ADSP_CODEC_AAC)|(1<<MSM_ADSP_CODEC_WMA)| \
 	(1<<MSM_ADSP_CODEC_WMAPRO)|(1<<MSM_ADSP_CODEC_AMRWB)| \

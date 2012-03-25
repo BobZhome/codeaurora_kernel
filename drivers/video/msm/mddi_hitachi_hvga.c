@@ -26,8 +26,11 @@
 #include <mach/vreg.h>
 #include <mach/board_lge.h>
 
+<<<<<<< HEAD
 #define DRV_AUO_PANEL
 
+=======
+>>>>>>> vendor-vs660-froyo
 #define PANEL_DEBUG 0
 
 #define LCD_CONTROL_BLOCK_BASE	0x110000
@@ -54,12 +57,19 @@ static msm_fb_vsync_handler_type mddi_hitachi_vsync_handler = NULL;
 static void *mddi_hitachi_vsync_handler_arg;
 static uint16 mddi_hitachi_vsync_attempts;
 
+<<<<<<< HEAD
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
 extern int g_mddi_lcd_probe;
 #endif
 
 #if defined(CONFIG_MACH_MSM7X27_THUNDERG) || defined(CONFIG_MACH_MSM7X27_THUNDERC) || defined(CONFIG_MACH_MSM7X27_THUNDERA)
 
+=======
+#if defined(CONFIG_MACH_MSM7X27_THUNDERG) || defined(CONFIG_MACH_MSM7X27_THUNDERC) || defined(CONFIG_MACH_MSM7X27_THUNDERA)
+/* Define new structure named 'msm_panel_hitachi_pdata' to use LCD initialization Flag (initialized)
+ * 2010-04-21, minjong.gong@lge.com
+ */
+>>>>>>> vendor-vs660-froyo
 static struct msm_panel_hitachi_pdata *mddi_hitachi_pdata;
 #else
 static struct msm_panel_common_pdata *mddi_hitachi_pdata;
@@ -120,6 +130,7 @@ static struct display_table mddi_hitachi_display_on_3rd[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
+<<<<<<< HEAD
 
 static struct display_table mddi_hitachi_display_on_auo[] = {
 	// Display on sequence
@@ -129,6 +140,8 @@ static struct display_table mddi_hitachi_display_on_auo[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
+=======
+>>>>>>> vendor-vs660-froyo
 #if 0
 static struct display_table2 mddi_hitachi_img[] = {
 	{0x2c, 16384, {}},
@@ -149,8 +162,15 @@ static struct display_table mddi_hitachi_display_off[] = {
 static struct display_table mddi_hitachi_sleep_mode_on_data[] = {
 	// Display off sequence
 	{0x28, 4, {0x00, 0x00, 0x00, 0x00}},
+<<<<<<< HEAD
 	{REGFLAG_DELAY, 20, {}},
 	{0x10, 4, {0x00, 0x00, 0x00, 0x00}},
+=======
+	// [App 4th Table] Change from 40ms to 20ms. 2010-08-03. minjong.gong@lge.com
+	{REGFLAG_DELAY, 20, {}},
+	{0x10, 4, {0x00, 0x00, 0x00, 0x00}},
+	// [Apply 4th Table] Change from 100ms to 40ms. 2010-08-03. minjong.gong@lge.com
+>>>>>>> vendor-vs660-froyo
 	{REGFLAG_DELAY, 40, {}},
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
@@ -190,12 +210,20 @@ static struct display_table mddi_hitachi_initialize_1st[] = {
 	// PGAMMACTL 
 	//{0xfa, 16, {0x11, 0x13, 0x08, 0x14, 0x28, 0x2c, 0x2b, 0x0d,
 	//		    0x19, 0x14, 0x1e, 0x1e, 0x0f, 0x00, 0x00, 0x00}},
+<<<<<<< HEAD
+=======
+	// Apply 3rd Cut gamma table. 2010-08-10. minjong.gong@lge.com
+>>>>>>> vendor-vs660-froyo
 	{0xfa, 16, {0x03, 0x03, 0x08, 0x28, 0x2b, 0x2f, 0x32, 0x12,
 				0x1d, 0x1f, 0x1c, 0x1c, 0x0f, 0x00, 0x00, 0x00}},
 
 	// NGAMMACTL 
 	//{0xfb, 16, {0x11, 0x13, 0x08, 0x14, 0x28, 0x2c, 0x2b, 0x2d,
 	//			0x19, 0x14, 0x1e, 0x1e, 0x0f, 0x00, 0x00, 0x00}},
+<<<<<<< HEAD
+=======
+	// Apply 3rd Cut gamma table. 2010-08-10. minjong.gong@lge.com
+>>>>>>> vendor-vs660-froyo
 	{0xfb, 16, {0x03, 0x03, 0x08, 0x28, 0x2b, 0x2f, 0x32, 0x12,
 				0x1d, 0x1f, 0x1c, 0x1c, 0x0f, 0x00, 0x00, 0x00}},
 
@@ -229,11 +257,17 @@ static struct display_table mddi_hitachi_initialize_3rd_vs660[] = {
 			    0x3f, 0x66, 0x02, 0x3f, 0x66, 0x02, 0x00, 0x00}},
 
 	// VCMCTL 
+<<<<<<< HEAD
 	{0xf5, 12, {0x00, 0x59, 0x45, 0x00, 0x00, 0x04, 0x00, 0x00,
+=======
+	// Revert 6th parameter. From 0x04 to 0x00. 2010-09-02. minjong.gong@lge.com
+	{0xf5, 12, {0x00, 0x59, 0x45, 0x00, 0x00, 0x00, 0x00, 0x00,
+>>>>>>> vendor-vs660-froyo
 			    0x00, 0x00, 0x59, 0x45}},
 	{REGFLAG_DELAY, 10, {}},
 
 	// MANPWRSEQ 
+<<<<<<< HEAD
 	{0xf3, 8,  {0x03, 0x6e, 0x15, 0x07, 0x03, 0x00, 0x00, 0x00}},
 	
 	// DISCTL 
@@ -241,6 +275,17 @@ static struct display_table mddi_hitachi_initialize_3rd_vs660[] = {
 	// When useing 0x4D (65Hz), it causes decreasing the touch sensitivity.
 	{0xf2, 20, {0x3b, 0x54, 0x0f, 0x08, 0x08, 0x08, 0x08, 0x00,
 			    0x08, 0x08, 0x00, 0x04, 0x00, 0x00, 0x54, 0x08,
+=======
+	// Revert 1st parameter. From 0x03 to 0x01. 2010-09-02. minjong.gong@lge.com
+	{0xf3, 8,  {0x01, 0x6e, 0x15, 0x07, 0x03, 0x00, 0x00, 0x00}},
+	
+	// DISCTL 
+	// Revert 2nd and 15th parameters. From 0x54 to 0x4d.
+	// Revert 6th, 7th, 9th and 10th parameters. From 0x08 to ox00.
+	// 2010-09-02. minjong.gong@lge.com
+	{0xf2, 20, {0x3b, 0x4d, 0x0f, 0x08, 0x08, 0x00, 0x00, 0x00,
+			    0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x4d, 0x08,
+>>>>>>> vendor-vs660-froyo
 			    0x08, 0x08, 0x08, 0x00}},
 
 	{0xf6, 12, {0x04, 0x00, 0x08, 0x03, 0x01, 0x00, 0x01, 0x00,
@@ -280,11 +325,17 @@ static struct display_table mddi_hitachi_initialize_3rd_p500[] = {
 			    0x04, 0x66, 0x02, 0x04, 0x66, 0x02, 0x00, 0x00}},
 
 	// VCMCTL 
+<<<<<<< HEAD
 	{0xf5, 12, {0x00, 0x59, 0x45, 0x00, 0x00, 0x04, 0x00, 0x00,
+=======
+	// Revert 6th parameter. From 0x04 to 0x00. 2010-09-02. minjong.gong@lge.com
+	{0xf5, 12, {0x00, 0x59, 0x45, 0x00, 0x00, 0x00, 0x00, 0x00,
+>>>>>>> vendor-vs660-froyo
 			    0x00, 0x00, 0x59, 0x45}},
 	{REGFLAG_DELAY, 10, {}},
 
 	// MANPWRSEQ 
+<<<<<<< HEAD
 	{0xf3, 8,  {0x03, 0x6e, 0x15, 0x07, 0x03, 0x00, 0x00, 0x00}},
 	
 	// DISCTL 
@@ -292,6 +343,17 @@ static struct display_table mddi_hitachi_initialize_3rd_p500[] = {
 	// When useing 0x4D (65Hz), it causes decreasing the touch sensitivity.
 	{0xf2, 20, {0x3b, 0x54, 0x0f, 0x08, 0x08, 0x08, 0x08, 0x00,
 			    0x08, 0x08, 0x00, 0x04, 0x00, 0x00, 0x54, 0x08,
+=======
+	// Revert 1st parameter. From 0x03 to 0x01. 2010-09-02. minjong.gong@lge.com
+	{0xf3, 8,  {0x01, 0x6e, 0x15, 0x07, 0x03, 0x00, 0x00, 0x00}},
+	
+	// DISCTL 
+	// Revert 2nd and 15th parameters. From 0x54 to 0x4d.
+	// Revert 6th, 7th, 9th and 10th parameters. From 0x08 to ox00.
+	// 2010-09-02. minjong.gong@lge.com
+	{0xf2, 20, {0x3b, 0x4d, 0x0f, 0x08, 0x08, 0x00, 0x00, 0x00,
+			    0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x4d, 0x08,
+>>>>>>> vendor-vs660-froyo
 			    0x08, 0x08, 0x08, 0x00}},
 
 	{0xf6, 12, {0x04, 0x00, 0x08, 0x03, 0x01, 0x00, 0x01, 0x00,
@@ -320,6 +382,7 @@ static struct display_table mddi_hitachi_initialize_3rd_p500[] = {
 
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
+<<<<<<< HEAD
 
 static struct display_table mddi_hitachi_initialize_auo[] = {
 
@@ -425,6 +488,9 @@ static struct display_table mddi_hitachi_initialize_auo[] = {
 };
 
 void hitachi_display_table(struct display_table *table, unsigned int count)
+=======
+void display_table(struct display_table *table, unsigned int count)
+>>>>>>> vendor-vs660-froyo
 {
 	unsigned int i;
 
@@ -484,6 +550,10 @@ static void mddi_hitachi_vsync_set_handler(msm_fb_vsync_handler_type handler,	/*
 	boolean error = FALSE;
 	unsigned long flags;
 
+<<<<<<< HEAD
+=======
+	/* LGE_CHANGE [neo.kang@lge.com] 2009-11-26, change debugging api */
+>>>>>>> vendor-vs660-froyo
 	printk("%s : handler = %x\n", 
 			__func__, (unsigned int)handler);
 
@@ -523,6 +593,14 @@ static void mddi_hitachi_lcd_vsync_detected(boolean detected)
 	uint32 elapsed_us;
 	uint32 num_vsyncs;
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE
+  * Close below code to fix screen shaking problem
+  * 2010-04-22, minjong.gong@lge.com
+  */
+//	mddi_queue_register_write_int(0x2C, 0);
+>>>>>>> vendor-vs660-froyo
 
 #if 0 /* Block temporaly till vsync implement */
 	if ((detected) || (mddi_hitachi_vsync_attempts > 5)) {
@@ -597,10 +675,13 @@ static void mddi_hitachi_lcd_vsync_detected(boolean detected)
 #endif
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_MACH_MSM7X27_THUNDERC_SPRINT
 extern int ts_set_vreg(unsigned char onoff);
 #endif
 
+=======
+>>>>>>> vendor-vs660-froyo
 static int mddi_hitachi_lcd_on(struct platform_device *pdev)
 {
 	EPRINTK("%s: started.\n", __func__);
@@ -616,6 +697,7 @@ static int mddi_hitachi_lcd_on(struct platform_device *pdev)
 #if defined(CONFIG_MACH_MSM7X27_THUNDERG)
 	if (lge_bd_rev <= LGE_REV_E) {
 		EPRINTK("ThunderG ==> lge_bd_rev = %d : 1st LCD initial\n", lge_bd_rev);
+<<<<<<< HEAD
 		hitachi_display_table(mddi_hitachi_initialize_1st, sizeof(mddi_hitachi_initialize_1st)/sizeof(struct display_table));
 		hitachi_display_table(mddi_hitachi_display_on_1st, sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
 	} else {
@@ -645,6 +727,32 @@ static int mddi_hitachi_lcd_on(struct platform_device *pdev)
 	ts_set_vreg(1);
 #endif
 
+=======
+		display_table(mddi_hitachi_initialize_1st, sizeof(mddi_hitachi_initialize_1st)/sizeof(struct display_table));
+		display_table(mddi_hitachi_display_on_1st, sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
+	} else {
+		EPRINTK("ThunderG ==> lge_bd_rev = %d : 3rd LCD initial\n", lge_bd_rev);
+		display_table(mddi_hitachi_initialize_3rd_p500, sizeof(mddi_hitachi_initialize_3rd_p500)/sizeof(struct display_table));
+		display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
+	}
+#elif defined(CONFIG_MACH_MSM7X27_THUNDERA)
+	display_table(mddi_hitachi_initialize_1st, 
+			sizeof(mddi_hitachi_initialize_1st)/sizeof(struct display_table));
+	display_table(mddi_hitachi_display_on_1st,
+			sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
+#else
+	if (lge_bd_rev <= LGE_REV_D) {
+		EPRINTK("ThunderC ==> lge_bd_rev = %d : 1st LCD initial\n", lge_bd_rev);
+		display_table(mddi_hitachi_initialize_1st, sizeof(mddi_hitachi_initialize_1st)/sizeof(struct display_table));
+		display_table(mddi_hitachi_display_on_1st, sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
+	} else {
+		EPRINTK("ThunderC ==> lge_bd_rev = %d : 3rd LCD initial\n", lge_bd_rev);
+		display_table(mddi_hitachi_initialize_3rd_vs660, sizeof(mddi_hitachi_initialize_3rd_vs660)/sizeof(struct display_table));
+		display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
+	}
+#endif
+	is_lcd_on = TRUE;
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 
@@ -662,6 +770,7 @@ static int mddi_hitachi_lcd_store_on(void)
 	mddi_hitachi_lcd_panel_store_poweron();
 #if defined(CONFIG_MACH_MSM7X27_THUNDERG)
 	if (lge_bd_rev <= LGE_REV_E) {
+<<<<<<< HEAD
 		hitachi_display_table(mddi_hitachi_initialize_1st, sizeof(mddi_hitachi_initialize_1st)/sizeof(struct display_table));
 		mdelay(200);
 		hitachi_display_table(mddi_hitachi_display_on_1st, sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
@@ -686,6 +795,32 @@ static int mddi_hitachi_lcd_store_on(void)
 	mdelay(200);
 	hitachi_display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
 #endif	
+=======
+		display_table(mddi_hitachi_initialize_1st, sizeof(mddi_hitachi_initialize_1st)/sizeof(struct display_table));
+		mdelay(200);
+		display_table(mddi_hitachi_display_on_1st, sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
+	} else {
+		display_table(mddi_hitachi_initialize_3rd_p500, sizeof(mddi_hitachi_initialize_3rd_p500)/sizeof(struct display_table));
+		mdelay(200);
+		display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
+	}
+#elif defined(CONFIG_MACH_MSM7X27_THUNDERA)
+	display_table(mddi_hitachi_initialize_1st,
+			sizeof(mddi_hitachi_initialize_1st)/sizeof(struct display_table));
+	mdelay(200);
+	display_table(mddi_hitachi_display_on_1st,
+			sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
+#else
+	if (lge_bd_rev <= LGE_REV_D) {
+		display_table(mddi_hitachi_initialize_1st, sizeof(mddi_hitachi_initialize_1st)/sizeof(struct display_table));
+		mdelay(200);
+		display_table(mddi_hitachi_display_on_1st, sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
+	} else {
+		display_table(mddi_hitachi_initialize_3rd_vs660, sizeof(mddi_hitachi_initialize_3rd_vs660)/sizeof(struct display_table));
+		mdelay(200);
+		display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
+	}
+>>>>>>> vendor-vs660-froyo
 #endif
 	is_lcd_on = TRUE;
 	return 0;
@@ -693,7 +828,11 @@ static int mddi_hitachi_lcd_store_on(void)
 
 static int mddi_hitachi_lcd_off(struct platform_device *pdev)
 {
+<<<<<<< HEAD
 	hitachi_display_table(mddi_hitachi_sleep_mode_on_data, sizeof(mddi_hitachi_sleep_mode_on_data)/sizeof(struct display_table));
+=======
+	display_table(mddi_hitachi_sleep_mode_on_data, sizeof(mddi_hitachi_sleep_mode_on_data)/sizeof(struct display_table));
+>>>>>>> vendor-vs660-froyo
 	mddi_hitachi_lcd_panel_poweroff();
 	is_lcd_on = FALSE;
 	return 0;
@@ -729,16 +868,24 @@ ssize_t mddi_hitachi_lcd_store_onoff(struct device *dev, struct device_attribute
 
 int mddi_hitachi_position(void)
 {
+<<<<<<< HEAD
 	hitachi_display_table(mddi_hitachi_position_table, ARRAY_SIZE(mddi_hitachi_position_table));
+=======
+	display_table(mddi_hitachi_position_table, ARRAY_SIZE(mddi_hitachi_position_table));
+>>>>>>> vendor-vs660-froyo
 	return 0;
 }
 EXPORT_SYMBOL(mddi_hitachi_position);
 
+<<<<<<< HEAD
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
 DEVICE_ATTR(hitachi_lcd_onoff, 0666, mddi_hitachi_lcd_show_onoff, mddi_hitachi_lcd_store_onoff);
 #else
 DEVICE_ATTR(lcd_onoff, 0666, mddi_hitachi_lcd_show_onoff, mddi_hitachi_lcd_store_onoff);
 #endif
+=======
+DEVICE_ATTR(lcd_onoff, 0666, mddi_hitachi_lcd_show_onoff, mddi_hitachi_lcd_store_onoff);
+>>>>>>> vendor-vs660-froyo
 
 struct msm_fb_panel_data hitachi_panel_data0 = {
 	.on = mddi_hitachi_lcd_on,
@@ -767,11 +914,15 @@ static int __init mddi_hitachi_lcd_probe(struct platform_device *pdev)
 
 	msm_fb_add_device(pdev);
 
+<<<<<<< HEAD
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
 	ret = device_create_file(&pdev->dev, &dev_attr_hitachi_lcd_onoff);
 #else
 	ret = device_create_file(&pdev->dev, &dev_attr_lcd_onoff);
 #endif
+=======
+	ret = device_create_file(&pdev->dev, &dev_attr_lcd_onoff);
+>>>>>>> vendor-vs660-froyo
 
 	return 0;
 }
@@ -795,6 +946,7 @@ static int mddi_hitachi_lcd_init(void)
 	/* TODO: Check client id */
 
 #endif
+<<<<<<< HEAD
 
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
   gpio_tlmm_config(GPIO_CFG(101, 0, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_2MA), GPIO_ENABLE);
@@ -804,6 +956,8 @@ static int mddi_hitachi_lcd_init(void)
 	g_mddi_lcd_probe = 0;
 #endif
 
+=======
+>>>>>>> vendor-vs660-froyo
 	ret = platform_driver_register(&this_driver);
 	if (!ret) {
 		pinfo = &hitachi_panel_data0.panel_info;
@@ -821,6 +975,14 @@ static int mddi_hitachi_lcd_init(void)
 		pinfo->lcd.refx100 = (mddi_hitachi_rows_per_second * 100) /
                         		mddi_hitachi_rows_per_refresh;
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE.
+  * Change proch values to resolve LCD Tearing. Before BP:14, FP:6. After BP=FP=6.
+  * The set values on LCD are both 8, but we use 6 for MDDI in order to secure timing margin.
+  * 2010-08-21, minjong.gong@lge.com
+  */
+>>>>>>> vendor-vs660-froyo
 		pinfo->lcd.v_back_porch = 6;
 		pinfo->lcd.v_front_porch = 6;
 		pinfo->lcd.v_pulse_width = 4;
@@ -899,6 +1061,14 @@ static void mddi_hitachi_lcd_panel_store_poweron(void)
 	}
 }
 
+<<<<<<< HEAD
+=======
+/* LGE_CHANGE
+  * Add new function to reduce current comsumption in sleep mode.
+  * In sleep mode disable LCD by assertion low on reset pin.
+  * 2010-06-07, minjong.gong@lge.com
+  */
+>>>>>>> vendor-vs660-froyo
 static void mddi_hitachi_lcd_panel_poweroff(void)
 {
 	struct msm_panel_hitachi_pdata *pdata = mddi_hitachi_pdata;
