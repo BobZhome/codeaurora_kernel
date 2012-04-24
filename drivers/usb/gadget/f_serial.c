@@ -58,6 +58,7 @@ static struct usb_interface_descriptor gser_interface_desc __initdata = {
 	.bInterfaceClass =	USB_CLASS_VENDOR_SPEC,
 	.bInterfaceSubClass =	0,
 	.bInterfaceProtocol =	0,
+#endif
 	/* .iInterface = DYNAMIC */
 };
 
@@ -83,6 +84,7 @@ static struct usb_descriptor_header *gser_fs_function[] __initdata = {
 	(struct usb_descriptor_header *) &gser_fs_out_desc,
 	NULL,
 };
+#endif
 
 /* high speed support: */
 
@@ -106,6 +108,7 @@ static struct usb_descriptor_header *gser_hs_function[] __initdata = {
 	(struct usb_descriptor_header *) &gser_hs_out_desc,
 	NULL,
 };
+#endif
 
 /* string descriptors: */
 

@@ -149,6 +149,8 @@
 
 #define NR_SG		32
 
+#define MSM_MMC_IDLE_TIMEOUT	10000 /* msec */
+
 struct clk;
 
 struct msmsdcc_nc_dmadata {
@@ -242,11 +244,20 @@ struct msmsdcc_host {
 	unsigned int		cmd_pio_irqmask;
 	unsigned int		cmd_datactrl;
 	struct mmc_command	*cmd_cmd;
-	u32			cmd_c;
-	bool			gpio_config_status;
+	u32					cmd_c;
 
-	bool prog_scan;
-	bool prog_enable;
+	unsigned int	mci_irqenable;
+	unsigned int	dummy_52_needed;
+	unsigned int	dummy_52_state;
+	unsigned int	sdio_irq_disabled;
+	struct wake_lock	sdio_wlock;
+	struct wake_lock	sdio_suspend_wlock;
+	unsigned int    sdcc_suspending;
+
+	unsigned int sdcc_irq_disabled;
+
 };
+
+int msmsdcc_set_pwrsave(struct mmc_host *mmc, int pwrsave);
 
 #endif

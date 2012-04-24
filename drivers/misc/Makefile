@@ -50,3 +50,6 @@ obj-y				+= carma/
 obj-$(CONFIG_WL127X_RFKILL)	+= wl127x-rfkill.o
 obj-$(CONFIG_APANIC)		+= apanic.o
 obj-$(CONFIG_SENSORS_AK8975)	+= akm8975.o
+
+obj-$(CONFIG_LGE_AT_CMD_DEVICE) += lge_ats_at_class.o
+obj-$(CONFIG_LGE_AT_CMD_DEVICE) += lge_ats_at.o

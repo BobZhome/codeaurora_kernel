@@ -22,7 +22,6 @@ choice
 
 config FB_MSM_MDP31
 	select FB_MSM_LCDC_HW
-	bool "MDP HW ver3.1"
 	---help---
 	  Support for MSM MDP HW revision 3.1
 	  Say Y here if this is msm8x50 variant platform.
@@ -57,7 +56,6 @@ choice
 
 config FB_MSM_LCDC_PRISM_WVGA_PANEL
 	depends on FB_MSM_LCDC_HW
-	bool "LCDC Prism WVGA Panel"
 	select FB_MSM_LCDC_PRISM_WVGA
 	---help---
 	  Support for LCDC Prism WVGA (800x480) panel
@@ -71,7 +69,6 @@ config FB_MSM_LCDC_ST15_PANEL
           Support for ST1.5 WXGA (1366x768) panel
 
 config FB_MSM_PANEL_NONE
-	bool "NONE"
 	---help---
 	  This will disable LCD panel
 endchoice
@@ -82,7 +79,6 @@ choice
 	default FB_MSM_SECONDARY_PANEL_NONE
 
 config FB_MSM_SECONDARY_PANEL_NONE
-	bool "NONE"
 	---help---
 	  No secondary panel
 endchoice
@@ -103,13 +99,11 @@ choice
 	default FB_MSM_TVOUT_NTSC_M
 
 config FB_MSM_TVOUT_NTSC_M
-	bool "NTSC M"
 	select FB_MSM_TVOUT_NTSC
 	---help---
 	  Support for NTSC M region (North American and Korea)
 
 config FB_MSM_TVOUT_NONE
-	bool "NONE"
 	---help---
 	  This will disable TV Out functionality.
 endchoice

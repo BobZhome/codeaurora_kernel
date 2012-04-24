@@ -246,6 +246,40 @@ struct mtp_ext_config_desc_function {
 	__u8	reserved[6];
 };
 
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_GADGET
+/* LGE_CHANGE
+ * MS Ext Desciptor for MTP and adb (to use in testing driver).
+ * FIXME:MUST use ALWAYS MTP with ADB enabled.
+ * This will be changed in future use.
+ * 2011-02-09, hyunhui.park@lge.com
+ */
+
+/* MTP Extended Configuration Descriptor */
+struct {
+	struct mtp_ext_config_desc_header	header;
+	struct mtp_ext_config_desc_function    function;
+	struct mtp_ext_config_desc_function    adb_function;
+} mtp_ext_config_desc = {
+	.header = {
+		.dwLength = __constant_cpu_to_le32(sizeof(mtp_ext_config_desc)),
+		.bcdVersion = __constant_cpu_to_le16(0x0100),
+		.wIndex = __constant_cpu_to_le16(4),
+		/* It has two functions (mtp, adb) */
+		.bCount = __constant_cpu_to_le16(2),
+	},
+	.function = {
+		.bFirstInterfaceNumber = 0,
+		.bInterfaceCount = 1,
+		.compatibleID = { 'M', 'T', 'P' },
+	},
+	/* adb */
+	.adb_function = {
+		.bFirstInterfaceNumber = 1,
+		.bInterfaceCount = 1,
+	},
+};
+
+#else /* This is Google Original */
 /* MTP Extended Configuration Descriptor */
 struct {
 	struct mtp_ext_config_desc_header	header;
@@ -263,6 +297,7 @@ struct {
 		.compatibleID = { 'M', 'T', 'P' },
 	},
 };
+#endif
 
 struct mtp_device_status {
 	__le16	wLength;
@@ -1001,6 +1036,10 @@ static int mtp_ctrlrequest(struct usb_composite_dev *cdev,
 			&& ctrl->bRequest == USB_REQ_GET_DESCRIPTOR
 			&& (w_value >> 8) == USB_DT_STRING
 			&& (w_value & 0xFF) == MTP_OS_STRING_ID) {
+
+		DBG(cdev, "os string request: %d index: %d value: %d length: %d\n",
+			ctrl->bRequest, w_index, w_value, w_length);
+
 		value = (w_length < sizeof(mtp_os_string)
 				? w_length : sizeof(mtp_os_string));
 		memcpy(cdev->req->buf, mtp_os_string, value);
@@ -1014,6 +1053,8 @@ static int mtp_ctrlrequest(struct usb_composite_dev *cdev,
 				&& (w_index == 4 || w_index == 5)) {
 			value = (w_length < sizeof(mtp_ext_config_desc) ?
 					w_length : sizeof(mtp_ext_config_desc));
+			DBG(cdev, "w_length %d, sizeof(mtp_ext_config_desc) %d\n",
+					w_length, sizeof(mtp_ext_config_desc));
 			memcpy(cdev->req->buf, &mtp_ext_config_desc, value);
 		}
 	} else if ((ctrl->bRequestType & USB_TYPE_MASK) == USB_TYPE_CLASS) {

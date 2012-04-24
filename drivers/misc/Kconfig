@@ -525,6 +525,14 @@ config APANIC_PLABEL
 	 If your platform uses a different flash partition label for storing
  	 crashdumps, enter it here.
 
+config LGE_AT_CMD_DEVICE
+	bool "Support LGE AT_CMD device"
+	default n
+	depends on LGE_SUPPORT_AT_CMD
+	depends on MACH_LGE
+	help
+	 Choose if use AT_CMD device used for sending uevent to user space
+
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"

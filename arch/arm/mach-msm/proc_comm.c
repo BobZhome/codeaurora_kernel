@@ -53,7 +53,6 @@ static DEFINE_SPINLOCK(proc_comm_lock);
  * provide a way to check for and handle modem restart.
  */
 int (*msm_check_for_modem_crash)(void);
-
 /* Poll for a state change, checking for possible
  * modem crashes along the way (so we don't wait
  * forever while the ARM9 is blowing up).

@@ -33,6 +33,25 @@
 
 #include "gadget_chips.h"
 
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_GADGET
+/* LGE_CHANGE
+ * Add header for LGE android usb
+ * 2011-01-21, hyunhui.park@lge.com
+ */
+#include "u_lgeusb.h"
+#endif
+
+/* LGE_CHANGE
+ * USB dev class set define.
+ * 2011-02-10, hyunhui.park@lge.com
+ */
+#define set_device_class(desc, class, subclass, protocol)	\
+	do {													\
+		desc.bDeviceClass = class;						\
+		desc.bDeviceSubClass = subclass;					\
+		desc.bDeviceProtocol = protocol;					\
+	} while (0)
+
 /*
  * Kbuild is not very cooperative with respect to linking separately
  * compiled library objects into one module.  So for now we won't use

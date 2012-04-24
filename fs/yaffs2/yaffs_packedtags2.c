@@ -1,7 +1,7 @@
 /*
  * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
  *
- * Copyright (C) 2002-2010 Aleph One Ltd.
+ * Copyright (C) 2002-2007 Aleph One Ltd.
  *   for Toby Churchill Ltd and Brightstar Engineering
  *
  * Created by Charles Manning <charles@aleph1.co.uk>
@@ -13,7 +13,6 @@
 
 #include "yaffs_packedtags2.h"
 #include "yportenv.h"
-#include "yaffs_trace.h"
 #include "yaffs_tagsvalidity.h"
 
 /* This code packs a set of extended tags into a binary structure for
@@ -185,6 +184,7 @@ void yaffs_unpack_tags2(struct yaffs_ext_tags *t, struct yaffs_packed_tags2 *pt,
 		default:
 			ecc_result = YAFFS_ECC_RESULT_UNKNOWN;
 		}
+#endif
 	}
 
 	yaffs_unpack_tags2_tags_only(t, &pt->t);

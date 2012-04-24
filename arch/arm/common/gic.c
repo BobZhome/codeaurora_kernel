@@ -32,6 +32,7 @@
 #include <asm/irq.h>
 #include <asm/mach/irq.h>
 #include <asm/hardware/gic.h>
+#include <../mach-msm/mpm.h>
 
 static DEFINE_SPINLOCK(irq_controller_lock);
 
@@ -154,6 +155,8 @@ static int gic_set_type(struct irq_data *d, unsigned int type)
 		writel_relaxed(enablemask, base + GIC_DIST_ENABLE_CLEAR + enableoff);
 		enabled = true;
 	}
+	return 0;
+}
 
 	writel_relaxed(val, base + GIC_DIST_CONFIG + confoff);
 

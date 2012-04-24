@@ -93,21 +93,38 @@ static void smd_diag(void)
 		x[SZ_DIAG_ERR_MSG - 1] = 0;
 		pr_debug("DIAG '%s'\n", x);
 	}
-}
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+	x = smem_find(SMEM_LGE_ERR_MESSAGE, LGE_ERR_MESSAGE_BUF_LEN);
+	if (x != 0) {
+		int i;
+		char *message = (char *)x;
+		error_modem_message = (char *)x;
 
 /* call when SMSM_RESET flag is set in the A9's smsm_state */
 static void handle_modem_crash(void)
 {
 	pr_err("ARM9 has CRASHED\n");
 	smd_diag();
+#ifdef CONFIG_LGE_HANDLE_MODEM_CRASH
+	/* flush console before reboot
+	 * from google's mahimahi kernel
+	 * 2010-05-04, cleaneye.kim@lge.com
+	 */
+	msm_pm_flush_console();
+	
+	// LGE_CHANGE [dojip.kim@lge.com] 2010-08-13, comment out
+	// To solve Phone Freezing problem during Power On/Off Test by QM or DQ
+	//atomic_notifier_call_chain(&panic_notifier_list, 0, 0x87654321);
 
 	/* hard reboot if possible */
 	if (msm_hw_reset_hook)
 		msm_hw_reset_hook();
 
 	/* in this case the modem or watchdog should reboot us */
+	#if 0	//LGE_CHANGE [blue.park@lge.com] <For ErrorHandler>
 	for (;;)
 		;
+	#endif
 }
 
 uint32_t raw_smsm_get_state(enum smsm_state_item item)
@@ -727,6 +744,10 @@ int smd_close(smd_channel_t *ch)
 {
 	unsigned long flags;
 
+	SMD_INFO("smd_close(%p)\n", ch);
+#ifdef CONFIG_MACH_LGE
+	SMD_INFO("smd_close(%s)\n", ch->name);
+#endif
 	if (ch == 0)
 		return -1;
 
@@ -936,6 +957,38 @@ int smsm_set_sleep_duration(uint32_t delay)
 
 #endif
 
+#ifdef CONFIG_MACH_LGE
+/* Make a api to not report a changed SMSM state to other processor
+ * blue.park@lge.com 2010-04-14
+ */
+int smsm_change_state_nonotify(uint32_t smsm_entry,
+		      uint32_t clear_mask, uint32_t set_mask)
+{
+	unsigned long flags;
+	uint32_t  old_state, new_state;
+
+	if (smsm_entry >= SMSM_NUM_ENTRIES) {
+		pr_err("smsm_change_state: Invalid entry %d",
+		       smsm_entry);
+		return -EINVAL;
+	}
+
+	if (!smsm_info.state) {
+		pr_err("smsm_change_state <SM NO STATE>\n");
+		return -EIO;
+	}
+	spin_lock_irqsave(&smem_lock, flags);
+
+	old_state = readl(SMSM_STATE_ADDR(smsm_entry));
+	new_state = (old_state & ~clear_mask) | set_mask;
+	writel(new_state, SMSM_STATE_ADDR(smsm_entry));
+	SMSM_DBG("smsm_change_state %x\n", new_state);
+	
+	spin_unlock_irqrestore(&smem_lock, flags);
+
+	return 0;
+}
+#endif
 int smd_core_init(void)
 {
 	int r;

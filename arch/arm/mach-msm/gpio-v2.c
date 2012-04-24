@@ -332,6 +332,8 @@ static int msm_gpio_irq_set_wake(struct irq_data *d, unsigned int on)
 {
 	int gpio = msm_irq_to_gpio(&msm_gpio.gpio_chip, d->irq);
 
+	WARN(on, "TLMM summary wont wakeup in XO shutdown, use a direct line");
+
 	if (on) {
 		if (bitmap_empty(msm_gpio.wake_irqs, NR_GPIO_IRQS))
 			irq_set_irq_wake(TLMM_SCSS_SUMMARY_IRQ, 1);
@@ -386,7 +388,6 @@ static int __devexit msm_gpio_remove(struct platform_device *dev)
 		return ret;
 
 	irq_set_handler(TLMM_SCSS_SUMMARY_IRQ, NULL);
-
 	return 0;
 }
 

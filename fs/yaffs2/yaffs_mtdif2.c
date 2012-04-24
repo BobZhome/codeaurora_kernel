@@ -1,7 +1,7 @@
 /*
  * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
  *
- * Copyright (C) 2002-2010 Aleph One Ltd.
+ * Copyright (C) 2002-2007 Aleph One Ltd.
  *   for Toby Churchill Ltd and Brightstar Engineering
  *
  * Created by Charles Manning <charles@aleph1.co.uk>
@@ -13,8 +13,11 @@
 
 /* mtd interface for YAFFS2 */
 
+const char *yaffs_mtdif2_c_version =
+	"$Id$";
+
 #include "yportenv.h"
-#include "yaffs_trace.h"
+
 
 #include "yaffs_mtdif2.h"
 
@@ -23,8 +26,6 @@
 #include "linux/time.h"
 
 #include "yaffs_packedtags2.h"
-
-#include "yaffs_linux.h"
 
 /* NB For use with inband tags....
  * We assume that the data buffer is of size total_bytes_per_chunk so that we can also

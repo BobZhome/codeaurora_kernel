@@ -3385,7 +3385,6 @@ static void hub_events(void)
 	u16 portchange;
 	int i, ret;
 	int connect_change;
-
 	/*
 	 *  We restart the list every time to avoid a deadlock with
 	 * deleting hubs downstream from this one. This should be

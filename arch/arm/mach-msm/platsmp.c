@@ -92,7 +92,25 @@ int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
 
 	/* Only need to bring cpu out of reset this way once */
 	if (cold_boot_done == false) {
+<<<<<<< HEAD
 		prepare_cold_cpu(cpu);
+=======
+		ret = scm_set_boot_addr((void *)
+					virt_to_phys(msm_secondary_startup),
+					SCM_FLAG_COLDBOOT_CPU1);
+		if (ret == 0) {
+			void *sc1_base_ptr;
+			sc1_base_ptr = ioremap_nocache(0x00902000, SZ_4K*2);
+			if (sc1_base_ptr) {
+				writel(0x0, sc1_base_ptr+0x15A0);
+				writel(0x0, sc1_base_ptr+0xD80);
+				writel(0x3, sc1_base_ptr+0xE64);
+				iounmap(sc1_base_ptr);
+			}
+		} else
+			printk(KERN_DEBUG "Failed to set secondary core boot "
+					  "address\n");
+>>>>>>> adcc2c7... Pristine LS670 Gingerbread ZVH sources.
 		cold_boot_done = true;
 	}
 

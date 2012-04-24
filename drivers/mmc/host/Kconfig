@@ -442,6 +442,13 @@ config MMC_SDRICOH_CS
 config MMC_TMIO_CORE
 	tristate
 
+config MMC_MSM_PROG_DONE_SCAN
+	bool "Perform prog done scan as needed for SDIO"
+	depends on MMC_MSM
+	default n
+	help
+	  Enable prog_done scan after cmd53-dummycmd52 for SDIO
+
 config MMC_TMIO
 	tristate "Toshiba Mobile IO Controller (TMIO) MMC/SD function support"
 	depends on MFD_TMIO || MFD_ASIC3

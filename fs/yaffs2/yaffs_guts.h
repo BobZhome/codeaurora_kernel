@@ -1,7 +1,7 @@
 /*
  * YAFFS: Yet another Flash File System . A NAND-flash specific file system.
  *
- * Copyright (C) 2002-2010 Aleph One Ltd.
+ * Copyright (C) 2002-2007 Aleph One Ltd.
  *   for Toby Churchill Ltd and Brightstar Engineering
  *
  * Created by Charles Manning <charles@aleph1.co.uk>
@@ -58,9 +58,8 @@
 #define YAFFS_NOBJECT_BUCKETS		256
 
 #define YAFFS_OBJECT_SPACE		0x40000
-#define YAFFS_MAX_OBJECT_ID		(YAFFS_OBJECT_SPACE -1)
 
-#define YAFFS_CHECKPOINT_VERSION 	4
+#define YAFFS_CHECKPOINT_VERSION 	3
 
 #ifdef CONFIG_YAFFS_UNICODE
 #define YAFFS_MAX_NAME_LENGTH		127
@@ -78,7 +77,7 @@
 #define YAFFS_OBJECTID_UNLINKED		3
 #define YAFFS_OBJECTID_DELETED		4
 
-/* Pseudo object ids for checkpointing */
+/* Sseudo object ids for checkpointing */
 #define YAFFS_OBJECTID_SB_HEADER	0x10
 #define YAFFS_OBJECTID_CHECKPOINT_DATA	0x20
 #define YAFFS_SEQUENCE_CHECKPOINT_DATA  0x21
@@ -251,12 +250,13 @@ enum yaffs_block_state {
 	 */
 
 	YAFFS_BLOCK_STATE_DIRTY,
-	/* The block was full and now all chunks have been deleted.
+	/* All pages have been allocated and deleted.
 	 * Erase me, reuse me.
 	 */
 
 	YAFFS_BLOCK_STATE_CHECKPOINT,
-	/* This block is assigned to holding checkpoint data. */
+	/* This block is assigned to holding checkpoint data.
+	 */
 
 	YAFFS_BLOCK_STATE_COLLECTING,
 	/* This block is being garbage collected */
@@ -426,6 +426,10 @@ struct yaffs_obj {
 	YCHAR short_name[YAFFS_SHORT_NAME_LENGTH + 1];
 #endif
 
+#ifndef __KERNEL__
+	__u32 inUse;
+#endif
+
 #ifdef CONFIG_YAFFS_WINCE
 	u32 win_ctime[2];
 	u32 win_mtime[2];
@@ -523,7 +527,6 @@ struct yaffs_param {
 	u8 skip_checkpt_wr;
 
 	int enable_xattr;	/* Enable xattribs */
-
 	/* NAND access functions (Must be set before calling YAFFS) */
 
 	int (*write_chunk_fn) (struct yaffs_dev * dev,
@@ -694,6 +697,7 @@ struct yaffs_dev {
 	int n_deleted_files;	/* Count of files awaiting deletion; */
 	int n_unlinked_files;	/* Count of unlinked files. */
 	int n_bg_deletions;	/* Count of background deletions. */
+
 
 	/* Temporary buffer management */
 	struct yaffs_buffer temp_buffer[YAFFS_N_TEMP_BUFFERS];

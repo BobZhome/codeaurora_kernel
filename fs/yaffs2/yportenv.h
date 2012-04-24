@@ -1,7 +1,7 @@
 /*
  * YAFFS: Yet another Flash File System . A NAND-flash specific file system.
  *
- * Copyright (C) 2002-2010 Aleph One Ltd.
+ * Copyright (C) 2002-2007 Aleph One Ltd.
  *   for Toby Churchill Ltd and Brightstar Engineering
  *
  * Created by Charles Manning <charles@aleph1.co.uk>
@@ -39,11 +39,16 @@
 #define YAFFS_LOSTNFOUND_PREFIX		"obj"
 
 
-#define YAFFS_ROOT_MODE			0755
-#define YAFFS_LOSTNFOUND_MODE		0700
+#define YAFFS_ROOT_MODE			0666
+#define YAFFS_LOSTNFOUND_MODE		0666
 
 #define Y_CURRENT_TIME CURRENT_TIME.tv_sec
 #define Y_TIME_CONVERT(x) (x).tv_sec
+
+#define yaffs_trace(mask, fmt, args...) \
+	do { if ((mask) & (yaffs_traceMask|YAFFS_TRACE_ERROR)) \
+		printk(KERN_WARNING "yaffs: " fmt, ## args); \
+	} while (0)
 
 #define compile_time_assertion(assertion) \
 	({ int x = __builtin_choose_expr(assertion, 0, (void)0); (void) x; })

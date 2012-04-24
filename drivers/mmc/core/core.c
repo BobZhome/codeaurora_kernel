@@ -60,7 +60,6 @@ int mmc_assume_removable;
 #else
 int mmc_assume_removable = 1;
 #endif
-EXPORT_SYMBOL(mmc_assume_removable);
 module_param_named(removable, mmc_assume_removable, bool, 0644);
 MODULE_PARM_DESC(
 	removable,
@@ -1905,6 +1904,12 @@ int mmc_resume_host(struct mmc_host *host)
 	}
 	host->pm_flags &= ~MMC_PM_KEEP_POWER;
 	mmc_bus_put(host);
+
+	/*
+	 * We add a slight delay here so that resume can progress
+	 * in parallel.
+	 */
+	mmc_detect_change(host, 1);
 
 	return err;
 }

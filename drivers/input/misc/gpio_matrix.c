@@ -20,6 +20,11 @@
 #include <linux/interrupt.h>
 #include <linux/slab.h>
 #include <linux/wakelock.h>
+//LGSI Thunder Upgrade : SLTATE HardKEy Enable saravanak.nachimuthu@lge.com
+#include <linux/delay.h>
+extern int key_touch_logging_status;
+extern void mtc_send_key_log_packet(unsigned long keycode, unsigned long state);
+//LGSI Thunder Upgrade : SLTATE HardKEy Enable saravanak.nachimuthu@lge.com
 
 struct gpio_kp {
 	struct gpio_event_input_devs *input_devs;
@@ -126,6 +131,18 @@ static void report_key(struct gpio_kp *kp, int key_index, int out, int in)
 					out, in, mi->output_gpios[out],
 					mi->input_gpios[in], pressed);
 			input_report_key(kp->input_devs->dev[dev], keycode, pressed);
+			/* TODO temporary code for DEBUG
+			 * 2010-04-19 younchan.kim@lge.com
+			 */
+			printk("gpiomatrix: key %x, %d-%d (%d-%d) "
+					"changed to %d\n", keycode,
+					out, in, mi->output_gpios[out],
+					mi->input_gpios[in], pressed);
+//LGSI Thunder Upgrade : SLTATE HardKEy Enable saravanak.nachimuthu@lge.com
+			if(key_touch_logging_status == 1)
+				mtc_send_key_log_packet((unsigned long)keycode, (unsigned long)!pressed);
+//LGSI Thunder Upgrade : SLTATE HardKEy Enable saravanak.nachimuthu@lge.com
+
 		}
 	}
 }

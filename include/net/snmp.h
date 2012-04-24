@@ -47,16 +47,15 @@ struct snmp_mib {
 }
 
 /*
- * We use unsigned longs for most mibs but u64 for ipstats.
+ * We use all unsigned longs. Linux will soon be so reliable that even 
+ * these will rapidly get too small 8-). Seriously consider the IpInReceives 
+ * count on the 20Gb/s + networks people expect in a few years time!
  */
-#include <linux/u64_stats_sync.h>
 
 /* IPstats */
 #define IPSTATS_MIB_MAX	__IPSTATS_MIB_MAX
 struct ipstats_mib {
-	/* mibs[] must be first field of struct ipstats_mib */
-	u64		mibs[IPSTATS_MIB_MAX];
-	struct u64_stats_sync syncp;
+	unsigned long	mibs[IPSTATS_MIB_MAX];
 };
 
 /* ICMP */

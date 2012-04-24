@@ -98,7 +98,17 @@ static inline struct f_acm *port_to_acm(struct gserial *p)
 /* notification endpoint uses smallish and infrequent fixed-size messages */
 
 #define GS_LOG2_NOTIFY_INTERVAL		5	/* 1 << 5 == 32 msec */
+
+
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_ACM_FIX
+/* LGE_CHANGE
+ * Apply CDC ACM function fixup for LG Android USB
+ * 2011-01-12, hyunhui.park@lge.com
+ */
+#define GS_NOTIFY_MAXPACKET		16	/* For LG host driver */
+#else
 #define GS_NOTIFY_MAXPACKET		10	/* notification + 2 bytes */
+#endif
 
 /* interface and class descriptors: */
 
@@ -464,15 +474,39 @@ static int acm_cdc_notify(struct f_acm *acm, u8 type, u16 value,
 	struct usb_ep			*ep = acm->notify;
 	struct usb_request		*req;
 	struct usb_cdc_notification	*notify;
+#ifndef CONFIG_USB_SUPPORT_LGE_ANDROID_ACM_FIX
+	/* LGE_CHANGE
+	 * Apply CDC ACM function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
 	const unsigned			len = sizeof(*notify) + length;
+#endif
 	void				*buf;
 	int				status;
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_ACM_FIX
+	/* LGE_CHANGE
+	 * Apply CDC ACM function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
+	unsigned char noti_buf[GS_NOTIFY_MAXPACKET];
+
+	memset(noti_buf, 0, GS_NOTIFY_MAXPACKET);
+#endif
 
 	req = acm->notify_req;
 	acm->notify_req = NULL;
 	acm->pending = false;
 
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_ACM_FIX
+	/* LGE_CHANGE
+	 * Apply CDC ACM function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
+	req->length = GS_NOTIFY_MAXPACKET;
+#else
 	req->length = len;
+#endif
+
 	notify = req->buf;
 	buf = notify + 1;
 
@@ -482,7 +516,16 @@ static int acm_cdc_notify(struct f_acm *acm, u8 type, u16 value,
 	notify->wValue = cpu_to_le16(value);
 	notify->wIndex = cpu_to_le16(acm->ctrl_id);
 	notify->wLength = cpu_to_le16(length);
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_ACM_FIX
+	/* LGE_CHANGE
+	 * Apply CDC ACM function fixup for LG Android USB
+	 * 2011-01-12, hyunhui.park@lge.com
+	 */
+	memcpy(noti_buf, data, length);
+	memcpy(buf, noti_buf, GS_NOTIFY_MAXPACKET);
+#else
 	memcpy(buf, data, length);
+#endif
 
 	/* ep_queue() can complete immediately if it fills the fifo... */
 	spin_unlock(&acm->lock);
@@ -546,6 +589,59 @@ static void acm_connect(struct gserial *port)
 	acm_notify_serial_state(acm);
 }
 
+//LGSI_CHANGE_START[satheesh.murugan@lge.com]
+/* LGE_CHANGES_S [moses.son@lge.com] 2011-02-24, bryce porting  */
+unsigned int acm_get_dtr(struct gserial *port)
+{
+	struct f_acm		*acm = port_to_acm(port);
+
+	if (acm->port_handshake_bits & ACM_CTRL_DTR)
+		return 1;
+	else
+		return 0;
+}
+
+unsigned int acm_get_rts(struct gserial *port)
+{
+	struct f_acm		*acm = port_to_acm(port);
+
+	if (acm->port_handshake_bits & ACM_CTRL_RTS)
+		return 1;
+	else
+		return 0;
+}
+
+unsigned int acm_send_carrier_detect(struct gserial *port, unsigned int yes)
+{
+	struct f_acm		*acm = port_to_acm(port);
+	u16			state;
+
+	state = acm->serial_state;
+	state &= ~ACM_CTRL_DCD;
+	if (yes)
+		state |= ACM_CTRL_DCD;
+
+	acm->serial_state = state;
+	return acm_notify_serial_state(acm);
+
+}
+
+unsigned int acm_send_ring_indicator(struct gserial *port, unsigned int yes)
+{
+	struct f_acm		*acm = port_to_acm(port);
+	u16			state;
+
+	state = acm->serial_state;
+	state &= ~ACM_CTRL_RI;
+	if (yes)
+		state |= ACM_CTRL_RI;
+
+	acm->serial_state = state;
+	return acm_notify_serial_state(acm);
+
+}
+/* LGE_CHANGES_E [moses.son@lge.com] 2011-02-24 */
+//LGSI_CHANGE_END[satheesh.murugan@lge.com]
 static void acm_disconnect(struct gserial *port)
 {
 	struct f_acm		*acm = port_to_acm(port);
@@ -708,6 +804,15 @@ static inline bool can_support_cdc(struct usb_configuration *c)
 	return true;
 }
 
+#ifdef CONFIG_USB_SUPPORT_LGE_ANDROID_GADGET_FIX
+/* LGE_CHANGE
+ * To bind LG AndroidNet, another ACM instance
+ * named "acm2" is used.
+ * 2011-01-12, hyunhui.park@lge.com
+ */
+static int acm_count;
+#endif
+
 /**
  * acm_bind_config - add a CDC ACM function to a configuration
  * @c: the configuration to support the CDC ACM instance
@@ -766,6 +871,14 @@ int acm_bind_config(struct usb_configuration *c, u8 port_num)
 	acm->port_num = port_num;
 
 	acm->port.connect = acm_connect;
+//LGSI_CHANGE_START[satheesh.murugan@lge.com]
+/* LGE_CHANGES_S [moses.son@lge.com] 2011-02-24, bryce porting	*/
+	acm->port.get_dtr = acm_get_dtr;
+	acm->port.get_rts = acm_get_rts;
+	acm->port.send_carrier_detect = acm_send_carrier_detect;
+	acm->port.send_ring_indicator = acm_send_ring_indicator;
+/* LGE_CHANGES_E [moses.son@lge.com] 2011-02-24 */
+//LGSI_CHANGE_END[satheesh.murugan@lge.com]
 	acm->port.disconnect = acm_disconnect;
 	acm->port.send_break = acm_send_break;
 

@@ -297,7 +297,6 @@
 
 #include "gadget_chips.h"
 
-
 /*------------------------------------------------------------------------*/
 
 #define FSG_DRIVER_DESC		"Mass Storage Function"
@@ -311,7 +310,6 @@ static const char fsg_string_interface[] = "Mass Storage";
 #define FSG_NO_INTR_EP           1
 
 #include "storage_common.c"
-
 
 /*-------------------------------------------------------------------------*/
 
@@ -416,7 +414,6 @@ struct fsg_config {
 		char ro;
 		char removable;
 		char cdrom;
-		char nofua;
 	} luns[FSG_MAX_LUNS];
 
 	const char		*lun_name_format;
@@ -2803,9 +2800,6 @@ static struct fsg_common *fsg_common_init(struct fsg_common *common,
 		rc = device_create_file(&curlun->dev, &dev_attr_file);
 		if (rc)
 			goto error_luns;
-		rc = device_create_file(&curlun->dev, &dev_attr_nofua);
-		if (rc)
-			goto error_luns;
 
 		if (lcfg->filename) {
 			rc = fsg_lun_open(curlun, lcfg->filename);
@@ -2935,7 +2929,6 @@ static void fsg_common_release(struct kref *ref)
 
 		/* In error recovery common->nluns may be zero. */
 		for (; i; --i, ++lun) {
-			device_remove_file(&lun->dev, &dev_attr_nofua);
 			device_remove_file(&lun->dev, &dev_attr_ro);
 			device_remove_file(&lun->dev, &dev_attr_file);
 			fsg_lun_close(lun);
