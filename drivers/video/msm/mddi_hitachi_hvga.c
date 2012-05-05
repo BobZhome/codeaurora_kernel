@@ -118,6 +118,12 @@ static struct display_table mddi_hitachi_display_on_3rd[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
+static struct display_table mddi_hitachi_display_on_auo[] = {
+	{0x11, 4, {0x00, 0x00, 0x00, 0x00}},
+	{REGFLAG_DELAY, 120, {}},
+	{0x29, 4, {0x00, 0x00, 0x00, 0x00}},
+	{REGFLAG_END_OF_TABLE, 0x00, {}}
+};
 #if 0
 static struct display_table2 mddi_hitachi_img[] = {
 	{0x2c, 16384, {}},
@@ -309,6 +315,109 @@ static struct display_table mddi_hitachi_initialize_3rd_p500[] = {
 
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
+static struct display_table mddi_hitachi_initialize_auo[] = {
+
+	// Power ON Sequence 
+	{0xf0, 4, {0x5a, 0x5a, 0x00, 0x00}},
+	{0xf1, 4, {0x5a, 0x5a, 0x00, 0x00}},
+
+	// DISCTL - 67.2HZ(0x4b) 70Hz(0x48) 72.4Hz(0x46) 75Hz(0x43) 80Hz(0x3f) 90Hz(0x38), Frame Inversion
+	{0xf2, 20, {0x3b, 0x48, 0x03, 0x08, 
+		         0x08, 0x08, 0x08, 0x00,
+			       0x08, 0x08, 0x00, 0x00, 
+			       0x00, 0x00, 0x54, 0x08,
+			       0x08, 0x08, 0x08, 0x00}},
+
+	// PWRCTL 
+	{0xf4, 16, {0x08, 0x00, 0x00, 0x00, 
+		         0x00, 0x00, 0x00, 0x00,
+			       0x3f, 0x79, 0x03, 0x3f, 
+			       0x79, 0x03, 0x00, 0x00}},
+
+	// VCMCTL - VCIR 0x03 -> 0x00
+	{0xf5, 12, {0x00, 0x5d, 0x75, 0x00, 
+		         0x00, 0x00, 0x00, 0x00,
+			       0x04, 0x00, 0x5d, 0x75}},
+			       
+	// {REGFLAG_DELAY, 10, {0}},
+
+  // SRCCTL
+	{0xf6, 8, {0x04, 0x00, 0x08, 0x03, 
+		         0x01, 0x00, 0x01, 0x00}},
+
+  // IFCTL
+	{0xf7, 8,  {0x48, 0x80, 0x10, 0x02,
+		         0x00, 0x00, 0x00, 0x00}},
+
+  // PANELCTL
+	{0xf8, 4,  {0x11, 0x00, 0x00, 0x00}},
+
+
+#if 0 // backlight auto-control
+  // WRDISBV
+	{0x51, 4,  {0xff, 0x00, 0x00, 0x00}},
+
+
+  // WRCTRLD
+	{0x53, 4,  {0x2c, 0x00, 0x00, 0x00}},
+
+
+  // WRCABC
+	{0x55, 4,  {0x03, 0x00, 0x00, 0x00}},
+
+  // WRCABCMB
+	{0x5e, 4,  {0x00, 0x00, 0x00, 0x00}},
+
+  // MIECTL1
+	{0xc0, 4,  {0x80, 0x80, 0x3f, 0x00}},
+
+  // BCMODE
+	{0xc1, 4,  {0x13, 0x00, 0x00, 0x00}},
+#endif
+
+  // GAMMASEL - Red
+	{0xf9, 4,  {0x24, 0x00, 0x00, 0x00}},
+	// PGAMMACTL 
+	{0xfa, 16, {0x0b, 0x0b, 0x0c, 0x1f, 
+		         0x1f, 0x27, 0x2f, 0x14,
+			       0x21, 0x26, 0x32, 0x31, 
+			       0x24, 0x00, 0x00, 0x01}},
+
+  // GAMMASEL - Green
+	{0xf9, 4,  {0x22, 0x00, 0x00, 0x00}},
+	// PGAMMACTL 
+	{0xfa, 16, {0x0b, 0x0b, 0x0e, 0x27, 
+		         0x29, 0x30, 0x33, 0x12,
+			       0x1f, 0x25, 0x31, 0x30, 
+			       0x24, 0x00, 0x00, 0x01}},
+
+  // GAMMASEL - Blue
+	{0xf9, 4,  {0x21, 0x00, 0x00, 0x00}},
+	// PGAMMACTL 
+	{0xfa, 16, {0x0b, 0x0b, 0x1a, 0x3a, 
+		         0x3f, 0x3f, 0x3f, 0x08,
+			       0x19, 0x21, 0x2c, 0x2a, 
+			       0x1a, 0x00, 0x00, 0x01}},
+
+	// COLMOD 
+	{0x3a,  4, {0x55, 0x00, 0x00, 0x00}},
+
+	// MADCTL 
+	{0x36,  4, {0x00, 0x00, 0x00, 0x00}},
+
+	// TEON 
+	{0x35,  4, {0x00, 0x00, 0x00, 0x00}},
+
+
+	// CASET
+	{0x2a,  4, {0x00, 0x00, 0x01, 0x3f}},
+
+	// PASET
+	{0x2b,  4, {0x00, 0x00, 0x01, 0xdf}},
+		
+	{REGFLAG_END_OF_TABLE, 0x00, {0}}
+};
+
 void hitachi_display_table(struct display_table *table, unsigned int count)
 {
 	unsigned int i;
@@ -514,9 +623,15 @@ static int mddi_hitachi_lcd_on(struct platform_device *pdev)
 	hitachi_display_table(mddi_hitachi_display_on_1st,
 			sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
 #else
+#ifdef DRV_AUO_PANEL
+	EPRINTK("ThunderC ==> lge_bd_rev = %d : AUO LCD initial\n", lge_bd_rev);
+	hitachi_display_table(mddi_hitachi_initialize_auo, sizeof(mddi_hitachi_initialize_auo)/sizeof(struct display_table));
+	hitachi_display_table(mddi_hitachi_display_on_auo, sizeof(mddi_hitachi_display_on_auo) / sizeof(struct display_table));
+#else
 	EPRINTK("ThunderC ==> lge_bd_rev = %d : 3rd LCD initial\n", lge_bd_rev);
 	hitachi_display_table(mddi_hitachi_initialize_3rd_vs660, sizeof(mddi_hitachi_initialize_3rd_vs660)/sizeof(struct display_table));
 	hitachi_display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
+#endif	
 #endif
 	is_lcd_on = TRUE;
 
@@ -556,9 +671,15 @@ static int mddi_hitachi_lcd_store_on(void)
 	hitachi_display_table(mddi_hitachi_display_on_1st,
 			sizeof(mddi_hitachi_display_on_1st) / sizeof(struct display_table));
 #else
+#ifdef DRV_AUO_PANEL
+	hitachi_display_table(mddi_hitachi_initialize_auo, sizeof(mddi_hitachi_initialize_auo)/sizeof(struct display_table));
+	mdelay(200);
+	hitachi_display_table(mddi_hitachi_display_on_auo, sizeof(mddi_hitachi_display_on_auo) / sizeof(struct display_table));
+#else
 	hitachi_display_table(mddi_hitachi_initialize_3rd_vs660, sizeof(mddi_hitachi_initialize_3rd_vs660)/sizeof(struct display_table));
 	mdelay(200);
 	hitachi_display_table(mddi_hitachi_display_on_3rd, sizeof(mddi_hitachi_display_on_3rd) / sizeof(struct display_table));
+#endif	
 #endif
 	is_lcd_on = TRUE;
 	return 0;

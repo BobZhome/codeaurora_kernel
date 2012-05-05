@@ -813,17 +813,25 @@ void mdp_load_thunder_lut(int lut_type)
 
 #define   IRQ_EN_1__MDP_IRQ___M    0x00000800
 
+
+#if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
+void lge_probe_lcd(void)
+{
+  gpio_tlmm_config(GPIO_CFG(101, 0, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_2MA), GPIO_ENABLE);
+	gpio_configure(101, GPIOF_INPUT);
+  if (gpio_get_value(101) == 0)
+		g_mddi_lcd_probe = 0; /* Hitachi LCD */
+	else
+		g_mddi_lcd_probe = 1; /* Novatek LCD */
+}
+#endif
+
 void mdp_hw_init(void)
 {
 	int i;
 
 #if defined(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_HVGA)
-  gpio_tlmm_config(GPIO_CFG(101, 0, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_2MA), GPIO_ENABLE);
-	gpio_configure(101, GPIOF_INPUT);
-  if (gpio_get_value(101) == 0)
-		g_mddi_lcd_probe = 0;
-	else
-		g_mddi_lcd_probe = 1;
+  lge_probe_lcd();
 #endif	
 
 	/* MDP cmd block enable */

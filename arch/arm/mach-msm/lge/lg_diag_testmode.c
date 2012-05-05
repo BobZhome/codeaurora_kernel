@@ -677,7 +677,8 @@ void *LGF_TestModeFactoryReset(test_mode_req_type * pReq,
 	unsigned char pbuf[BUF_PAGE_SIZE];
 	int mtd_op_result = 0;
 	unsigned char startStatus;
-	static unsigned char firstStartStatus = 0;;
+	static unsigned char firstStartStatus = 0;
+    unsigned char factory_reset_val = 0;
 
 	pRsp->ret_stat_code = TEST_OK_S;
 
@@ -694,8 +695,10 @@ void *LGF_TestModeFactoryReset(test_mode_req_type * pReq,
 				mtd_part_num, mtd_part_size, mtd_factory_blk);
 	}
 #endif /*CONFIG_LGE_MTD_DIRECT_ACCESS */
+    factory_reset_val = (unsigned char)pReq->factory_reset;
 
-	switch (pReq->factory_reset) {
+	switch(factory_reset_val) 
+	{
 	case FACTORY_RESET_CHECK:
 #ifdef CONFIG_LGE_MTD_DIRECT_ACCESS
 		memset((void *)pbuf, 0, sizeof(pbuf));

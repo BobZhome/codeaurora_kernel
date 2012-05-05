@@ -18,9 +18,10 @@
 
 #define MAX_KEY_BUFF_SIZE    200
 
-typedef enum {
-	VER_SW = 0,		//Binary Revision
-	VER_DSP,		/* Camera DSP */
+typedef enum
+{
+	VER_SW=0,		//Binary Revision
+	VER_DSP,      /* Camera DSP */
 	VER_MMS,
 	VER_CONTENTS,
 	VER_PRL,
@@ -37,26 +38,29 @@ typedef enum {
 	BANK_ON_SIZE,
 	MODULE_FILE_CNT,
 	MODULE_FILE_SIZE,
-	MP3_DSP_OS_VER = 21,
-	VER_MODULE,
-	VER_LCD_REVISION = 24
-} test_mode_req_version_type;
+	MP3_DSP_OS_VER=21,
+	VER_MODULE  ,
+	VER_LCD_REVISION=24
+} PACKED test_mode_req_version_type;
 
-typedef enum {
+typedef enum
+{
 	MOTOR_OFF,
 	MOTOR_ON
-} test_mode_req_motor_type;
+} PACKED test_mode_req_motor_type;
 
-typedef enum {
-	ACOUSTIC_OFF = 0,
+typedef enum
+{
+	ACOUSTIC_OFF=0,
 	ACOUSTIC_ON,
 	HEADSET_PATH_OPEN,
 	HANDSET_PATH_OPEN,
 	ACOUSTIC_LOOPBACK_ON,
 	ACOUSTIC_LOOPBACK_OFF
-} test_mode_req_acoustic_type;
+} PACKED test_mode_req_acoustic_type;
 
-typedef enum {
+typedef enum
+{
 	MP3_128KHZ_0DB,
 	MP3_128KHZ_0DB_L,
 	MP3_128KHZ_0DB_R,
@@ -64,39 +68,44 @@ typedef enum {
 	MP3_PLAYMODE_OFF,
 	MP3_SAMPLE_FILE,
 	MP3_NoSignal_LR_128k
-} test_mode_req_mp3_test_type;
+} PACKED test_mode_req_mp3_test_type;
 
-typedef enum {
+typedef enum
+{
 	SPEAKER_PHONE_OFF,
 	SPEAKER_PHONE_ON,
 	NOMAL_Mic1,
 	NC_MODE_ON,
 	ONLY_MIC2_ON_NC_ON,
 	ONLY_MIC1_ON_NC_ON
-} test_mode_req_speaker_phone_type;
+} PACKED test_mode_req_speaker_phone_type;
 
-typedef enum {
+typedef enum
+{
 	VOL_LEV_OFF,
 	VOL_LEV_MIN,
 	VOL_LEV_MEDIUM,
 	VOL_LEV_MAX
-} test_mode_req_volume_level_type;
+} PACKED test_mode_req_volume_level_type;
 
-typedef enum {
-	BT_GET_ADDR,		//no use anymore
-	BT_TEST_MODE_1 = 1,
-	BT_TEST_MODE_CHECK = 2,
-	BT_TEST_MODE_RELEASE = 5,
-	BT_TEST_MODE_11 = 11	// 11~42
-} test_mode_req_bt_type;
-typedef enum {
-	BT_ADDR_WRITE = 0,
+typedef enum
+{
+	BT_GET_ADDR, //no use anymore
+	BT_TEST_MODE_1=1,
+	BT_TEST_MODE_CHECK=2,
+	BT_TEST_MODE_RELEASE=5,
+	BT_TEST_MODE_11=11 // 11~42
+} PACKED test_mode_req_bt_type;
+typedef enum
+{
+	BT_ADDR_WRITE=0,
 	BT_ADDR_READ
-} test_mode_req_bt_rw_type;
+} PACKED test_mode_req_bt_rw_type;
 
 #define BT_RW_CNT 20
 
-typedef enum {
+typedef enum
+{
 	CAM_TEST_MODE_OFF = 0,
 	CAM_TEST_MODE_ON,
 	CAM_TEST_SHOT,
@@ -116,34 +125,40 @@ typedef enum {
 	CAM_TEST_STROBE_LIGHT_ON,
 	CAM_TEST_STROBE_LIGHT_OFF,
 	CAM_TEST_CAMERA_SELECT = 22,
-} test_mode_req_cam_type;
+} PACKED test_mode_req_cam_type;
 
-typedef enum {
+typedef enum
+{
 	EXTERNAL_SOCKET_MEMORY_CHECK,
 	EXTERNAL_FLASH_MEMORY_SIZE,
 	EXTERNAL_SOCKET_ERASE,
 	EXTERNAL_FLASH_MEMORY_USED_SIZE = 4,
-} test_mode_req_socket_memory;
+} PACKED test_mode_req_socket_memory;
 
-typedef enum {
+typedef enum
+{
 	FIRST_BOOTING_COMPLETE_CHECK,
-} test_mode_req_fboot;
+} PACKED test_mode_req_fboot;
 
-typedef enum {
+typedef enum
+{
 	MEMORY_TOTAL_CAPA_TEST,
 	MEMORY_USED_CAPA_TEST,
 	MEMORY_REMAIN_CAPA_TEST
-} test_mode_req_memory_capa_type;
+} PACKED test_mode_req_memory_capa_type;
+
 #ifndef SKW_TEST
-typedef enum {
+typedef enum
+{
 	FACTORY_RESET_CHECK,
 	FACTORY_RESET_COMPLETE_CHECK,
 	FACTORY_RESET_STATUS_CHECK,
 	FACTORY_RESET_COLD_BOOT,
-	FACTORY_RESET_ERASE_USERDATA = 0x0F,	// for NPST dll
-} test_mode_req_factory_reset_mode_type;
+	FACTORY_RESET_ERASE_USERDATA = 0x0F, // for NPST dll
+} PACKED test_mode_req_factory_reset_mode_type;
 
-typedef enum {
+typedef enum 
+{
 	FACTORY_RESET_START = 0,
 	FACTORY_RESET_INITIAL = 1,
 	FACTORY_RESET_ARM9_END = 2,
@@ -151,60 +166,68 @@ typedef enum {
 	FACTORY_RESET_COLD_BOOT_END = 5,
 	FACTORY_RESET_USER_START = 6,
 	FACTORY_RESET_NA = 7,
-} test_mode_factory_reset_status_type;
-
+} PACKED test_mode_factory_reset_status_type;
 #endif
 
-typedef enum {
+// LGE_CHANGE [dojip.kim@lge.com] 2010-09-28, kernel mode
+typedef enum
+{
 	SLEEP_MODE_ON,
 	AIR_PLAIN_MODE_ON,
 	FTM_BOOT_ON,
-} test_mode_sleep_mode_type;
+} PACKED test_mode_sleep_mode_type;
 
 /* LGE_FACTORY_TEST_MODE for Photo Sensor(ALC) */
-typedef enum {
-	ALC_TEST_MODE_OFF = 0,
+typedef enum
+{
+	ALC_TEST_MODE_OFF=0,
 	ALC_TEST_MODE_ON,
 	ALC_TEST_CHECK_STATUS,
 	ALC_TEST_AUTOTEST
-} test_mode_req_alc_type;
+} PACKED test_mode_req_alc_type;
 
-typedef enum {
+typedef enum
+{
 	TEST_SCRIPT_ITEM_SET,
 	TEST_SCRIPT_MODE_CHECK,
 	CAL_DATA_BACKUP,
 	CAL_DATA_RESTORE,
 	CAL_DATA_ERASE,
 	CAL_DATA_INFO
-} test_mode_req_test_script_mode_type;
+} PACKED test_mode_req_test_script_mode_type;
 
 /* TEST_MODE_PID_TEST */
-typedef enum {
+typedef enum
+{
 	PID_WRITE,
 	PID_READ
-} test_mode_req_pid_type;
+} PACKED test_mode_req_pid_type;
 
 /* TEST_MODE_SW_VERSION */
-typedef enum {
+typedef enum
+{
 	SW_VERSION,
 	SW_OUTPUT_VERSION,
 	SW_COMPLETE_VERSION,
 	SW_VERSION_CHECK
-} test_mode_req_sw_version_type;
+} PACKED test_mode_req_sw_version_type;
 
 /* TEST_MODE_CAL_CHECK */
-typedef enum {
+typedef enum
+{
 	CAL_CHECK,
 	CAL_DATA_CHECK,
-} test_mode_req_cal_check_type;
+} PACKED test_mode_req_cal_check_type;
 
-typedef enum {
+typedef enum
+{
 	DB_INTEGRITY_CHECK = 0,
 	DB_CHECK_DUMP_TO_INTERNAL_MEMORY,
 	DB_CHECK_COPY_TO_SD_CARD
-} test_mode_req_db_check;
+} PACKED test_mode_req_db_check;
 
-typedef union {
+typedef union
+{
 	test_mode_req_version_type version;
 	test_mode_req_bt_type bt;
 	byte bt_rw[BT_RW_CNT];
