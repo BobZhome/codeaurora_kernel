@@ -485,6 +485,14 @@ static void blk_release_queue(struct kobject *kobj)
 
 	blk_trace_shutdown(q);
 
+#ifdef CONFIG_MACH_MSM8960_D1LU
+	/* LGE_CHANGE
+	 * TD 127550
+	 * blk_release_queue() is freeing a pending timer.
+	 */
+	del_timer_sync(&q->backing_dev_info.wb.wakeup_timer);
+#endif
+
 	bdi_destroy(&q->backing_dev_info);
 	kmem_cache_free(blk_requestq_cachep, q);
 }

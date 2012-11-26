@@ -1,0 +1,9 @@
+#platform.team@lge.com	2011.01
+
+comment "LGE factory util selection"
+
+config LGE_FELICA
+	bool "felica factory util"
+	default n
+	---help---
+	LGE fcutil related change	

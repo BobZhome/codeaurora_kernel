@@ -1,0 +1,4 @@
+config LGE_WLAN_FIRST_SCAN_2P4GHZ_ONLY
+        bool "Enable first scan with 2.4GHz"
+        ---help---
+                Scan with only 2.4GHz if the scanning is first attempt after enabling wlan

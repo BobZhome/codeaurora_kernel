@@ -38,6 +38,12 @@
 #define FBIOGET_HWCINFO         0x4616
 #define FBIOPUT_MODEINFO        0x4617
 #define FBIOGET_DISPINFO        0x4618
+/* LGE_CHANGE
+ * For fast OSP operation,
+ * remove mutex_lock only when read FB info from OSP
+ * 2012-03-28, baryun.hwang@lge.com
+ */
+#define FBOSP					0x4620		/* for OSP operation */
 #define FBIO_WAITFORVSYNC	_IOW('F', 0x20, __u32)
 
 #define FB_TYPE_PACKED_PIXELS		0	/* Packed Pixels	*/

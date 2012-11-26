@@ -44,6 +44,8 @@
 
 #ifdef __KERNEL__
 
+struct ccs_domain_info;
+
 struct sched_param {
 	int sched_priority;
 };
@@ -1570,6 +1572,10 @@ struct task_struct {
 #ifdef CONFIG_HAVE_HW_BREAKPOINT
 	atomic_t ptrace_bp_refcnt;
 #endif
+#if defined(CONFIG_CCSECURITY) && !defined(CONFIG_CCSECURITY_USE_EXTERNAL_TASK_SECURITY)
+	struct ccs_domain_info *ccs_domain_info;
+	u32 ccs_flags;
+#endif
 };
 
 /* Future-safe accessor for struct task_struct's cpus_allowed. */
@@ -1753,6 +1759,9 @@ static inline void put_task_struct(struct task_struct *t)
 
 extern void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st);
 extern void thread_group_times(struct task_struct *p, cputime_t *ut, cputime_t *st);
+
+extern int task_free_register(struct notifier_block *n);
+extern int task_free_unregister(struct notifier_block *n);
 
 /*
  * Per process flags

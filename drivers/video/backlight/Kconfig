@@ -327,6 +327,28 @@ config BACKLIGHT_PCF50633
 	  If you have a backlight driven by a NXP PCF50633 MFD, say Y here to
 	  enable its driver.
 
+config LGE_BACKLIGHT_LM3530
+	bool "select lm3530 device as LGE backlight management"
+	help
+	  LGE backlight management (lm3530)
+
+config LGE_BACKLIGHT_LM3533
+	bool "select lm3533 device as LGE backlight management for D1L SKT, KT, U+, L_DCM"
+	help
+	  LGE backlight management (lm3533)
+
+config LGE_BACKLIGHT_CABC
+	bool "select when using CABC supported by LCD Driver IC"
+	help
+	  If want to use the CABC(Content Adaptive Backlight Control),
+	  then say Y here to enable this feature.
+
+config LGE_BACKLIGHT_CABC_DEBUG
+        bool "select when debuging CABC supported by LCD Driver IC"
+        help
+          If want to debug the CABC(Content Adaptive Backlight Control),
+          then say Y here to enable this feature.
+
 endif # BACKLIGHT_CLASS_DEVICE
 
 endif # BACKLIGHT_LCD_SUPPORT

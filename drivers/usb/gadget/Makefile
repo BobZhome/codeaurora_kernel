@@ -29,6 +29,13 @@ obj-$(CONFIG_USB_PXA_U2O)	+= mv_udc.o
 mv_udc-y			:= mv_udc_core.o mv_udc_phy.o
 obj-$(CONFIG_USB_CI13XXX_MSM)	+= ci13xxx_msm.o
 obj-$(CONFIG_USB_FUSB300)	+= fusb300_udc.o
+obj-$(CONFIG_USB_MSM_72K)	+= msm72k_udc.o
+
+# LGE_CHANGE
+# LGE android usb framework
+# 2011-09-09, hyunhui.park@lge.com
+#
+obj-$(CONFIG_USB_G_LGE_ANDROID)	+= u_lgeusb.o
 
 #
 # USB gadget drivers
@@ -49,6 +56,7 @@ g_dbgp-y			:= dbgp.o
 g_nokia-y			:= nokia.o
 g_webcam-y			:= webcam.o
 g_ncm-y				:= ncm.o
+g_android-y			:= android.o
 
 obj-$(CONFIG_USB_ZERO)		+= g_zero.o
 obj-$(CONFIG_USB_AUDIO)		+= g_audio.o
@@ -67,3 +75,4 @@ obj-$(CONFIG_USB_G_MULTI)	+= g_multi.o
 obj-$(CONFIG_USB_G_NOKIA)	+= g_nokia.o
 obj-$(CONFIG_USB_G_WEBCAM)	+= g_webcam.o
 obj-$(CONFIG_USB_G_NCM)		+= g_ncm.o
+obj-$(CONFIG_USB_G_ANDROID)	+= g_android.o

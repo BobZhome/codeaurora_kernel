@@ -1,0 +1,1 @@
+obj-y += ffu_uart.o
