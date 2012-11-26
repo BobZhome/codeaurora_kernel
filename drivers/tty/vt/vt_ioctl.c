@@ -1,3 +1,7 @@
+/* 
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2012 KYOCERA Corporation
+ */
 /*
  *  Copyright (C) 1992 obz under the linux copyright
  *
@@ -138,6 +142,38 @@ static void vt_event_wait(struct vt_event_wait *vw)
 }
 
 /**
+ *	vt_event_wait_sync		-	wait for an event
+ *	@vw: our event
+ *
+ *	Waits for an event to occur which completes our vt_event_wait
+ *	structure. On return the structure has wv->done set to 1 for success
+ *	or 0 if some event such as a signal ended the wait.
+ */
+
+static void vt_event_wait_sync(struct vt_event_wait *vw, int count)
+{
+	unsigned long flags;
+	/* Prepare the event */
+	INIT_LIST_HEAD(&vw->list);
+	vw->done = 0;
+	/* Queue our event */
+	spin_lock_irqsave(&vt_event_lock, flags);
+	list_add(&vw->list, &vt_events);
+	spin_unlock_irqrestore(&vt_event_lock, flags);
+
+	if (count == 0) {
+		console_unlock();
+	}
+
+	/* Wait for it to pass */
+	wait_event_interruptible(vt_event_waitqueue, vw->done);
+	/* Dequeue it */
+	spin_lock_irqsave(&vt_event_lock, flags);
+	list_del(&vw->list);
+	spin_unlock_irqrestore(&vt_event_lock, flags);
+}
+
+/**
  *	vt_event_wait_ioctl	-	event ioctl handler
  *	@arg: argument to ioctl
  *
@@ -184,6 +220,39 @@ int vt_waitactive(int n)
 		if (vw.done == 0)
 			return -EINTR;
 	} while (vw.event.newev != n);
+	return 0;
+}
+
+/**
+ *	vt_waitactive_sync	-	active console wait
+ *	@event: event code
+ *	@n: new console
+ *
+ *	Helper for event waits. Used to implement the legacy
+ *	event waiting ioctls in terms of events
+ */
+
+int vt_waitactive_sync(int n)
+{
+	struct vt_event_wait vw;
+	int i = 0;
+
+	do {
+		if (n == fg_console + 1)
+			break;
+		vw.event.event = VT_EVENT_SWITCH;
+		vt_event_wait_sync(&vw, i);
+
+		if (vw.done == 0)
+			return -EINTR;
+
+		i++;
+	} while (vw.event.newev != n);
+
+	if (i == 0) {
+		console_unlock();
+	}
+
 	return 0;
 }
 
@@ -1773,9 +1842,10 @@ int vt_move_to_console(unsigned int vt, int alloc)
 		console_unlock();
 		return -EIO;
 	}
-	console_unlock();
+
 	tty_lock();
-	if (vt_waitactive(vt + 1)) {
+
+	if (vt_waitactive_sync(vt + 1)) {
 		pr_debug("Suspend: Can't switch VCs.");
 		tty_unlock();
 		return -EINTR;

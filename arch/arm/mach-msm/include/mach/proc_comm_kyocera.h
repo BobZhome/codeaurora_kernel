@@ -1,0 +1,53 @@
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2012 KYOCERA Corporation
+*/
+#ifndef __PROC_COMM_KYOCERA_H__
+#define __PROC_COMM_KYOCERA_H__
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#define PROC_COMM_SUB_CMD_BASE                        0
+#define PROC_COMM_SUB_CMD_TP_READ_NV                  1
+#define PROC_COMM_SUB_CMD_TP_READ_NV2                 2
+#define PROC_COMM_SUB_CMD_UPDATE_DEV_INFO_LCD         3
+#define PROC_COMM_SUB_CMD_UPDATE_DEV_INFO_CAM         4
+#define PROC_COMM_SUB_CMD_UPDATE_DEV_INFO_MOVIE       5
+#define PROC_COMM_SUB_CMD_UPDATE_DEV_INFO_WLAN        6
+#define PROC_COMM_SUB_CMD_UPDATE_DEV_INFO_SND         7
+#define PROC_COMM_SUB_CMD_UPDATE_DEV_INFO_SND_VOL     8
+#define PROC_COMM_SUB_CMD_SLIDE_STATUS_INFO           9
+#define PROC_COMM_SUB_CMD_UPDATE_DEV_INFO_TOUCH      10
+#define PROC_COMM_SUB_CMD_DIAG_ENABLE                11
+#define PROC_COMM_SUB_CMD_UPDATE_DEV_INFO_FLASH      12
+
+#define PROC_COMM_SUB_CMD_GET_USERTIME_OFFSET_SEC     13
+#define PROC_COMM_SUB_CMD_GET_USERTIME_OFFSET_NSEC    14
+#define PROC_COMM_SUB_CMD_SET_USERTIME_OFFSET_SEC     15
+#define PROC_COMM_SUB_CMD_SET_USERTIME_OFFSET_NSEC    16
+#define PROC_COMM_SUB_CMD_GET_USERTIME_SETTING        17
+#define PROC_COMM_SUB_CMD_SET_USERTIME_SETTING        18
+
+#define PROC_COMM_SUB_CMD_ACC_MTP_RECOVERY_READ             19
+#define PROC_COMM_SUB_CMD_ACC_MTP_RECOVERY_WRITE            20
+#define PROC_COMM_SUB_CMD_ACC_MTP_RECOVERY_WRITE_START      21
+#define PROC_COMM_SUB_CMD_GET_MTP_SERIAL              22
+#define PROC_COMM_SUB_CMD_TP_TOUCHCNT_READ_NV         23
+#define PROC_COMM_SUB_CMD_TP_TOUCHCNT_WRITE_NV        24
+
+int proc_comm_rpc_apps_to_modem(unsigned sub_cmd, unsigned *data);
+
+#endif /* __PROC_COMM_KYOCERA_H__ */

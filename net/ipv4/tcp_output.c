@@ -1,4 +1,9 @@
 /*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2011 KYOCERA Corporation
+ */
+
+/*
  * INET		An implementation of the TCP/IP protocol suite for the LINUX
  *		operating system.  INET is implemented using the  BSD Socket
  *		interface as the means of communication with the user level.
@@ -39,6 +44,11 @@
 #include <linux/compiler.h>
 #include <linux/gfp.h>
 #include <linux/module.h>
+
+#define CUST_MTU_SIZE 1472
+#define CUST_MSS_SIZE (CUST_MTU_SIZE - 40)
+
+#define CUST_RWIN_SIZE (1024 * 45)
 
 /* People can turn this off for buggy TCP's found in printers etc. */
 int sysctl_tcp_retrans_collapse __read_mostly = 1;
@@ -2569,7 +2579,7 @@ static void tcp_connect_init(struct sock *sk)
 	tp->advmss = dst_metric_advmss(dst);
 	if (tp->rx_opt.user_mss && tp->rx_opt.user_mss < tp->advmss)
 		tp->advmss = tp->rx_opt.user_mss;
-
+	tp->advmss = CUST_MSS_SIZE;
 	tcp_initialize_rcv_mss(sk);
 
 	/* limit the window selection if the user enforce a smaller rx buffer */
@@ -2586,6 +2596,7 @@ static void tcp_connect_init(struct sock *sk)
 				  dst_metric(dst, RTAX_INITRWND));
 
 	tp->rx_opt.rcv_wscale = rcv_wscale;
+	tp->rcv_wnd = CUST_RWIN_SIZE;
 	tp->rcv_ssthresh = tp->rcv_wnd;
 
 	sk->sk_err = 0;

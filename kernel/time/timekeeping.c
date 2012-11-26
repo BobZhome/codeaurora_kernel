@@ -7,6 +7,10 @@
  *  Please see that file for copyright and history logs.
  *
  */
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2012 KYOCERA Corporation
+*/
 
 #include <linux/module.h>
 #include <linux/interrupt.h>
@@ -20,6 +24,10 @@
 #include <linux/time.h>
 #include <linux/tick.h>
 #include <linux/stop_machine.h>
+
+#include <mach/proc_comm_kyocera.h>
+#include <linux/rtc.h>
+
 
 /* Structure holding internal timekeeping values. */
 struct timekeeper {
@@ -140,6 +148,8 @@ static inline s64 timekeeping_get_ns_raw(void)
  * playing with xtime.
  */
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(xtime_lock);
+
+__cacheline_aligned_in_smp DEFINE_SEQLOCK(usertime_lock);
 
 
 /*
@@ -1125,3 +1135,252 @@ void xtime_update(unsigned long ticks)
 	do_timer(ticks);
 	write_sequnlock(&xtime_lock);
 }
+
+
+atomic_t usertime_setting; /* 1:Auto 0:Manual */
+struct timespec usertime_offset;
+struct timespec usertime_offset_nv;
+struct mutex usertime_nv_mutex;
+
+
+/* check timespec tv_sec overflow */
+static int chk_timespec_overflow(struct timespec usr_ts, struct timespec xtime_ts)
+{
+	long long tv_nsec=0;
+	long long tv_sec=0;
+
+	/* add nanoseconds */
+	tv_nsec=((usr_ts.tv_nsec+xtime_ts.tv_nsec) > NSEC_PER_SEC);
+
+	/* check overflow */
+	tv_sec=(long long)usr_ts.tv_sec + (long long)xtime_ts.tv_sec;
+	return ( tv_sec >= LONG_MAX);
+}
+
+extern void alarm_wait_wakeup(void);
+static void set_time_overflow(void)
+{
+    /* 1980/01/06 00:00:00 */
+    struct timespec set_time={315964800,0};
+	/* set the time to 1980/01/06 00:00 */
+	printk("usertime overflow!!!\n"); 
+	set_usertime_offset(&set_time);
+	alarm_wait_wakeup();
+}
+#include <linux/irqflags.h>
+
+static void get_nv_usertime_offset(struct timespec *ts)
+{
+	unsigned int sec;
+	unsigned int nsec;
+
+	mutex_lock(&usertime_nv_mutex);
+	proc_comm_rpc_apps_to_modem(PROC_COMM_SUB_CMD_GET_USERTIME_OFFSET_SEC ,&sec);
+	ts->tv_sec = (long)sec;
+	proc_comm_rpc_apps_to_modem(PROC_COMM_SUB_CMD_GET_USERTIME_OFFSET_NSEC ,&nsec);
+	ts->tv_nsec = (long)nsec;
+	mutex_unlock(&usertime_nv_mutex);
+}
+
+static void set_nv_usertime_offset(void)
+{
+	unsigned long seq;
+
+	unsigned int sec;
+	unsigned int nsec;
+	struct timespec ts;
+
+	do {
+		seq = read_seqbegin(&usertime_lock);
+		ts = usertime_offset_nv;
+	} while (read_seqretry(&usertime_lock, seq));
+
+	mutex_lock(&usertime_nv_mutex);
+	sec = (unsigned int)ts.tv_sec;
+	proc_comm_rpc_apps_to_modem(PROC_COMM_SUB_CMD_SET_USERTIME_OFFSET_SEC ,&sec);
+	nsec = (unsigned int)ts.tv_nsec;
+	proc_comm_rpc_apps_to_modem(PROC_COMM_SUB_CMD_SET_USERTIME_OFFSET_NSEC ,&nsec);
+	mutex_unlock(&usertime_nv_mutex);
+
+	printk("%s %ld.%ld \n",__func__,ts.tv_sec,ts.tv_nsec);
+}
+
+
+static int get_nv_usertime_setting(void)
+{
+	unsigned int flag;
+	proc_comm_rpc_apps_to_modem(PROC_COMM_SUB_CMD_GET_USERTIME_SETTING ,&flag);
+	return (int)flag;
+}
+
+static void set_nv_usertime_setting(int flag)
+{
+	unsigned int tmp_flag;
+	tmp_flag = (unsigned int)flag;
+	proc_comm_rpc_apps_to_modem(PROC_COMM_SUB_CMD_SET_USERTIME_SETTING ,&tmp_flag);
+}
+
+
+void init_usertime(void)
+{
+	int flag=0;
+
+	mutex_init(&usertime_nv_mutex);
+	
+
+	flag = get_nv_usertime_setting();
+	if(flag == -1)
+	{
+		flag = 1;
+		printk("%s NV read error.\n",__func__);
+	}
+
+
+	atomic_set(&usertime_setting, flag);
+
+	usertime_offset.tv_sec = 0;
+	usertime_offset.tv_nsec = 0;
+
+
+	if(!flag)
+	{
+		get_nv_usertime_offset(&usertime_offset);
+	}
+	usertime_offset_nv = usertime_offset;
+}
+
+void clear_usertime_offset(void)
+{
+	unsigned long flags;
+
+	write_seqlock_irqsave(&usertime_lock, flags);
+	usertime_offset.tv_sec = 0;
+	usertime_offset.tv_nsec = 0;
+	usertime_offset_nv = usertime_offset;
+	write_sequnlock_irqrestore(&usertime_lock, flags);
+
+	set_nv_usertime_offset();
+}
+
+
+void set_usertime_setting(int flag)
+{
+	atomic_set(&usertime_setting, flag);
+	set_nv_usertime_setting(flag);
+	if(flag == 1)
+	{
+		clear_usertime_offset();
+	}
+}
+
+
+int get_usertime_setting(void)
+{
+	return atomic_read(&usertime_setting);
+}
+
+void set_usertime_offset(struct timespec *ts)
+{
+	unsigned long flags;
+	struct timeval tmp_xtime;
+
+	do_gettimeofday(&tmp_xtime);
+
+	write_seqlock_irqsave(&usertime_lock, flags);
+	usertime_offset = timespec_sub(*ts, ns_to_timespec(timeval_to_ns(&tmp_xtime)));
+	usertime_offset_nv = usertime_offset;
+	write_sequnlock_irqrestore(&usertime_lock, flags);
+
+	set_nv_usertime_offset();
+
+	printk("%s %ld.%ld + %ld.%ld = %ld.%ld\n",__func__,tmp_xtime.tv_sec,tmp_xtime.tv_usec,
+							   usertime_offset.tv_sec,usertime_offset.tv_nsec,
+							   ts->tv_sec,ts->tv_nsec);
+}
+
+
+void add_usertime_offset(struct timespec *old_ts, struct timespec *new_ts)
+{
+	unsigned long flags;
+	struct timespec tmp_local_offset_nv;
+	struct timespec ts_delta;
+
+	set_normalized_timespec(&ts_delta, new_ts->tv_sec - old_ts->tv_sec,
+				new_ts->tv_nsec - old_ts->tv_nsec);
+
+	write_seqlock_irqsave(&usertime_lock, flags);
+
+	set_normalized_timespec(&usertime_offset, usertime_offset.tv_sec - ts_delta.tv_sec,
+				usertime_offset.tv_nsec - ts_delta.tv_nsec);
+
+	/* check timespec tv_sec overflow */
+	if( (rtc_hctosys_ret==0)  &&
+	    (chk_timespec_overflow(usertime_offset,
+	                           *new_ts)))
+	{
+		set_time_overflow();
+		return;
+	}
+
+
+	set_normalized_timespec(&tmp_local_offset_nv, usertime_offset.tv_sec - usertime_offset_nv.tv_sec,
+				usertime_offset.tv_nsec - usertime_offset_nv.tv_nsec);
+
+	if(tmp_local_offset_nv.tv_sec != 0)
+	{
+		usertime_offset_nv = usertime_offset;
+	}
+
+	write_sequnlock_irqrestore(&usertime_lock, flags);
+
+	if(tmp_local_offset_nv.tv_sec != 0)
+	{
+		set_nv_usertime_offset();
+	}
+}
+
+
+void get_usertime_offset(struct timespec *ts)
+{
+	unsigned long seq;
+	do {
+		seq = read_seqbegin(&usertime_lock);
+		*ts = usertime_offset;
+	} while (read_seqretry(&usertime_lock, seq));
+}
+
+
+void get_usertime(struct timespec *ts)
+{
+	struct timeval tv_xtime;
+	struct timespec ts_xtime;
+	struct timespec tmp_usr_offset;
+
+	do_gettimeofday(&tv_xtime);
+	ts_xtime = ns_to_timespec(timeval_to_ns(&tv_xtime));
+	get_usertime_offset(&tmp_usr_offset);
+
+	/* not performed the initial configuration of xtime */
+	if( (rtc_hctosys_ret==0)  &&
+	    (chk_timespec_overflow(tmp_usr_offset,
+	                         ts_xtime)))
+	{
+		printk("xtime(%ld.%ld),offset(%ld)\n",ts_xtime.tv_sec,ts_xtime.tv_nsec,tmp_usr_offset.tv_sec);
+		set_time_overflow();
+	}
+	set_normalized_timespec(ts, tmp_usr_offset.tv_sec + ts_xtime.tv_sec,
+				tmp_usr_offset.tv_nsec + ts_xtime.tv_nsec);
+}
+
+
+struct timespec sub_usertime_offset(struct timespec ts)
+{
+	struct timespec tmp_usr_offset;
+
+	get_usertime_offset(&tmp_usr_offset);
+
+	return timespec_sub(ts, tmp_usr_offset);
+}
+
+
+

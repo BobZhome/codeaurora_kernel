@@ -9,6 +9,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C)2012 KYOCERA Corporation
+ */
 
 #include <linux/module.h>
 #include <linux/platform_device.h>
@@ -23,6 +27,7 @@
 #include <linux/mfd/pm8xxx/core.h>
 #include <linux/mfd/pm8xxx/gpio.h>
 #include <linux/input/pmic8xxx-keypad.h>
+
 
 #define PM8XXX_MAX_ROWS		18
 #define PM8XXX_MAX_COLS		8
@@ -83,6 +88,10 @@
 
 #define KEYP_CLOCK_FREQ			32768
 
+#define  KEYPRESS_MAX_NUM 0xFFFFFFFF
+#define  KEYPAD_SIZE      (64)
+static unsigned int keypad_count[KEYPAD_SIZE];
+
 /**
  * struct pmic8xxx_kp - internal keypad data structure
  * @pdata - keypad platform data pointer
@@ -116,6 +125,9 @@ static int pmic8xxx_kp_write_u8(struct pmic8xxx_kp *kp,
 	int rc;
 
 	rc = pm8xxx_writeb(kp->dev->parent, reg, data);
+	if (rc < 0)
+		dev_warn(kp->dev, "Error writing pmic8xxx: %X - ret %X\n",
+				reg, rc);
 	return rc;
 }
 
@@ -125,6 +137,10 @@ static int pmic8xxx_kp_read(struct pmic8xxx_kp *kp,
 	int rc;
 
 	rc = pm8xxx_read_buf(kp->dev->parent, reg, data, num_bytes);
+	if (rc < 0)
+		dev_warn(kp->dev, "Error reading pmic8xxx: %X - ret %X\n",
+				reg, rc);
+
 	return rc;
 }
 
@@ -134,6 +150,9 @@ static int pmic8xxx_kp_read_u8(struct pmic8xxx_kp *kp,
 	int rc;
 
 	rc = pmic8xxx_kp_read(kp, data, reg, 1);
+	if (rc < 0)
+		dev_warn(kp->dev, "Error reading pmic8xxx: %X - ret %X\n",
+				reg, rc);
 	return rc;
 }
 
@@ -189,13 +208,37 @@ static int pmic8xxx_kp_read_data(struct pmic8xxx_kp *kp, u16 *state,
 	int rc, row;
 	u8 new_data[PM8XXX_MAX_ROWS];
 
+#ifdef CONFIG_KYOCERA_ORIGINAL_FEATURE
+	const static u16 no_assignment_key[] = {
+		(0),
+		((1<<4)+(1<<6)),
+		((1<<4)+(1<<6)),
+		((1<<4)+(1<<5)+(1<<6)),
+		(1<<6),
+		(1<<4),
+		((1<<1)+(1<<2)+(1<<3)),
+		(1),
+	};
+#endif
 	rc = pmic8xxx_kp_read(kp, new_data, data_reg, read_rows);
 	if (rc)
 		return rc;
 
 	for (row = 0; row < kp->pdata->num_rows; row++) {
+#ifdef CONFIG_KYOCERA_ORIGINAL_FEATURE
+		new_data[row] |= no_assignment_key[row];
+		dev_dbg(kp->dev, "new_data[%d]=%d,%d,%d,%d,%d,%d,%d\n", row,
+					new_data[row]&0x1,
+					(new_data[row]>>1)&0x1,
+					(new_data[row]>>2)&0x1,
+					(new_data[row]>>3)&0x1,
+					(new_data[row]>>4)&0x1,
+					(new_data[row]>>5)&0x1,
+					(new_data[row]>>6)&0x1);
+#else
 		dev_dbg(kp->dev, "new_data[%d] = %d\n", row,
 					new_data[row]);
+#endif
 		state[row] = pmic8xxx_col_state(kp, new_data[row]);
 	}
 
@@ -277,6 +320,11 @@ static void __pmic8xxx_kp_scan_matrix(struct pmic8xxx_kp *kp, u16 *new_state,
 					!(new_state[row] & (1 << col)));
 
 			input_sync(kp->input);
+			if(KEYPRESS_MAX_NUM>keypad_count[code] && !(new_state[row] & (1 << col)))
+			{
+				(keypad_count[code])++;
+			}
+
 		}
 	}
 }
@@ -299,11 +347,35 @@ static bool pmic8xxx_detect_ghost_keys(struct pmic8xxx_kp *kp, u16 *new_state)
 					 " and row[%d]\n", found_first, row);
 				return true;
 			}
+#ifdef CONFIG_KYOCERA_ORIGINAL_FEATURE
+			check |= row_state;
+#endif
 		}
+#ifndef CONFIG_KYOCERA_ORIGINAL_FEATURE
 		check |= row_state;
+#endif
 	}
 	return false;
 }
+
+#ifdef CONFIG_KYOCERA_ORIGINAL_FEATURE
+static int check_key_4push(struct pmic8xxx_kp *kp, u16 *state)
+{
+	int row, count = 0;
+	u16 row_state;
+
+	for (row = 0; row < kp->pdata->num_rows; row++) {
+		row_state = (~state[row]) &
+				 ((1 << kp->pdata->num_cols) - 1);
+		count += hweight16(row_state);
+		if(count>=4){
+			dev_dbg(kp->dev, "push key is more 4_count\n");
+			return 1;
+		}
+	}
+	return 0;
+}
+#endif 
 
 static int pmic8xxx_kp_scan_matrix(struct pmic8xxx_kp *kp, unsigned int events)
 {
@@ -317,9 +389,11 @@ static int pmic8xxx_kp_scan_matrix(struct pmic8xxx_kp *kp, unsigned int events)
 		if (rc < 0)
 			return rc;
 
-		/* detecting ghost key is not an error */
 		if (pmic8xxx_detect_ghost_keys(kp, new_state))
 			return 0;
+#ifdef CONFIG_KYOCERA_ORIGINAL_FEATURE
+		if(check_key_4push(kp, new_state)) return -EINVAL;
+#endif
 		__pmic8xxx_kp_scan_matrix(kp, new_state, kp->keystate);
 		memcpy(kp->keystate, new_state, sizeof(new_state));
 	break;
@@ -346,6 +420,18 @@ static int pmic8xxx_kp_scan_matrix(struct pmic8xxx_kp *kp, unsigned int events)
 	}
 	return rc;
 }
+
+unsigned int* get_keypress_cnt_result(int* array_len)
+{
+	*array_len = sizeof(keypad_count);
+	return keypad_count;
+}
+EXPORT_SYMBOL(get_keypress_cnt_result);
+void clear_keypress_cnt(void)
+{
+	memset(keypad_count, 0x00, sizeof(keypad_count));
+}
+EXPORT_SYMBOL(clear_keypress_cnt);
 
 /*
  * NOTE: We are reading recent and old data registers blindly
@@ -463,7 +549,7 @@ static int  __devinit pmic8xxx_kp_config_gpio(int gpio_start, int num_gpios,
 					__func__, gpio_start + i, rc);
 			return rc;
 		}
-	 }
+	}
 
 	return 0;
 }
@@ -532,7 +618,7 @@ static int __devinit pmic8xxx_kp_probe(struct platform_device *pdev)
 		.output_buffer	= PM_GPIO_OUT_BUF_OPEN_DRAIN,
 		.output_value	= 0,
 		.pull		= PM_GPIO_PULL_NO,
-		.vin_sel	= PM_GPIO_VIN_S3,
+		.vin_sel	= PM_GPIO_VIN_S4,
 		.out_strength	= PM_GPIO_STRENGTH_LOW,
 		.function	= PM_GPIO_FUNC_1,
 		.inv_int_pol	= 1,
@@ -541,12 +627,13 @@ static int __devinit pmic8xxx_kp_probe(struct platform_device *pdev)
 	struct pm_gpio kypd_sns = {
 		.direction	= PM_GPIO_DIR_IN,
 		.pull		= PM_GPIO_PULL_UP_31P5,
-		.vin_sel	= PM_GPIO_VIN_S3,
+		.vin_sel	= PM_GPIO_VIN_S4,
 		.out_strength	= PM_GPIO_STRENGTH_NO,
 		.function	= PM_GPIO_FUNC_NORMAL,
 		.inv_int_pol	= 1,
 	};
 
+	memset(keypad_count, 0x00, sizeof(keypad_count));
 
 	if (!pdata || !pdata->num_cols || !pdata->num_rows ||
 		pdata->num_cols > PM8XXX_MAX_COLS ||
@@ -700,9 +787,9 @@ static int __devinit pmic8xxx_kp_probe(struct platform_device *pdev)
 	return 0;
 
 err_pmic_reg_read:
-	free_irq(kp->key_stuck_irq, NULL);
+	free_irq(kp->key_stuck_irq, kp);
 err_req_stuck_irq:
-	free_irq(kp->key_sense_irq, NULL);
+	free_irq(kp->key_sense_irq, kp);
 err_gpio_config:
 err_get_irq:
 	input_free_device(kp->input);
@@ -717,8 +804,8 @@ static int __devexit pmic8xxx_kp_remove(struct platform_device *pdev)
 	struct pmic8xxx_kp *kp = platform_get_drvdata(pdev);
 
 	device_init_wakeup(&pdev->dev, 0);
-	free_irq(kp->key_stuck_irq, NULL);
-	free_irq(kp->key_sense_irq, NULL);
+	free_irq(kp->key_stuck_irq, kp);
+	free_irq(kp->key_sense_irq, kp);
 	input_unregister_device(kp->input);
 	kfree(kp);
 
@@ -763,7 +850,6 @@ static int pmic8xxx_kp_resume(struct device *dev)
 
 		mutex_unlock(&input_dev->mutex);
 	}
-
 	return 0;
 }
 #endif

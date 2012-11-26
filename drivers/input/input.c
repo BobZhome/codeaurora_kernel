@@ -9,6 +9,11 @@
  * under the terms of the GNU General Public License version 2 as published by
  * the Free Software Foundation.
  */
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2012 KYOCERA Corporation
+*/
+
 
 #define pr_fmt(fmt) KBUILD_BASENAME ": " fmt
 
@@ -593,6 +598,7 @@ static void input_dev_release_keys(struct input_dev *dev)
 
 	if (is_event_supported(EV_KEY, dev->evbit, EV_MAX)) {
 		for (code = 0; code <= KEY_MAX; code++) {
+			if(KEY_MEDIA == code) continue;
 			if (is_event_supported(code, dev->keybit, KEY_MAX) &&
 			    __test_and_clear_bit(code, dev->key)) {
 				input_pass_event(dev, EV_KEY, code, 0);

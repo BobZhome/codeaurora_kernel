@@ -14,6 +14,7 @@
 #define __LINUX_POWER_SUPPLY_H__
 
 #include <linux/device.h>
+#include <linux/wakelock.h>
 #include <linux/workqueue.h>
 #include <linux/leds.h>
 
@@ -163,6 +164,9 @@ struct power_supply {
 	/* private */
 	struct device *dev;
 	struct work_struct changed_work;
+	spinlock_t changed_lock;
+	bool changed;
+	struct wake_lock work_wake_lock;
 
 #ifdef CONFIG_LEDS_TRIGGERS
 	struct led_trigger *charging_full_trig;
@@ -201,6 +205,9 @@ extern struct power_supply *power_supply_get_by_name(char *name);
 extern void power_supply_changed(struct power_supply *psy);
 extern int power_supply_am_i_supplied(struct power_supply *psy);
 extern int power_supply_set_battery_charged(struct power_supply *psy);
+extern int power_supply_set_current_limit(struct power_supply *psy, int limit);
+extern int power_supply_set_online(struct power_supply *psy, bool enable);
+extern int power_supply_set_charge_type(struct power_supply *psy, int type);
 
 #if defined(CONFIG_POWER_SUPPLY) || defined(CONFIG_POWER_SUPPLY_MODULE)
 extern int power_supply_is_system_supplied(void);

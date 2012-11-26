@@ -26,6 +26,10 @@
  *
  * MontaVista Software | 1237 East Arques Avenue | Sunnyvale | CA 94085 | USA
  */
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2012 KYOCERA Corporation
+*/
 
 /* These are all the functions necessary to implement
  * POSIX clocks & timers
@@ -160,7 +164,18 @@ static inline void unlock_timer(struct k_itimer *timr, unsigned long flags)
 /* Get clock_realtime */
 static int posix_clock_realtime_get(clockid_t which_clock, struct timespec *tp)
 {
-	ktime_get_real_ts(tp);
+
+	if(!get_usertime_setting())
+	{
+		get_usertime(tp);
+	}
+	else
+	{
+
+		ktime_get_real_ts(tp);
+
+	}
+
 	return 0;
 }
 

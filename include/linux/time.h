@@ -1,3 +1,7 @@
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2012 KYOCERA Corporation
+*/
 #ifndef _LINUX_TIME_H
 #define _LINUX_TIME_H
 
@@ -173,6 +177,18 @@ extern int timekeeping_inject_offset(struct timespec *ts);
 
 struct tms;
 extern void do_sys_times(struct tms *);
+
+
+extern void init_usertime(void);
+extern void clear_usertime_offset(void);
+extern void set_usertime_setting(int flag);
+extern int get_usertime_setting(void);
+extern void set_usertime_offset(struct timespec *ts);
+extern void get_usertime_offset(struct timespec *ts);
+extern void add_usertime_offset(struct timespec *old_ts, struct timespec *new_ts);
+extern void get_usertime(struct timespec *ts);
+extern struct timespec sub_usertime_offset(struct timespec ts);
+
 
 /*
  * Similar to the struct tm in userspace <time.h>, but it needs to be here so

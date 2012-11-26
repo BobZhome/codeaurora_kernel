@@ -26,6 +26,10 @@
  *	Added getnstimeofday to allow the posix timer functions to return
  *	with nanosecond accuracy
  */
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2012 KYOCERA Corporation
+*/
 
 #include <linux/module.h>
 #include <linux/timex.h>
@@ -103,7 +107,19 @@ SYSCALL_DEFINE2(gettimeofday, struct timeval __user *, tv,
 {
 	if (likely(tv != NULL)) {
 		struct timeval ktv;
-		do_gettimeofday(&ktv);
+	
+		if(!get_usertime_setting())
+		{
+			struct timespec uts;
+			get_usertime(&uts);
+			ktv.tv_sec = uts.tv_sec;
+			ktv.tv_usec = uts.tv_nsec / NSEC_PER_USEC;
+		}
+		else
+		{
+			do_gettimeofday(&ktv);
+		}
+
 		if (copy_to_user(tv, &ktv, sizeof(ktv)))
 			return -EFAULT;
 	}
@@ -200,7 +216,20 @@ SYSCALL_DEFINE2(settimeofday, struct timeval __user *, tv,
 			return -EFAULT;
 	}
 
-	return do_sys_settimeofday(tv ? &new_ts : NULL, tz ? &new_tz : NULL);
+
+	if((!get_usertime_setting()) &&
+	   (tv != NULL))
+	{
+		set_usertime_offset(&new_ts);
+		return 0;
+	}
+	else
+	{
+
+		return do_sys_settimeofday(tv ? &new_ts : NULL, tz ? &new_tz : NULL);
+
+	}
+
 }
 
 SYSCALL_DEFINE1(adjtimex, struct timex __user *, txc_p)
@@ -227,7 +256,17 @@ SYSCALL_DEFINE1(adjtimex, struct timex __user *, txc_p)
  */
 struct timespec current_fs_time(struct super_block *sb)
 {
-	struct timespec now = current_kernel_time();
+
+	struct timespec now;
+	if(!get_usertime_setting())
+	{
+		get_usertime(&now);
+	}
+	else
+	{
+		now = current_kernel_time();
+	}
+
 	return timespec_trunc(now, sb->s_time_gran);
 }
 EXPORT_SYMBOL(current_fs_time);

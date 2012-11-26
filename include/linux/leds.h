@@ -9,6 +9,12 @@
  * published by the Free Software Foundation.
  *
  */
+
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C)2012 KYOCERA Corporation 
+ */
+
 #ifndef __LINUX_LEDS_H_INCLUDED
 #define __LINUX_LEDS_H_INCLUDED
 
@@ -74,6 +80,8 @@ struct led_classdev {
 	struct list_head	 trig_list;
 	void			*trigger_data;
 #endif
+
+	void		(*control_ex)(struct led_classdev *led_cdev, unsigned long onoff, unsigned long priority, unsigned long mode, unsigned long *pattern);
 };
 
 extern int led_classdev_register(struct device *parent,

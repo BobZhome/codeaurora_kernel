@@ -2,6 +2,8 @@
  *  linux/kernel/printk.c
  *
  *  Copyright (C) 1991, 1992  Linus Torvalds
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C) 2012 KYOCERA Corporation
  *
  * Modified to make sys_syslog() more flexible: added commands to
  * return the last 4k of kernel messages, regardless of whether
@@ -41,7 +43,7 @@
 #include <linux/cpu.h>
 #include <linux/notifier.h>
 #include <linux/rculist.h>
-
+#include <mach/msm_rtb.h>
 #include <asm/uaccess.h>
 
 /*
@@ -289,6 +291,53 @@ static inline void boot_delay_msec(void)
 {
 }
 #endif
+
+/*
+ * Return the number of unread characters in the log buffer.
+ */
+static int log_buf_get_len(void)
+{
+	return logged_chars;
+}
+
+/*
+ * Clears the ring-buffer
+ */
+void log_buf_clear(void)
+{
+	logged_chars = 0;
+}
+
+/*
+ * Copy a range of characters from the log buffer.
+ */
+int log_buf_copy(char *dest, int idx, int len)
+{
+	int ret, max;
+	bool took_lock = false;
+
+	if (!oops_in_progress) {
+		spin_lock_irq(&logbuf_lock);
+		took_lock = true;
+	}
+
+	max = log_buf_get_len();
+	if (idx < 0 || idx >= max) {
+		ret = -1;
+	} else {
+		if (len > max - idx)
+			len = max - idx;
+		ret = len;
+		idx += (log_end - max);
+		while (len-- > 0)
+			dest[len] = LOG_BUF(idx + len);
+	}
+
+	if (took_lock)
+		spin_unlock_irq(&logbuf_lock);
+
+	return ret;
+}
 
 #ifdef CONFIG_SECURITY_DMESG_RESTRICT
 int dmesg_restrict = 1;
@@ -737,6 +786,11 @@ asmlinkage int printk(const char *fmt, ...)
 {
 	va_list args;
 	int r;
+#ifdef CONFIG_MSM_RTB
+	void *caller = __builtin_return_address(0);
+
+	uncached_logk_pc(LOGK_LOGBUF, caller, (void *)log_end);
+#endif
 
 #ifdef CONFIG_KGDB_KDB
 	if (unlikely(kdb_trap_printk)) {
@@ -871,6 +925,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 	/* Emit the output into the temporary buffer */
 	printed_len += vscnprintf(printk_buf + printed_len,
 				  sizeof(printk_buf) - printed_len, fmt, args);
+
 
 	p = printk_buf;
 
@@ -1129,6 +1184,14 @@ void resume_console(void)
 	console_unlock();
 }
 
+static void __cpuinit console_flush(struct work_struct *work)
+{
+	console_lock();
+	console_unlock();
+}
+
+static __cpuinitdata DECLARE_WORK(console_cpu_notify_work, console_flush);
+
 /**
  * console_cpu_notify - print deferred console messages after CPU hotplug
  * @self: notifier struct
@@ -1139,6 +1202,9 @@ void resume_console(void)
  * will be spooled but will not show up on the console.  This function is
  * called when a new CPU comes online (or fails to come up), and ensures
  * that any such output gets printed.
+ *
+ * Special handling must be done for cases invoked from an atomic context,
+ * as we can't be taking the console semaphore here.
  */
 static int __cpuinit console_cpu_notify(struct notifier_block *self,
 	unsigned long action, void *hcpu)
@@ -1146,11 +1212,16 @@ static int __cpuinit console_cpu_notify(struct notifier_block *self,
 	switch (action) {
 	case CPU_ONLINE:
 	case CPU_DEAD:
-	case CPU_DYING:
 	case CPU_DOWN_FAILED:
 	case CPU_UP_CANCELED:
 		console_lock();
 		console_unlock();
+	/* invoked with preemption disabled, so defer */
+	case CPU_DYING:
+		if (!console_trylock())
+			schedule_work(&console_cpu_notify_work);
+		else
+			console_unlock();
 	}
 	return NOTIFY_OK;
 }
@@ -1222,6 +1293,24 @@ void wake_up_klogd(void)
 {
 	if (waitqueue_active(&log_wait))
 		this_cpu_write(printk_pending, 1);
+}
+
+void log_output_console( void )
+{
+	unsigned	_con_start, _log_end;
+
+	if ( console_sem.count <= 0 )
+	{
+		printk( "Console LOCKED!\n" );
+
+		while( con_start != log_end )
+		{
+			_con_start = con_start;
+			_log_end = log_end;
+			con_start = log_end;		/* Flush */
+			call_console_drivers( _con_start, _log_end );
+		}
+	}
 }
 
 /**

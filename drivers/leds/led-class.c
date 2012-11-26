@@ -9,6 +9,11 @@
  * published by the Free Software Foundation.
  */
 
+/*
+ * This software is contributed or developed by KYOCERA Corporation.
+ * (C)2012 KYOCERA Corporation 
+ */
+
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -21,6 +26,8 @@
 #include <linux/ctype.h>
 #include <linux/leds.h>
 #include "leds.h"
+
+#define LED_BUFF_SIZE 50
 
 static struct class *leds_class;
 
@@ -38,7 +45,7 @@ static ssize_t led_brightness_show(struct device *dev,
 	/* no lock needed for this */
 	led_update_brightness(led_cdev);
 
-	return sprintf(buf, "%u\n", led_cdev->brightness);
+	return snprintf(buf, LED_BUFF_SIZE, "%u\n", led_cdev->brightness);
 }
 
 static ssize_t led_brightness_store(struct device *dev,
@@ -64,20 +71,94 @@ static ssize_t led_brightness_store(struct device *dev,
 	return ret;
 }
 
+static ssize_t led_max_brightness_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+	ssize_t ret = -EINVAL;
+	unsigned long state = 0;
+
+	ret = strict_strtoul(buf, 10, &state);
+	if (!ret) {
+		ret = size;
+		if (state > LED_FULL)
+			state = LED_FULL;
+		led_cdev->max_brightness = state;
+		led_set_brightness(led_cdev, led_cdev->brightness);
+	}
+
+	return ret;
+}
+
+static ssize_t led_control_ex_show(struct device *dev, 
+		struct device_attribute *attr, char *buf)
+{
+	return snprintf(buf, LED_BUFF_SIZE, "No data to show!\n");
+}
+
+static ssize_t led_control_ex_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+	ssize_t ret = -EINVAL;
+	char *after;
+	const char *start;
+	size_t count = 0;
+	unsigned long param[13];
+	int index;
+	
+	after = (char *)buf;
+	memset(param, 0, sizeof(param));
+	for (index = 0; index < 13; index++)
+	{
+		while (!isdigit(*after))
+		{
+			if ((count >= size) || (*after == '\0'))
+			{
+				ret = count;
+				goto parse_param_exit;
+			}
+
+			after++;
+			count++;
+		}
+		start = after;
+
+		param[index] = simple_strtoul(start, &after, 10);
+		count += after - start;
+	}
+
+parse_param_exit:
+	if (count >= size)
+	{
+		if (led_cdev->control_ex)
+		{
+			led_cdev->control_ex(led_cdev, param[0], param[1], param[2], &param[3]);
+		}
+	}
+
+	return ret;
+}
+
+
 static ssize_t led_max_brightness_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
 
-	return sprintf(buf, "%u\n", led_cdev->max_brightness);
+	return snprintf(buf, LED_BUFF_SIZE, "%u\n", led_cdev->max_brightness);
 }
 
 static struct device_attribute led_class_attrs[] = {
 	__ATTR(brightness, 0644, led_brightness_show, led_brightness_store),
-	__ATTR(max_brightness, 0444, led_max_brightness_show, NULL),
+	__ATTR(max_brightness, 0644, led_max_brightness_show,
+			led_max_brightness_store),
 #ifdef CONFIG_LEDS_TRIGGERS
 	__ATTR(trigger, 0644, led_trigger_show, led_trigger_store),
 #endif
+
+	__ATTR(control_ex, 0644, led_control_ex_show, led_control_ex_store),
+
 	__ATTR_NULL,
 };
 
