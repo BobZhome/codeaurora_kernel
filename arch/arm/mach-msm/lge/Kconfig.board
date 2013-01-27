@@ -1,0 +1,21 @@
+#
+# Inlcude the specific Kconfig file for LGE board
+#
+
+# D1L
+source "arch/arm/mach-msm/lge/d1l/Kconfig"
+
+# D1L_KR
+source "arch/arm/mach-msm/lge/d1l_kr/Kconfig"
+
+# L_DCM
+source "arch/arm/mach-msm/lge/l_dcm/Kconfig"
+
+# LX(L0/L2/L1)
+source "arch/arm/mach-msm/lge/lx/Kconfig"
+
+# LX_KR(L1u/L1sk/L1kt)
+source "arch/arm/mach-msm/lge/lx_kr/Kconfig"
+
+# L1(L1m/L1v)
+source "arch/arm/mach-msm/lge/l1/Kconfig"

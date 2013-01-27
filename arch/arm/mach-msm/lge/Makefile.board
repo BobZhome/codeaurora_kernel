@@ -1,0 +1,21 @@
+#
+# Makefile for the LGE board
+#
+
+# D1L
+# obj-$(CONFIG_MACH_MSM8960_D1L) += d1l/
+
+# D1l_KR
+obj-$(CONFIG_MACH_MSM8960_D1L_KR) += d1l_kr/
+
+# L_DCM
+obj-$(CONFIG_MACH_MSM8960_L_DCM) += l_dcm/
+
+# LX(L0/L2/L1)
+obj-$(CONFIG_MACH_MSM8960_LX) += lx/
+
+# LX_KR(L1u/L1sk/L1kt)
+obj-$(CONFIG_MACH_MSM8960_LX_KR) += lx_kr/
+
+# L1(L1m/L1v)
+obj-$(CONFIG_MACH_MSM8960_L1) += l1/

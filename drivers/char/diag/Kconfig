@@ -1,0 +1,99 @@
+menu "Diag Support"
+
+config DIAG_CHAR
+	tristate "char driver interface and diag forwarding to/from modem"
+	default m
+	depends on USB_G_ANDROID || USB_FUNCTION_DIAG || USB_QCOM_MAEMO
+	depends on ARCH_MSM
+	help
+	 Char driver interface for diag user space and diag-forwarding to modem ARM and back.
+	 This enables diagchar for maemo usb gadget or android usb gadget based on config selected.
+endmenu
+
+menu "DIAG traffic over USB"
+
+config DIAG_OVER_USB
+	bool "Enable DIAG traffic to go over USB"
+        depends on ARCH_MSM
+	default y
+	help
+	 This feature helps segregate code required for DIAG traffic to go over USB.
+endmenu
+
+menu "SLATE Support"
+
+config LGE_SLATE
+	bool "Enable SLATE Key Logging message routing"
+		depends on DIAG_OVER_USB
+	default y
+	help
+	 This feature helps decide whether slate key logging start message would be routed to apps or not.
+endmenu
+
+menu "SDIO support for DIAG"
+
+config DIAG_SDIO_PIPE
+	depends on MSM_SDIO_AL
+	default y
+	bool "Enable 9K DIAG traffic over SDIO"
+	help
+	 SDIO Transport Layer for DIAG Router
+endmenu
+
+menu "HSIC support for DIAG"
+
+config DIAG_HSIC_PIPE
+	depends on USB_QCOM_DIAG_BRIDGE
+	default y
+	bool "Enable 9K DIAG traffic over HSIC"
+	help
+	 HSIC Transport Layer for DIAG Router
+endmenu
+
+menu "LGE DM APP Support"
+
+config LGE_DM_APP
+	bool "LGE DM APP Support"
+	default n
+	depends on MACH_LGE
+	help
+	 LGE DM APP Support
+endmenu
+
+menu "USB Diag Disable"
+
+config LGE_USB_DIAG_DISABLE
+	default n
+	bool "Disable diag function"
+	help
+	 Provide method of diag enable or disable
+endmenu
+
+menu "USB MDM Diag Disable"
+
+config LGE_USB_MDM_DIAG_DISABLE
+	default n
+	bool "MDM diag disable"
+	help
+	 MDM diag disable
+endmenu
+
+menu "LGE DIAG MTS Daemon Support"
+
+config LGE_MTS
+	bool "LGE Diag MTS Daemon Support"
+	default n
+	depends on MACH_LGE
+	help
+	 LGE DIAG MTS Support
+endmenu
+
+menu "LGE DIAG table update twice"
+
+config LGE_DIAG_TABLE_UPDATE_TWICE
+	bool "LGE DIAG table update twice"
+	default n
+	depends on MACH_LGE
+	help
+	 LGE DIAG table twice
+endmenu
