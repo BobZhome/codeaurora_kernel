@@ -247,7 +247,20 @@ struct fsg_lun {
 	u32		sense_data_info;
 	u32		unit_attention_data;
 
+	unsigned int	blkbits;	/* Bits of logical block size of bound block device */
+	unsigned int	blksize;	/* logical block size of bound block device */
 	struct device	dev;
+#ifdef CONFIG_USB_MSC_PROFILING
+	spinlock_t	lock;
+	struct {
+
+		unsigned long rbytes;
+		unsigned long wbytes;
+		ktime_t rtime;
+		ktime_t wtime;
+	} perf;
+
+#endif
 };
 
 #define fsg_lun_is_open(curlun)	((curlun)->filp != NULL)
@@ -262,8 +275,13 @@ static struct fsg_lun *fsg_lun_from_dev(struct device *dev)
 #define EP0_BUFSIZE	256
 #define DELAYED_STATUS	(EP0_BUFSIZE + 999)	/* An impossibly large value */
 
-/* Number of buffers we will use.  2 is enough for double-buffering */
-#define FSG_NUM_BUFFERS	2
+/* Number of buffers for CBW, DATA and CSW */
+#ifdef CONFIG_USB_CSW_HACK
+#define FSG_NUM_BUFFERS    4
+#else
+#define FSG_NUM_BUFFERS    2
+#endif
+
 
 /* Default size of buffer length. */
 #define FSG_BUFLEN	((u32)16384)
@@ -493,12 +511,128 @@ static struct usb_descriptor_header *fsg_hs_function[] = {
 	NULL,
 };
 
+static struct usb_endpoint_descriptor
+fsg_ss_bulk_in_desc = {
+	.bLength =		USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType =	USB_DT_ENDPOINT,
+
+	/* bEndpointAddress copied from fs_bulk_in_desc during fsg_bind() */
+	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+	.wMaxPacketSize =	cpu_to_le16(1024),
+};
+
+static struct usb_ss_ep_comp_descriptor fsg_ss_bulk_in_comp_desc = {
+	.bLength =		sizeof(fsg_ss_bulk_in_comp_desc),
+	.bDescriptorType =	USB_DT_SS_ENDPOINT_COMP,
+
+	/*.bMaxBurst =		DYNAMIC, */
+};
+
+static struct usb_endpoint_descriptor
+fsg_ss_bulk_out_desc = {
+	.bLength =		USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType =	USB_DT_ENDPOINT,
+
+	/* bEndpointAddress copied from fs_bulk_out_desc during fsg_bind() */
+	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+	.wMaxPacketSize =	cpu_to_le16(1024),
+};
+
+static struct usb_ss_ep_comp_descriptor fsg_ss_bulk_out_comp_desc = {
+	.bLength =		sizeof(fsg_ss_bulk_in_comp_desc),
+	.bDescriptorType =	USB_DT_SS_ENDPOINT_COMP,
+
+	/*.bMaxBurst =		DYNAMIC, */
+};
+
+#ifndef FSG_NO_INTR_EP
+
+static struct usb_endpoint_descriptor
+fsg_ss_intr_in_desc = {
+	.bLength =		USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType =	USB_DT_ENDPOINT,
+
+	/* bEndpointAddress copied from fs_intr_in_desc during fsg_bind() */
+	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+	.wMaxPacketSize =	cpu_to_le16(2),
+	.bInterval =		9,	/* 2**(9-1) = 256 uframes -> 32 ms */
+};
+
+static struct usb_ss_ep_comp_descriptor fsg_ss_intr_in_comp_desc = {
+	.bLength =		sizeof(fsg_ss_bulk_in_comp_desc),
+	.bDescriptorType =	USB_DT_SS_ENDPOINT_COMP,
+
+	.wBytesPerInterval =	cpu_to_le16(2),
+};
+
+#ifndef FSG_NO_OTG
+#  define FSG_SS_FUNCTION_PRE_EP_ENTRIES	2
+#else
+#  define FSG_SS_FUNCTION_PRE_EP_ENTRIES	1
+#endif
+
+#endif
+
+static __maybe_unused struct usb_ext_cap_descriptor fsg_ext_cap_desc = {
+	.bLength =		USB_DT_USB_EXT_CAP_SIZE,
+	.bDescriptorType =	USB_DT_DEVICE_CAPABILITY,
+	.bDevCapabilityType =	USB_CAP_TYPE_EXT,
+
+	.bmAttributes =		cpu_to_le32(USB_LPM_SUPPORT),
+};
+
+static __maybe_unused struct usb_ss_cap_descriptor fsg_ss_cap_desc = {
+	.bLength =		USB_DT_USB_SS_CAP_SIZE,
+	.bDescriptorType =	USB_DT_DEVICE_CAPABILITY,
+	.bDevCapabilityType =	USB_SS_CAP_TYPE,
+
+	/* .bmAttributes = LTM is not supported yet */
+
+	.wSpeedSupported =	cpu_to_le16(USB_LOW_SPEED_OPERATION
+		| USB_FULL_SPEED_OPERATION
+		| USB_HIGH_SPEED_OPERATION
+		| USB_5GBPS_OPERATION),
+	.bFunctionalitySupport = USB_LOW_SPEED_OPERATION,
+	.bU1devExitLat =	USB_DEFAULT_U1_DEV_EXIT_LAT,
+	.bU2DevExitLat =	USB_DEFAULT_U2_DEV_EXIT_LAT,
+};
+
+static __maybe_unused struct usb_bos_descriptor fsg_bos_desc = {
+	.bLength =		USB_DT_BOS_SIZE,
+	.bDescriptorType =	USB_DT_BOS,
+
+	.wTotalLength =		USB_DT_BOS_SIZE
+				+ USB_DT_USB_EXT_CAP_SIZE
+				+ USB_DT_USB_SS_CAP_SIZE,
+
+	.bNumDeviceCaps =	2,
+};
+
+static struct usb_descriptor_header *fsg_ss_function[] = {
+#ifndef FSG_NO_OTG
+	(struct usb_descriptor_header *) &fsg_otg_desc,
+#endif
+	(struct usb_descriptor_header *) &fsg_intf_desc,
+	(struct usb_descriptor_header *) &fsg_ss_bulk_in_desc,
+	(struct usb_descriptor_header *) &fsg_ss_bulk_in_comp_desc,
+	(struct usb_descriptor_header *) &fsg_ss_bulk_out_desc,
+	(struct usb_descriptor_header *) &fsg_ss_bulk_out_comp_desc,
+#ifndef FSG_NO_INTR_EP
+	(struct usb_descriptor_header *) &fsg_ss_intr_in_desc,
+	(struct usb_descriptor_header *) &fsg_ss_intr_in_comp_desc,
+#endif
+	NULL,
+};
+
 /* Maxpacket and other transfer characteristics vary by speed. */
-static struct usb_endpoint_descriptor *
+static __maybe_unused struct usb_endpoint_descriptor *
 fsg_ep_desc(struct usb_gadget *g, struct usb_endpoint_descriptor *fs,
-		struct usb_endpoint_descriptor *hs)
+		struct usb_endpoint_descriptor *hs,
+		struct usb_endpoint_descriptor *ss)
 {
-	if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
+	if (gadget_is_superspeed(g) && g->speed == USB_SPEED_SUPER)
+		return ss;
+	else if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
 		return hs;
 	return fs;
 }
@@ -580,13 +714,24 @@ static int fsg_lun_open(struct fsg_lun *curlun, const char *filename)
 		rc = (int) size;
 		goto out;
 	}
-	num_sectors = size >> 9;	/* File size in 512-byte blocks */
+
+	if (curlun->cdrom) {
+		curlun->blksize = 2048;
+		curlun->blkbits = 11;
+	} else if (inode->i_bdev) {
+		curlun->blksize = bdev_logical_block_size(inode->i_bdev);
+		curlun->blkbits = blksize_bits(curlun->blksize);
+	} else {
+		curlun->blksize = 512;
+		curlun->blkbits = 9;
+	}
+
+	num_sectors = size >> curlun->blkbits; /* File size in logic-block-size blocks */
 	min_sectors = 1;
 	if (curlun->cdrom) {
-		num_sectors &= ~3;	/* Reduce to a multiple of 2048 */
-		min_sectors = 300*4;	/* Smallest track is 300 frames */
-		if (num_sectors >= 256*60*75*4) {
-			num_sectors = (256*60*75 - 1) * 4;
+		min_sectors = 300;	/* Smallest track is 300 frames */
+		if (num_sectors >= 256*60*75) {
+			num_sectors = 256*60*75 - 1;
 			LINFO(curlun, "file too big: %s\n", filename);
 			LINFO(curlun, "using only first %d blocks\n",
 					(int) num_sectors);
@@ -655,6 +800,71 @@ static void store_cdrom_address(u8 *dest, int msf, u32 addr)
 	}
 }
 
+#ifdef CONFIG_USB_G_LGE_ANDROID_CDROM_MAC_SUPPORT
+/**
+ * fsg_get_toc() - Builds a TOC with required format @format.
+ * @curlun: The LUN for which the TOC has to be built
+ * @msf: Min Sec Frame format or LBA format for address
+ * @format: TOC format code
+ * @buf: the buffer into which the TOC is built
+ *
+ * Builds a Table of Content which can be used as data for READ_TOC command.
+ * The TOC simulates a single session, single track CD-ROM mode 1 disc.
+ *
+ * Returns number of bytes written to @buf, -EINVAL if format not supported.
+ */
+static int fsg_get_toc(struct fsg_lun *curlun, int msf, int format, u8 *buf)
+{
+	int i, len;
+	switch (format) {
+	case 0:
+		/* Formatted TOC */
+		len = 4 + 2*8;				/* 4 byte header + 2 descriptors */
+		memset(buf, 0, len);
+		buf[1] = len - 2;	/* TOC Length excludes length field */
+		buf[2] = 1;		/* First track number */
+		buf[3] = 1;		/* Last track number */
+		buf[5] = 0x16;		/* Data track, copying allowed */
+		buf[6] = 0x01;		/* Only track is number 1 */
+		store_cdrom_address(&buf[8], msf, 0);
+
+		buf[13] = 0x16;		/* Lead-out track is data */
+		buf[14] = 0xAA;		/* Lead-out track number */
+		store_cdrom_address(&buf[16], msf, curlun->num_sectors);
+		return len;
+		break;
+	case 2:
+		/* Raw TOC */
+		len = 4 + 3*11;			/* 4 byte header + 3 descriptors */
+		memset(buf, 0, len);	/* Header + A0, A1 & A2 descriptors */
+		buf[1] = len - 2;		/* TOC data length */
+		buf[2] = 1;				/* First complete session */
+		buf[3] = 1;				/* Last complete session */
+
+		buf += 4;
+		/* fill in A0, A1 and A2 points */
+		for (i = 0; i < 3; i++) {
+			buf[0] = 1;			/* Session number */
+			buf[1] = 0x16;			/* Data track, copying allowed */
+			/* 2 - Track number 0 ->  TOC */
+			buf[3] = 0xA0 + i; 		/* A0, A1, A2 point */
+			/* 4, 5, 6 - Min, sec, frame is zero */
+			buf[8] = 1;			/* Pmin: last track number */
+			buf += 11;			/* go to next track descriptor */
+		}
+		buf -= 11;				/* go back to A2 descriptor */
+
+		/* For A2, 7, 8, 9, 10 - zero, Pmin, Psec, Pframe of Lead out */
+		store_cdrom_address(&buf[7], msf, curlun->num_sectors);
+		return len;
+		break;
+	default:
+		/* Multi-session, PMA, ATIP, CD-TEXT not supported/required */
+		return -EINVAL;
+		break;
+	}
+}
+#endif
 
 /*-------------------------------------------------------------------------*/
 
@@ -677,6 +887,43 @@ static ssize_t fsg_show_nofua(struct device *dev, struct device_attribute *attr,
 	return sprintf(buf, "%u\n", curlun->nofua);
 }
 
+#ifdef CONFIG_USB_MSC_PROFILING
+static ssize_t fsg_show_perf(struct device *dev, struct device_attribute *attr,
+			      char *buf)
+{
+	struct fsg_lun	*curlun = fsg_lun_from_dev(dev);
+	unsigned long rbytes, wbytes;
+	int64_t rtime, wtime;
+
+	spin_lock(&curlun->lock);
+	rbytes = curlun->perf.rbytes;
+	wbytes = curlun->perf.wbytes;
+	rtime = ktime_to_us(curlun->perf.rtime);
+	wtime = ktime_to_us(curlun->perf.wtime);
+	spin_unlock(&curlun->lock);
+
+	return snprintf(buf, PAGE_SIZE, "Write performance :"
+					"%lu bytes in %lld microseconds\n"
+					"Read performance :"
+					"%lu bytes in %lld microseconds\n",
+					wbytes, wtime, rbytes, rtime);
+}
+static ssize_t fsg_store_perf(struct device *dev, struct device_attribute *attr,
+			const char *buf, size_t count)
+{
+	struct fsg_lun	*curlun = fsg_lun_from_dev(dev);
+	int value;
+
+	sscanf(buf, "%d", &value);
+	if (!value) {
+		spin_lock(&curlun->lock);
+		memset(&curlun->perf, 0, sizeof(curlun->perf));
+		spin_unlock(&curlun->lock);
+	}
+
+	return count;
+}
+#endif
 static ssize_t fsg_show_file(struct device *dev, struct device_attribute *attr,
 			     char *buf)
 {
@@ -763,10 +1010,16 @@ static ssize_t fsg_store_file(struct device *dev, struct device_attribute *attr,
 	struct rw_semaphore	*filesem = dev_get_drvdata(dev);
 	int		rc = 0;
 
+
+#ifndef CONFIG_USB_ANDROID_MASS_STORAGE
+	/* disabled in android because we need to allow closing the backing file
+	 * if the media was removed
+	 */
 	if (curlun->prevent_medium_removal && fsg_lun_is_open(curlun)) {
 		LDBG(curlun, "eject attempt prevented\n");
 		return -EBUSY;				/* "Door is locked" */
 	}
+#endif
 
 	/* Remove a trailing newline */
 	if (count > 0 && buf[count-1] == '\n')

@@ -14,6 +14,7 @@
 
 #include <linux/delay.h>
 #include <linux/highmem.h>
+#include <linux/module.h>
 #include <linux/pci.h>
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
@@ -238,6 +239,8 @@ static int o2_probe(struct sdhci_pci_chip *chip)
 		scratch |= 0x80;
 		pci_write_config_byte(chip->pdev, O2_SD_LOCK_WP, scratch);
 	}
+
+	slot->host->mmc->caps2 = MMC_CAP2_BOOTPART_NOACC;
 
 	return 0;
 }

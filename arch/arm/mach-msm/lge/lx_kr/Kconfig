@@ -1,0 +1,33 @@
+config BOARD_HEADER_FILE
+	string "LGE board specific header file name"
+	default ""
+
+config MACH_MSM8960_LX_KR
+	depends on ARCH_MSM8960
+	select MACH_LGE
+	bool "MSM8960 LX_KR"
+	help
+	  Support for the LGE MSM8960 LX device.
+
+choice
+	depends on MACH_MSM8960_LX_KR
+	prompt "LX Board Selection"
+	default MACH_MSM8960_L1u
+
+config MACH_MSM8960_L1sk
+	bool "MSM8960 L1 SKT"
+	help
+	  Support for the LGE MSM8960 L1 SKT device.
+
+config MACH_MSM8960_L1kt
+	bool "MSM8960 L1 KT"
+	help
+	  Support for the LGE MSM8960 L1 KT device.
+
+config MACH_MSM8960_L1u
+	bool "MSM8960 L1 LGU+"
+	help
+	  Support for the LGE MSM8960 L1 LGU+ device.
+
+endchoice
+

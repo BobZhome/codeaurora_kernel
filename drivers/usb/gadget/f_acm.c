@@ -5,6 +5,7 @@
  * Copyright (C) 2008 by David Brownell
  * Copyright (C) 2008 by Nokia Corporation
  * Copyright (C) 2009 by Samsung Electronics
+ * Copyright (c) 2011 Code Aurora Forum. All rights reserved.
  * Author: Michal Nazarewicz (m.nazarewicz@samsung.com)
  *
  * This software is distributed under the terms of the GNU General
@@ -17,6 +18,8 @@
 #include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/device.h>
+#include <linux/usb/android_composite.h>
+#include <mach/usb_gadget_xport.h>
 
 #include "u_serial.h"
 #include "gadget_chips.h"
@@ -39,16 +42,11 @@
  * descriptors (roughly equivalent to CDC Unions) may sometimes help.
  */
 
-struct acm_ep_descs {
-	struct usb_endpoint_descriptor	*in;
-	struct usb_endpoint_descriptor	*out;
-	struct usb_endpoint_descriptor	*notify;
-};
-
 struct f_acm {
 	struct gserial			port;
 	u8				ctrl_id, data_id;
 	u8				port_num;
+	enum transport_type		transport;
 
 	u8				pending;
 
@@ -58,11 +56,7 @@ struct f_acm {
 	 */
 	spinlock_t			lock;
 
-	struct acm_ep_descs		fs;
-	struct acm_ep_descs		hs;
-
 	struct usb_ep			*notify;
-	struct usb_endpoint_descriptor	*notify_desc;
 	struct usb_request		*notify_req;
 
 	struct usb_cdc_line_coding	port_line_coding;	/* 8-N-1 etc */
@@ -83,6 +77,17 @@ struct f_acm {
 #define ACM_CTRL_DCD		(1 << 0)
 };
 
+static unsigned int no_acm_tty_ports;
+static unsigned int no_acm_sdio_ports;
+static unsigned int no_acm_smd_ports;
+static unsigned int nr_acm_ports;
+
+static struct acm_port_info {
+	enum transport_type	transport;
+	unsigned		port_num;
+	unsigned		client_port_num;
+} gacm_ports[GSERIAL_NO_PORTS];
+
 static inline struct f_acm *func_to_acm(struct usb_function *f)
 {
 	return container_of(f, struct f_acm, port.func);
@@ -93,12 +98,94 @@ static inline struct f_acm *port_to_acm(struct gserial *p)
 	return container_of(p, struct f_acm, port);
 }
 
+static int acm_port_setup(struct usb_configuration *c)
+{
+	int ret = 0;
+
+	pr_debug("%s: no_acm_tty_ports:%u no_acm_sdio_ports: %u nr_acm_ports:%u\n",
+			__func__, no_acm_tty_ports, no_acm_sdio_ports,
+				nr_acm_ports);
+
+	if (no_acm_tty_ports)
+		ret = gserial_setup(c->cdev->gadget, no_acm_tty_ports);
+	if (no_acm_sdio_ports)
+		ret = gsdio_setup(c->cdev->gadget, no_acm_sdio_ports);
+	if (no_acm_smd_ports)
+		ret = gsmd_setup(c->cdev->gadget, no_acm_smd_ports);
+
+	return ret;
+}
+
+static int acm_port_connect(struct f_acm *acm)
+{
+	unsigned port_num;
+
+	port_num = gacm_ports[acm->port_num].client_port_num;
+
+
+	pr_debug("%s: transport:%s f_acm:%p gserial:%p port_num:%d cl_port_no:%d\n",
+			__func__, xport_to_str(acm->transport),
+			acm, &acm->port, acm->port_num, port_num);
+
+	switch (acm->transport) {
+	case USB_GADGET_XPORT_TTY:
+		gserial_connect(&acm->port, port_num);
+		break;
+	case USB_GADGET_XPORT_SDIO:
+		gsdio_connect(&acm->port, port_num);
+		break;
+	case USB_GADGET_XPORT_SMD:
+		gsmd_connect(&acm->port, port_num);
+		break;
+	default:
+		pr_err("%s: Un-supported transport: %s\n", __func__,
+				xport_to_str(acm->transport));
+		return -ENODEV;
+	}
+
+	return 0;
+}
+
+static int acm_port_disconnect(struct f_acm *acm)
+{
+	unsigned port_num;
+
+	port_num = gacm_ports[acm->port_num].client_port_num;
+
+	pr_debug("%s: transport:%s f_acm:%p gserial:%p port_num:%d cl_pno:%d\n",
+			__func__, xport_to_str(acm->transport),
+			acm, &acm->port, acm->port_num, port_num);
+
+	switch (acm->transport) {
+	case USB_GADGET_XPORT_TTY:
+		gserial_disconnect(&acm->port);
+		break;
+	case USB_GADGET_XPORT_SDIO:
+		gsdio_disconnect(&acm->port, port_num);
+		break;
+	case USB_GADGET_XPORT_SMD:
+		gsmd_disconnect(&acm->port, port_num);
+		break;
+	default:
+		pr_err("%s: Un-supported transport:%s\n", __func__,
+				xport_to_str(acm->transport));
+		return -ENODEV;
+	}
+
+	return 0;
+}
 /*-------------------------------------------------------------------------*/
 
 /* notification endpoint uses smallish and infrequent fixed-size messages */
 
 #define GS_LOG2_NOTIFY_INTERVAL		5	/* 1 << 5 == 32 msec */
+
+#ifdef CONFIG_USB_G_LGE_ANDROID
+#define GS_NOTIFY_MAXPACKET		16	/* For LG host driver */
+#define GS_DESC_NOTIFY_MAXPACKET		64	/* For acm_hs_notify_desc */
+#else
 #define GS_NOTIFY_MAXPACKET		10	/* notification + 2 bytes */
+#endif
 
 /* interface and class descriptors: */
 
@@ -215,7 +302,11 @@ static struct usb_endpoint_descriptor acm_hs_notify_desc = {
 	.bDescriptorType =	USB_DT_ENDPOINT,
 	.bEndpointAddress =	USB_DIR_IN,
 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+#ifdef CONFIG_USB_G_LGE_ANDROID
+	.wMaxPacketSize =	cpu_to_le16(GS_DESC_NOTIFY_MAXPACKET),
+#else
 	.wMaxPacketSize =	cpu_to_le16(GS_NOTIFY_MAXPACKET),
+#endif
 	.bInterval =		GS_LOG2_NOTIFY_INTERVAL+4,
 };
 
@@ -333,8 +424,7 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	/* SET_LINE_CODING ... just read and save what the host sends */
 	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
 			| USB_CDC_REQ_SET_LINE_CODING:
-		if (w_length != sizeof(struct usb_cdc_line_coding)
-				|| w_index != acm->ctrl_id)
+		if (w_length != sizeof(struct usb_cdc_line_coding))
 			goto invalid;
 
 		value = w_length;
@@ -345,8 +435,6 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	/* GET_LINE_CODING ... return what host sent, or initial value */
 	case ((USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
 			| USB_CDC_REQ_GET_LINE_CODING:
-		if (w_index != acm->ctrl_id)
-			goto invalid;
 
 		value = min_t(unsigned, w_length,
 				sizeof(struct usb_cdc_line_coding));
@@ -356,9 +444,6 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	/* SET_CONTROL_LINE_STATE ... save what the host sent */
 	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
 			| USB_CDC_REQ_SET_CONTROL_LINE_STATE:
-		if (w_index != acm->ctrl_id)
-			goto invalid;
-
 		value = 0;
 
 		/* FIXME we should not allow data to flow until the
@@ -366,6 +451,12 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		 * that bit, we should return to that no-flow state.
 		 */
 		acm->port_handshake_bits = w_value;
+		if (acm->port.notify_modem) {
+			unsigned port_num =
+				gacm_ports[acm->port_num].client_port_num;
+
+			acm->port.notify_modem(&acm->port, port_num, w_value);
+		}
 		break;
 
 	default:
@@ -405,25 +496,30 @@ static int acm_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 			usb_ep_disable(acm->notify);
 		} else {
 			VDBG(cdev, "init acm ctrl interface %d\n", intf);
-			acm->notify_desc = ep_choose(cdev->gadget,
-					acm->hs.notify,
-					acm->fs.notify);
 		}
-		usb_ep_enable(acm->notify, acm->notify_desc);
+		if (config_ep_by_speed(cdev->gadget, f, acm->notify))
+			return -EINVAL;
+
+		usb_ep_enable(acm->notify);
 		acm->notify->driver_data = acm;
 
 	} else if (intf == acm->data_id) {
 		if (acm->port.in->driver_data) {
 			DBG(cdev, "reset acm ttyGS%d\n", acm->port_num);
-			gserial_disconnect(&acm->port);
+			acm_port_disconnect(acm);
 		} else {
 			DBG(cdev, "activate acm ttyGS%d\n", acm->port_num);
-			acm->port.in_desc = ep_choose(cdev->gadget,
-					acm->hs.in, acm->fs.in);
-			acm->port.out_desc = ep_choose(cdev->gadget,
-					acm->hs.out, acm->fs.out);
 		}
-		gserial_connect(&acm->port, acm->port_num);
+		if (config_ep_by_speed(cdev->gadget, f,
+				acm->port.in) ||
+			config_ep_by_speed(cdev->gadget, f,
+				acm->port.out)) {
+			acm->port.in->desc = NULL;
+			acm->port.out->desc = NULL;
+			return -EINVAL;
+		}
+
+		acm_port_connect(acm);
 
 	} else
 		return -EINVAL;
@@ -437,7 +533,7 @@ static void acm_disable(struct usb_function *f)
 	struct usb_composite_dev *cdev = f->config->cdev;
 
 	DBG(cdev, "acm ttyGS%d deactivated\n", acm->port_num);
-	gserial_disconnect(&acm->port);
+	acm_port_disconnect(acm);
 	usb_ep_disable(acm->notify);
 	acm->notify->driver_data = NULL;
 }
@@ -464,15 +560,27 @@ static int acm_cdc_notify(struct f_acm *acm, u8 type, u16 value,
 	struct usb_ep			*ep = acm->notify;
 	struct usb_request		*req;
 	struct usb_cdc_notification	*notify;
+#ifndef CONFIG_USB_G_LGE_ANDROID
 	const unsigned			len = sizeof(*notify) + length;
+#endif
 	void				*buf;
 	int				status;
+
+#ifdef CONFIG_USB_G_LGE_ANDROID
+	unsigned char noti_buf[GS_NOTIFY_MAXPACKET];
+
+	memset(noti_buf, 0, GS_NOTIFY_MAXPACKET);
+#endif
 
 	req = acm->notify_req;
 	acm->notify_req = NULL;
 	acm->pending = false;
 
+#ifdef CONFIG_USB_G_LGE_ANDROID
+	req->length = GS_NOTIFY_MAXPACKET;
+#else
 	req->length = len;
+#endif
 	notify = req->buf;
 	buf = notify + 1;
 
@@ -482,7 +590,12 @@ static int acm_cdc_notify(struct f_acm *acm, u8 type, u16 value,
 	notify->wValue = cpu_to_le16(value);
 	notify->wIndex = cpu_to_le16(acm->ctrl_id);
 	notify->wLength = cpu_to_le16(length);
+#ifdef CONFIG_USB_G_LGE_ANDROID
+	memcpy(noti_buf, data, length);
+	memcpy(buf, noti_buf, GS_NOTIFY_MAXPACKET);
+#else
 	memcpy(buf, data, length);
+#endif
 
 	/* ep_queue() can complete immediately if it fills the fifo... */
 	spin_unlock(&acm->lock);
@@ -546,6 +659,57 @@ static void acm_connect(struct gserial *port)
 	acm_notify_serial_state(acm);
 }
 
+unsigned int acm_get_dtr(struct gserial *port)
+{
+	struct f_acm		*acm = port_to_acm(port);
+
+	if (acm->port_handshake_bits & ACM_CTRL_DTR)
+		return 1;
+	else
+		return 0;
+}
+
+unsigned int acm_get_rts(struct gserial *port)
+{
+	struct f_acm		*acm = port_to_acm(port);
+
+	if (acm->port_handshake_bits & ACM_CTRL_RTS)
+		return 1;
+	else
+		return 0;
+}
+
+unsigned int acm_send_carrier_detect(struct gserial *port, unsigned int yes)
+{
+	struct f_acm		*acm = port_to_acm(port);
+	u16			state;
+
+	pr_info("%s : ACM_CTRL_DCD is %s\n", __func__, (yes ? "yes" : "no"));
+	state = acm->serial_state;
+	state &= ~ACM_CTRL_DCD;
+	if (yes)
+		state |= ACM_CTRL_DCD;
+
+	acm->serial_state = state;
+	return acm_notify_serial_state(acm);
+
+}
+
+unsigned int acm_send_ring_indicator(struct gserial *port, unsigned int yes)
+{
+	struct f_acm		*acm = port_to_acm(port);
+	u16			state;
+
+	state = acm->serial_state;
+	state &= ~ACM_CTRL_RI;
+	if (yes)
+		state |= ACM_CTRL_RI;
+
+	acm->serial_state = state;
+	return acm_notify_serial_state(acm);
+
+}
+
 static void acm_disconnect(struct gserial *port)
 {
 	struct f_acm		*acm = port_to_acm(port);
@@ -565,6 +729,15 @@ static int acm_send_break(struct gserial *port, int duration)
 		state |= ACM_CTRL_BRK;
 
 	acm->serial_state = state;
+	return acm_notify_serial_state(acm);
+}
+
+static int acm_send_modem_ctrl_bits(struct gserial *port, int ctrl_bits)
+{
+	struct f_acm *acm = port_to_acm(port);
+
+	acm->serial_state = ctrl_bits;
+
 	return acm_notify_serial_state(acm);
 }
 
@@ -629,17 +802,10 @@ acm_bind(struct usb_configuration *c, struct usb_function *f)
 	acm->notify_req->complete = acm_cdc_notify_complete;
 	acm->notify_req->context = acm;
 
-	/* copy descriptors, and track endpoint copies */
+	/* copy descriptors */
 	f->descriptors = usb_copy_descriptors(acm_fs_function);
 	if (!f->descriptors)
 		goto fail;
-
-	acm->fs.in = usb_find_endpoint(acm_fs_function,
-			f->descriptors, &acm_fs_in_desc);
-	acm->fs.out = usb_find_endpoint(acm_fs_function,
-			f->descriptors, &acm_fs_out_desc);
-	acm->fs.notify = usb_find_endpoint(acm_fs_function,
-			f->descriptors, &acm_fs_notify_desc);
 
 	/* support all relevant hardware speeds... we expect that when
 	 * hardware is dual speed, all bulk-capable endpoints work at
@@ -653,15 +819,10 @@ acm_bind(struct usb_configuration *c, struct usb_function *f)
 		acm_hs_notify_desc.bEndpointAddress =
 				acm_fs_notify_desc.bEndpointAddress;
 
-		/* copy descriptors, and track endpoint copies */
+		/* copy descriptors */
 		f->hs_descriptors = usb_copy_descriptors(acm_hs_function);
-
-		acm->hs.in = usb_find_endpoint(acm_hs_function,
-				f->hs_descriptors, &acm_hs_in_desc);
-		acm->hs.out = usb_find_endpoint(acm_hs_function,
-				f->hs_descriptors, &acm_hs_out_desc);
-		acm->hs.notify = usb_find_endpoint(acm_hs_function,
-				f->hs_descriptors, &acm_hs_notify_desc);
+		if (!f->hs_descriptors)
+			goto fail;
 	}
 
 	DBG(cdev, "acm ttyGS%d: %s speed IN/%s OUT/%s NOTIFY/%s\n",
@@ -672,6 +833,11 @@ acm_bind(struct usb_configuration *c, struct usb_function *f)
 	return 0;
 
 fail:
+	if (f->hs_descriptors)
+		usb_free_descriptors(f->hs_descriptors);
+	if (f->descriptors)
+		usb_free_descriptors(f->descriptors);
+
 	if (acm->notify_req)
 		gs_free_req(acm->notify, acm->notify_req);
 
@@ -696,7 +862,11 @@ acm_unbind(struct usb_configuration *c, struct usb_function *f)
 	if (gadget_is_dualspeed(c->cdev->gadget))
 		usb_free_descriptors(f->hs_descriptors);
 	usb_free_descriptors(f->descriptors);
-	gs_free_req(acm->notify, acm->notify_req);
+
+	if (acm->notify_req)
+		gs_free_req(acm->notify, acm->notify_req);
+
+	kfree(acm->port.func.name);
 	kfree(acm);
 }
 
@@ -763,12 +933,24 @@ int acm_bind_config(struct usb_configuration *c, u8 port_num)
 	spin_lock_init(&acm->lock);
 
 	acm->port_num = port_num;
+	acm->transport = gacm_ports[port_num].transport;
 
 	acm->port.connect = acm_connect;
+
+	acm->port.get_dtr = acm_get_dtr;
+	acm->port.get_rts = acm_get_rts;
+	acm->port.send_carrier_detect = acm_send_carrier_detect;
+	acm->port.send_ring_indicator = acm_send_ring_indicator;
+
 	acm->port.disconnect = acm_disconnect;
 	acm->port.send_break = acm_send_break;
+	acm->port.send_modem_ctrl_bits = acm_send_modem_ctrl_bits;
 
-	acm->port.func.name = "acm";
+	acm->port.func.name = kasprintf(GFP_KERNEL, "acm%u", port_num + 1);
+	if (!acm->port.func.name) {
+		kfree(acm);
+		return -ENOMEM;
+	}
 	acm->port.func.strings = acm_strings;
 	/* descriptors are per-instance copies */
 	acm->port.func.bind = acm_bind;
@@ -781,4 +963,45 @@ int acm_bind_config(struct usb_configuration *c, u8 port_num)
 	if (status)
 		kfree(acm);
 	return status;
+}
+
+/**
+ * acm_init_port - bind a acm_port to its transport
+ */
+static int acm_init_port(int port_num, const char *name)
+{
+	enum transport_type transport;
+
+	if (port_num >= GSERIAL_NO_PORTS)
+		return -ENODEV;
+
+	transport = str_to_xport(name);
+	pr_debug("%s, port:%d, transport:%s\n", __func__,
+			port_num, xport_to_str(transport));
+
+	gacm_ports[port_num].transport = transport;
+	gacm_ports[port_num].port_num = port_num;
+
+	switch (transport) {
+	case USB_GADGET_XPORT_TTY:
+		gacm_ports[port_num].client_port_num = no_acm_tty_ports;
+		no_acm_tty_ports++;
+		break;
+	case USB_GADGET_XPORT_SDIO:
+		gacm_ports[port_num].client_port_num = no_acm_sdio_ports;
+		no_acm_sdio_ports++;
+		break;
+	case USB_GADGET_XPORT_SMD:
+		gacm_ports[port_num].client_port_num = no_acm_smd_ports;
+		no_acm_smd_ports++;
+		break;
+	default:
+		pr_err("%s: Un-supported transport transport: %u\n",
+				__func__, gacm_ports[port_num].transport);
+		return -ENODEV;
+	}
+
+	nr_acm_ports++;
+
+	return 0;
 }

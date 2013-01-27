@@ -17,6 +17,7 @@
 
 #include "power_supply.h"
 
+#include <mach/board_lge.h>
 /*
  * This is because the name "current" breaks the device attr macro.
  * The "current" word resolves to "(get_current())" so instead of
@@ -28,6 +29,40 @@
  * Only modification that the name is not tried to be resolved
  * (as a macro let's say).
  */
+/* [START] sungsookim */
+#ifdef CONFIG_LGE_PM
+#define PSEUDO_BATT_ATTR(_name)						\
+{									\
+	.attr = { .name = #_name, .mode = 0644 },			\
+	.show = pseudo_batt_show_property,				\
+	.store = pseudo_batt_store_property,				\
+}
+#define BLOCK_CHARGING_ATTR(_name)					\
+{									\
+	.attr = { .name = #_name, .mode = 0644 },			\
+	.show = block_charging_show_property,				\
+	.store = block_charging_store_property,				\
+}
+#endif
+/* [END] */
+/* LGE_CHANGE_S [dongju99.kim@lge.com] 2012-07-05 */
+#if defined (CONFIG_MACH_MSM8960_VU2SK) || defined (CONFIG_MACH_MSM8960_VU2U) || defined (CONFIG_MACH_MSM8960_VU2KT)
+#define RGB_BLUE_LED_ATTR(_name)						\
+{									\
+	.attr = { .name = #_name, .mode = 0644 },			\
+	.show = rgb_blue_led_show_property,				\
+	.store =rgb_blue_led_store_property,				\
+}
+
+#define LCD_ONOFF_CONTROL_ATTR(_name)					\
+{									\
+	.attr = { .name = #_name, .mode = 0644 },			\
+	.show = lcd_onoff_control_show_property,				\
+	.store = lcd_onoff_control_store_property,				\
+}
+
+#endif
+/* LGE_CHANGE_E [dongju99.kim@lge.com] 2012-07-05 */ 
 
 #define POWER_SUPPLY_ATTR(_name)					\
 {									\
@@ -44,6 +79,9 @@ static ssize_t power_supply_show_property(struct device *dev,
 	static char *type_text[] = {
 		"Battery", "UPS", "Mains", "USB",
 		"USB_DCP", "USB_CDP", "USB_ACA"
+#ifdef CONFIG_LGE_WIRELESS_CHARGER
+		,"WIRELESS"
+#endif
 	};
 	static char *status_text[] = {
 		"Unknown", "Charging", "Discharging", "Not charging", "Full"
@@ -66,12 +104,24 @@ static ssize_t power_supply_show_property(struct device *dev,
 	struct power_supply *psy = dev_get_drvdata(dev);
 	const ptrdiff_t off = attr - power_supply_attrs;
 	union power_supply_propval value;
-
+#ifdef CONFIG_LGE_PM
+	if (off == POWER_SUPPLY_PROP_TYPE)
+	{
+		if(psy->type==POWER_SUPPLY_TYPE_USB_DCP)
+			value.intval=POWER_SUPPLY_TYPE_MAINS;
+		else	
+			value.intval = psy->type;
+	}
+	else
+	{
+		ret = psy->get_property(psy, off, &value);
+	}
+#else
 	if (off == POWER_SUPPLY_PROP_TYPE)
 		value.intval = psy->type;
 	else
 		ret = psy->get_property(psy, off, &value);
-
+#endif
 	if (ret < 0) {
 		if (ret == -ENODATA)
 			dev_dbg(dev, "driver has no data for `%s' property\n",
@@ -94,9 +144,13 @@ static ssize_t power_supply_show_property(struct device *dev,
 		return sprintf(buf, "%s\n", capacity_level_text[value.intval]);
 	else if (off == POWER_SUPPLY_PROP_TYPE)
 		return sprintf(buf, "%s\n", type_text[value.intval]);
+#ifdef CONFIG_LGE_PM
+	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME && off <= POWER_SUPPLY_PROP_SERIAL_NUMBER)
+		return sprintf(buf, "%s\n", value.strval);
+#else
 	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME)
 		return sprintf(buf, "%s\n", value.strval);
-
+#endif
 	return sprintf(buf, "%d\n", value.intval);
 }
 
@@ -123,6 +177,196 @@ static ssize_t power_supply_store_property(struct device *dev,
 	return count;
 }
 
+/* [START] sungsookim */
+#ifdef CONFIG_LGE_PM
+static ssize_t pseudo_batt_show_property(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t ret;
+	struct power_supply *psy = dev_get_drvdata(dev);
+	const ptrdiff_t off = attr - power_supply_attrs;
+	union power_supply_propval value;
+
+	static char *pseudo_batt[] = {
+		"NORMAL", "PSEUDO",
+	};
+
+	ret = psy->get_property(psy, off, &value);
+
+	if (ret < 0) {
+		if (ret != -ENODEV)
+			dev_err(dev, "driver failed to report `%s' property\n",
+					attr->attr.name);
+		return ret;
+	}
+	if (off == POWER_SUPPLY_PROP_PSEUDO_BATT)
+		return sprintf(buf, "[%s] \nusage: echo [mode] [ID] [therm] [temp] [volt] [cap] [charging] > pseudo_batt\n", pseudo_batt[value.intval]);
+
+	return 0;
+}
+
+extern int pseudo_batt_set(struct pseudo_batt_info_type*);
+
+static ssize_t pseudo_batt_store_property(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	int ret = -EINVAL;
+	struct pseudo_batt_info_type info;
+
+	if (sscanf(buf, "%d %d %d %d %d %d %d", &info.mode, &info.id, &info.therm,
+				&info.temp, &info.volt, &info.capacity, &info.charging) != 7)
+	{
+		if(info.mode == 1) //pseudo mode
+		{
+			printk(KERN_ERR "usage : echo [mode] [ID] [therm] [temp] [volt] [cap] [charging] > pseudo_batt");
+			goto out;
+		}
+	}
+	pseudo_batt_set(&info);
+	ret = count;
+out:
+	return ret;
+}
+
+/* LGE_CHANGE_S [dongju99.kim@lge.com] 2012-07-05 */ 
+#if defined (CONFIG_MACH_MSM8960_VU2SK) || defined (CONFIG_MACH_MSM8960_VU2U) || defined (CONFIG_MACH_MSM8960_VU2KT)
+//20120922 ws.yang@lge.com	
+extern int mipi_lgit_lcd_ief_off(void);
+extern int mipi_lgit_lcd_ief_on(void);
+static ssize_t lcd_onoff_control_show_property(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t ret;
+	struct power_supply *psy = dev_get_drvdata(dev);
+	const ptrdiff_t off = attr - power_supply_attrs;
+	union power_supply_propval value;
+
+	ret = psy->get_property(psy, off, &value);
+
+	if (ret < 0) {
+		if (ret != -ENODEV)
+			dev_err(dev, "driver failed to report `%s' property\n",
+					attr->attr.name);
+		return ret;
+	}
+		return sprintf(buf, "[%d]\n", value.intval);
+
+}
+
+static ssize_t rgb_blue_led_show_property(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t ret;
+	struct power_supply *psy = dev_get_drvdata(dev);
+	const ptrdiff_t off = attr - power_supply_attrs;
+	union power_supply_propval value;
+#if 0
+	static char *pseudo_batt[] = {
+		"RED", "GREEN", "BLUE"
+	};
+#endif
+	ret = psy->get_property(psy, off, &value);
+
+	if (ret < 0) {
+		if (ret != -ENODEV)
+			dev_err(dev, "driver failed to report `%s' property\n",
+					attr->attr.name);
+		return ret;
+	}
+		return sprintf(buf, "%d\n", value.intval);
+
+}
+static ssize_t lcd_onoff_control_store_property(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	int ret = 0;
+	int lcd;
+
+	sscanf(buf, "%d", &lcd );
+	if (lcd== 0)
+	{
+		printk("%s:mipi_lgit_lcd_ief_off\n",__func__);
+		mipi_lgit_lcd_ief_off();
+	}
+	else if (lcd == 1)
+	{
+		printk("%s:mipi_lgit_lcd_ief_on\n",__func__);
+		mipi_lgit_lcd_ief_on();
+	}
+	
+	ret = count;
+	return ret;
+}
+
+extern void rgb_blue_led_brightness_set(int);
+static ssize_t rgb_blue_led_store_property(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	int ret = 0;
+	int led;
+
+	sscanf(buf, "%d", &led );
+	rgb_blue_led_brightness_set(led);
+	ret = count;
+	return ret;
+}
+#endif
+/* LGE_CHANGE_E [dongju99.kim@lge.com] 2012-07-05 */
+
+extern void batt_block_charging_set(int);
+static ssize_t block_charging_show_property(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	ssize_t ret;
+	struct power_supply *psy = dev_get_drvdata(dev);
+	const ptrdiff_t off = attr - power_supply_attrs;
+	union power_supply_propval value;
+
+	static char *block_charging_mode[] = {
+		"BLOCK CHARGING", "NORMAL", 
+	};
+
+	ret = psy->get_property(psy, off, &value);
+
+	if (ret < 0) {
+		if (ret != -ENODEV)
+			dev_err(dev, "driver failed to report `%s' property\n",
+					attr->attr.name);
+		return ret;
+	}
+	if (off == POWER_SUPPLY_PROP_BLOCK_CHARGING)
+		return sprintf(buf, "[%s] \n", block_charging_mode[value.intval]);
+	
+	return 0;
+}
+
+static ssize_t block_charging_store_property(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	int ret = -EINVAL;
+	int block;
+
+	if(sscanf(buf, "%d", &block) != 1)
+	{
+		printk("%s:Too many argument\n",__func__);
+		goto out;
+	}
+	printk("%s:block charging=%d\n",__func__,block);
+	batt_block_charging_set(block);
+	ret = count;
+out:
+	return ret;
+}
+#endif
+/* [END] */
 /* Must be in the same order as POWER_SUPPLY_PROP_* */
 static struct device_attribute power_supply_attrs[] = {
 	/* Properties of type `int' */
@@ -166,10 +410,25 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(time_to_full_now),
 	POWER_SUPPLY_ATTR(time_to_full_avg),
 	POWER_SUPPLY_ATTR(type),
+#ifdef CONFIG_LGE_PM_BATTERY_ID_CHECKER
+	POWER_SUPPLY_ATTR(valid_batt_id),
+#endif
 	/* Properties of type `const char *' */
 	POWER_SUPPLY_ATTR(model_name),
 	POWER_SUPPLY_ATTR(manufacturer),
 	POWER_SUPPLY_ATTR(serial_number),
+/* [START] sungsookim */
+#ifdef CONFIG_LGE_PM
+	PSEUDO_BATT_ATTR(pseudo_batt),
+	BLOCK_CHARGING_ATTR(block_charging),
+	POWER_SUPPLY_ATTR(ext_pwr),
+#endif
+/* LGE_CHANGE_S [dongju99.kim@lge.com] 2012-07-05 */ 
+#if defined (CONFIG_MACH_MSM8960_VU2SK) || defined (CONFIG_MACH_MSM8960_VU2U) || defined (CONFIG_MACH_MSM8960_VU2KT)
+	RGB_BLUE_LED_ATTR(blue_led),						
+	LCD_ONOFF_CONTROL_ATTR(lcd_onoff),						
+#endif
+/* [END] */
 };
 
 static struct attribute *

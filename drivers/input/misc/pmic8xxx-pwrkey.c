@@ -20,6 +20,7 @@
 #include <linux/platform_device.h>
 #include <linux/log2.h>
 
+#include <linux/wakelock.h>
 #include <linux/mfd/pm8xxx/core.h>
 #include <linux/input/pmic8xxx-pwrkey.h>
 
@@ -30,16 +31,25 @@
 /**
  * struct pmic8xxx_pwrkey - pmic8xxx pwrkey information
  * @key_press_irq: key press irq number
+ * @pdata: platform data
  */
 struct pmic8xxx_pwrkey {
 	struct input_dev *pwr;
 	int key_press_irq;
+	const struct pm8xxx_pwrkey_platform_data *pdata;
 };
 
+struct wake_lock pwrkey_wakelock;
 static irqreturn_t pwrkey_press_irq(int irq, void *_pwrkey)
 {
 	struct pmic8xxx_pwrkey *pwrkey = _pwrkey;
 
+	printk(KERN_EMERG "Pwr key pr");
+	if(wake_lock_active(&pwrkey_wakelock))
+	{
+		wake_unlock(&pwrkey_wakelock);
+	}
+	wake_lock_timeout(&pwrkey_wakelock,2*HZ);
 	input_report_key(pwrkey->pwr, KEY_POWER, 1);
 	input_sync(pwrkey->pwr);
 
@@ -50,6 +60,7 @@ static irqreturn_t pwrkey_release_irq(int irq, void *_pwrkey)
 {
 	struct pmic8xxx_pwrkey *pwrkey = _pwrkey;
 
+	printk(KERN_EMERG "Pwr key rel");
 	input_report_key(pwrkey->pwr, KEY_POWER, 0);
 	input_sync(pwrkey->pwr);
 
@@ -98,7 +109,9 @@ static int __devinit pmic8xxx_pwrkey_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	if (pdata->kpd_trigger_delay_us > 62500) {
+	/* Valid range of pwr key trigger delay is 1/64 sec to 2 seconds. */
+	if (pdata->kpd_trigger_delay_us > USEC_PER_SEC * 2 ||
+		pdata->kpd_trigger_delay_us < USEC_PER_SEC / 64) {
 		dev_err(&pdev->dev, "invalid power key trigger delay\n");
 		return -EINVAL;
 	}
@@ -106,6 +119,8 @@ static int __devinit pmic8xxx_pwrkey_probe(struct platform_device *pdev)
 	pwrkey = kzalloc(sizeof(*pwrkey), GFP_KERNEL);
 	if (!pwrkey)
 		return -ENOMEM;
+
+	pwrkey->pdata = pdata;
 
 	pwr = input_allocate_device();
 	if (!pwr) {
@@ -120,8 +135,8 @@ static int __devinit pmic8xxx_pwrkey_probe(struct platform_device *pdev)
 	pwr->phys = "pmic8xxx_pwrkey/input0";
 	pwr->dev.parent = &pdev->dev;
 
-	delay = (pdata->kpd_trigger_delay_us << 10) / USEC_PER_SEC;
-	delay = 1 + ilog2(delay);
+	delay = (pdata->kpd_trigger_delay_us << 6) / USEC_PER_SEC;
+	delay = ilog2(delay);
 
 	err = pm8xxx_readb(pdev->dev.parent, PON_CNTL_1, &pon_cntl);
 	if (err < 0) {
@@ -153,7 +168,7 @@ static int __devinit pmic8xxx_pwrkey_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, pwrkey);
 
-	err = request_irq(key_press_irq, pwrkey_press_irq,
+	err = request_any_context_irq(key_press_irq, pwrkey_press_irq,
 		IRQF_TRIGGER_RISING, "pmic8xxx_pwrkey_press", pwrkey);
 	if (err < 0) {
 		dev_dbg(&pdev->dev, "Can't get %d IRQ for pwrkey: %d\n",
@@ -161,7 +176,7 @@ static int __devinit pmic8xxx_pwrkey_probe(struct platform_device *pdev)
 		goto unreg_input_dev;
 	}
 
-	err = request_irq(key_release_irq, pwrkey_release_irq,
+	err = request_any_context_irq(key_release_irq, pwrkey_release_irq,
 		 IRQF_TRIGGER_RISING, "pmic8xxx_pwrkey_release", pwrkey);
 	if (err < 0) {
 		dev_dbg(&pdev->dev, "Can't get %d IRQ for pwrkey: %d\n",
@@ -170,6 +185,7 @@ static int __devinit pmic8xxx_pwrkey_probe(struct platform_device *pdev)
 		goto free_press_irq;
 	}
 
+	wake_lock_init(&pwrkey_wakelock,WAKE_LOCK_SUSPEND,"pmic8xxx_pwrkey");
 	device_init_wakeup(&pdev->dev, pdata->wakeup);
 
 	return 0;
@@ -200,6 +216,7 @@ static int __devexit pmic8xxx_pwrkey_remove(struct platform_device *pdev)
 	input_unregister_device(pwrkey->pwr);
 	platform_set_drvdata(pdev, NULL);
 	kfree(pwrkey);
+	wake_lock_destroy(&pwrkey_wakelock);
 
 	return 0;
 }

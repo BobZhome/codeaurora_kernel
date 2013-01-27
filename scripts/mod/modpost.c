@@ -37,6 +37,8 @@ static int all_versions = 0;
 static int external_module = 0;
 /* Warn about section mismatch in vmlinux if set to 1 */
 static int vmlinux_section_warnings = 1;
+/* Exit with an error when there is a section mismatch if set to 1 */
+static int section_error_on_mismatch;
 /* Only warn about unresolved symbols */
 static int warn_unresolved = 0;
 /* How a symbol is exported */
@@ -822,7 +824,7 @@ static void check_section(const char *modname, struct elf_info *elf,
 
 #define ALL_INIT_DATA_SECTIONS \
 	".init.setup$", ".init.rodata$", \
-	".devinit.rodata$", ".cpuinit.rodata$", ".meminit.rodata$" \
+	".devinit.rodata$", ".cpuinit.rodata$", ".meminit.rodata$", \
 	".init.data$", ".devinit.data$", ".cpuinit.data$", ".meminit.data$"
 #define ALL_EXIT_DATA_SECTIONS \
 	".exit.data$", ".devexit.data$", ".cpuexit.data$", ".memexit.data$"
@@ -1467,6 +1469,13 @@ static int addend_386_rel(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r)
 	return 0;
 }
 
+#ifndef R_ARM_CALL
+#define R_ARM_CALL	28
+#endif
+#ifndef R_ARM_JUMP24
+#define R_ARM_JUMP24	29
+#endif
+
 static int addend_arm_rel(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r)
 {
 	unsigned int r_typ = ELF_R_TYPE(r->r_info);
@@ -1478,6 +1487,8 @@ static int addend_arm_rel(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r)
 		              (elf->symtab_start + ELF_R_SYM(r->r_info));
 		break;
 	case R_ARM_PC24:
+	case R_ARM_CALL:
+	case R_ARM_JUMP24:
 		/* From ARM ABI: ((S + A) | T) - P */
 		r->r_addend = (int)(long)(elf->hdr +
 		              sechdr->sh_offset +
@@ -2068,7 +2079,7 @@ int main(int argc, char **argv)
 	struct ext_sym_list *extsym_iter;
 	struct ext_sym_list *extsym_start = NULL;
 
-	while ((opt = getopt(argc, argv, "i:I:e:cmsSo:awM:K:")) != -1) {
+	while ((opt = getopt(argc, argv, "i:I:e:cmsSo:awM:K:E")) != -1) {
 		switch (opt) {
 		case 'i':
 			kernel_read = optarg;
@@ -2105,6 +2116,9 @@ int main(int argc, char **argv)
 			break;
 		case 'w':
 			warn_unresolved = 1;
+			break;
+		case 'E':
+			section_error_on_mismatch = 1;
 			break;
 		default:
 			exit(1);
@@ -2154,11 +2168,23 @@ int main(int argc, char **argv)
 
 	if (dump_write)
 		write_dump(dump_write);
-	if (sec_mismatch_count && !sec_mismatch_verbose)
-		warn("modpost: Found %d section mismatch(es).\n"
-		     "To see full details build your kernel with:\n"
-		     "'make CONFIG_DEBUG_SECTION_MISMATCH=y'\n",
-		     sec_mismatch_count);
+
+	if (sec_mismatch_count && !sec_mismatch_verbose) {
+		merror(
+		"modpost: Found %d section mismatch(es).\n"
+		"To see full details build your kernel with:\n"
+		"'make CONFIG_DEBUG_SECTION_MISMATCH=y'\n",
+		sec_mismatch_count);
+
+	}
+
+	if (sec_mismatch_count && section_error_on_mismatch) {
+		err |= 1;
+		printf(
+		"To build the kernel despite the mismatches, "
+		"build with:\n'make CONFIG_NO_ERROR_ON_MISMATCH=y'\n"
+		"(NOTE: This is not recommended)\n");
+	}
 
 	return err;
 }

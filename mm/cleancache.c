@@ -56,6 +56,9 @@ EXPORT_SYMBOL(cleancache_register_ops);
 /* Called by a cleancache-enabled filesystem at time of mount */
 void __cleancache_init_fs(struct super_block *sb)
 {
+	if( sb->cleancache_poolid >= 0 ) // LGE Add Start
+		pr_warn("%s : has already initialized cache  %d\n",__func__,sb->cleancache_poolid) ;
+	else // LGE Add End
 	sb->cleancache_poolid = (*cleancache_ops.init_fs)(PAGE_SIZE);
 }
 EXPORT_SYMBOL(__cleancache_init_fs);
@@ -63,6 +66,9 @@ EXPORT_SYMBOL(__cleancache_init_fs);
 /* Called by a cleancache-enabled clustered filesystem at time of mount */
 void __cleancache_init_shared_fs(char *uuid, struct super_block *sb)
 {
+	if( sb->cleancache_poolid >= 0 ) // LGE Add Start
+		pr_warn("%s : has already initialized cache  %d\n",__func__,sb->cleancache_poolid) ;
+	else // LGE Add End
 	sb->cleancache_poolid =
 		(*cleancache_ops.init_shared_fs)(uuid, PAGE_SIZE);
 }

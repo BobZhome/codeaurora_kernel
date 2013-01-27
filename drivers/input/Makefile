@@ -24,3 +24,12 @@ obj-$(CONFIG_INPUT_TOUCHSCREEN)	+= touchscreen/
 obj-$(CONFIG_INPUT_MISC)	+= misc/
 
 obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
+obj-$(CONFIG_INPUT_KEYRESET)	+= keyreset.o
+
+#BEGIN: 0019636 chanha.park@lge.com 2012-06-11
+#ADD: 0019636: [F200][BT] BTL-A Porting 
+#+++ BRCM
+obj-y	+= bthid/
+#--- BRCM
+#END: 0019636 chanha.park@lge.com 2012-06-11
+

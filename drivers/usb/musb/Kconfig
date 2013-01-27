@@ -8,7 +8,7 @@ comment "Enable Host or Gadget support to see Inventra options"
 
 # (M)HDRC = (Multipoint) Highspeed Dual-Role Controller
 config USB_MUSB_HDRC
-	depends on (USB || USB_GADGET)
+	depends on USB && USB_GADGET
 	depends on (ARM || (BF54x && !BF544) || (BF52x && !BF522 && !BF523))
 	select NOP_USB_XCEIV if (ARCH_DAVINCI || MACH_OMAP3EVM || BLACKFIN)
 	select TWL4030_USB if MACH_OMAP_3430SDP
@@ -126,7 +126,7 @@ endchoice
 
 # enable peripheral support (including with OTG)
 config USB_GADGET_MUSB_HDRC
-	bool
+	tristate
 	depends on USB_MUSB_HDRC && (USB_MUSB_PERIPHERAL || USB_MUSB_OTG)
 #	default y
 #	select USB_GADGET_DUALSPEED

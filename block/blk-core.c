@@ -833,8 +833,6 @@ struct request *blk_get_request(struct request_queue *q, int rw, gfp_t gfp_mask)
 	if (unlikely(test_bit(QUEUE_FLAG_DEAD, &q->queue_flags)))
 		return NULL;
 
-	BUG_ON(rw != READ && rw != WRITE);
-
 	spin_lock_irq(q->queue_lock);
 	if (gfp_mask & __GFP_WAIT) {
 		rq = get_request_wait(q, rw, NULL);
@@ -1203,6 +1201,7 @@ void init_request_from_bio(struct request *req, struct bio *bio)
 	req->ioprio = bio_prio(bio);
 	blk_rq_bio_prep(req->q, req, bio);
 }
+EXPORT_SYMBOL(init_request_from_bio);
 
 static int __make_request(struct request_queue *q, struct bio *bio)
 {
@@ -1467,7 +1466,7 @@ static inline void __generic_make_request(struct bio *bio)
 			goto end_io;
 		}
 
-		if (unlikely(!(bio->bi_rw & REQ_DISCARD) &&
+		if (unlikely(!(bio->bi_rw & (REQ_DISCARD | REQ_SANITIZE)) &&
 			     nr_sectors > queue_max_hw_sectors(q))) {
 			printk(KERN_ERR "bio too big device %s (%u > %u)\n",
 			       bdevname(bio->bi_bdev, b),
@@ -1517,6 +1516,14 @@ static inline void __generic_make_request(struct bio *bio)
 		    (!blk_queue_discard(q) ||
 		     ((bio->bi_rw & REQ_SECURE) &&
 		      !blk_queue_secdiscard(q)))) {
+			err = -EOPNOTSUPP;
+			goto end_io;
+		}
+
+		if ((bio->bi_rw & REQ_SANITIZE) &&
+		    (!blk_queue_sanitize(q))) {
+			pr_info("%s - got a SANITIZE request but the queue "
+			       "doesn't support sanitize requests", __func__);
 			err = -EOPNOTSUPP;
 			goto end_io;
 		}
@@ -1611,7 +1618,8 @@ void submit_bio(int rw, struct bio *bio)
 	 * If it's a regular read/write or a barrier with data attached,
 	 * go through the normal accounting stuff before submission.
 	 */
-	if (bio_has_data(bio) && !(rw & REQ_DISCARD)) {
+	if (bio_has_data(bio) &&
+	    (!(rw & (REQ_DISCARD | REQ_SANITIZE)))) {
 		if (rw & WRITE) {
 			count_vm_events(PGPGOUT, count);
 		} else {
@@ -1657,7 +1665,7 @@ EXPORT_SYMBOL(submit_bio);
  */
 int blk_rq_check_limits(struct request_queue *q, struct request *rq)
 {
-	if (rq->cmd_flags & REQ_DISCARD)
+	if (rq->cmd_flags & (REQ_DISCARD | REQ_SANITIZE))
 		return 0;
 
 	if (blk_rq_sectors(rq) > queue_max_sectors(q) ||

@@ -122,6 +122,8 @@ struct v4l2_ioctl_ops {
 	int (*vidioc_qbuf)    (struct file *file, void *fh, struct v4l2_buffer *b);
 	int (*vidioc_dqbuf)   (struct file *file, void *fh, struct v4l2_buffer *b);
 
+	int (*vidioc_create_bufs)(struct file *file, void *fh, struct v4l2_create_buffers *b);
+	int (*vidioc_prepare_buf)(struct file *file, void *fh, struct v4l2_buffer *b);
 
 	int (*vidioc_overlay) (struct file *file, void *fh, unsigned int i);
 	int (*vidioc_g_fbuf)   (struct file *file, void *fh,
@@ -205,6 +207,10 @@ struct v4l2_ioctl_ops {
 					struct v4l2_encoder_cmd *a);
 	int (*vidioc_try_encoder_cmd)  (struct file *file, void *fh,
 					struct v4l2_encoder_cmd *a);
+	int (*vidioc_decoder_cmd)      (struct file *file, void *fh,
+					struct v4l2_decoder_cmd *a);
+	int (*vidioc_try_decoder_cmd)  (struct file *file, void *fh,
+					struct v4l2_decoder_cmd *a);
 
 	/* Stream type-dependent parameter ioctls */
 	int (*vidioc_g_parm)           (struct file *file, void *fh,

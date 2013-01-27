@@ -27,6 +27,9 @@ obj-$(CONFIG_BATTERY_BQ27x00)	+= bq27x00_battery.o
 obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
 obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
 obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
+# LGE_CHANGE_S
+obj-$(CONFIG_BATTERY_MAX17043)	+= max17043_fuelgauge.o
+# LGE_CHANGE_E
 obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
 obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
 obj-$(CONFIG_CHARGER_PCF50633)	+= pcf50633-charger.o
@@ -36,3 +39,17 @@ obj-$(CONFIG_CHARGER_ISP1704)	+= isp1704_charger.o
 obj-$(CONFIG_CHARGER_MAX8903)	+= max8903_charger.o
 obj-$(CONFIG_CHARGER_TWL4030)	+= twl4030_charger.o
 obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
+obj-$(CONFIG_BATTERY_MSM)       += msm_battery.o
+obj-$(CONFIG_BATTERY_MSM8X60)   += msm_charger.o
+obj-$(CONFIG_PM8058_CHARGER)    += pmic8058-charger.o
+obj-$(CONFIG_ISL9519_CHARGER)   += isl9519q.o
+obj-$(CONFIG_SMB349_CHARGER)   += smb349.o
+obj-$(CONFIG_PM8058_FIX_USB)    += pm8058_usb_fix.o
+obj-$(CONFIG_BATTERY_QCIBAT)    += qci_battery.o
+obj-$(CONFIG_BATTERY_BQ27520)	+= bq27520_fuelgauger.o
+obj-$(CONFIG_BATTERY_BQ27541)	+= bq27541_fuelgauger.o
+obj-$(CONFIG_SMB137B_CHARGER)   += smb137b.o
+obj-$(CONFIG_PM8XXX_CCADC)	+= pm8xxx-ccadc.o
+obj-$(CONFIG_PM8921_BMS)	+= pm8921-bms.o
+obj-$(CONFIG_PM8921_CHARGER)	+= pm8921-charger.o
+obj-$(CONFIG_LTC4088_CHARGER)	+= ltc4088-charger.o

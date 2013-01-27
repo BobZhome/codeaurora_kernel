@@ -38,6 +38,10 @@ snd-soc-twl4030-objs := twl4030.o
 snd-soc-twl6040-objs := twl6040.o
 snd-soc-uda134x-objs := uda134x.o
 snd-soc-uda1380-objs := uda1380.o
+snd-soc-wcd9304-objs := wcd9304.o wcd9304-tables.o
+snd-soc-wcd9310-objs := wcd9310.o wcd9310-tables.o
+CFLAGS_wcd9310.o := -Wno-unused
+snd-soc-cs8427-objs := cs8427.o
 snd-soc-wl1273-objs := wl1273.o
 snd-soc-wm1250-ev1-objs := wm1250-ev1.o
 snd-soc-wm8350-objs := wm8350.o
@@ -81,7 +85,8 @@ snd-soc-wm9712-objs := wm9712.o
 snd-soc-wm9713-objs := wm9713.o
 snd-soc-wm-hubs-objs := wm_hubs.o
 snd-soc-jz4740-codec-objs := jz4740.o
-
+snd-soc-timpani-objs := timpani.o
+snd-soc-msm-stub-objs := msm_stub.o
 # Amp
 snd-soc-lm4857-objs := lm4857.o
 snd-soc-max9877-objs := max9877.o
@@ -130,6 +135,9 @@ obj-$(CONFIG_SND_SOC_TWL4030)	+= snd-soc-twl4030.o
 obj-$(CONFIG_SND_SOC_TWL6040)	+= snd-soc-twl6040.o
 obj-$(CONFIG_SND_SOC_UDA134X)	+= snd-soc-uda134x.o
 obj-$(CONFIG_SND_SOC_UDA1380)	+= snd-soc-uda1380.o
+obj-$(CONFIG_SND_SOC_WCD9304)	+= snd-soc-wcd9304.o
+obj-$(CONFIG_SND_SOC_WCD9310)	+= snd-soc-wcd9310.o
+obj-$(CONFIG_SND_SOC_CS8427)	+= snd-soc-cs8427.o
 obj-$(CONFIG_SND_SOC_WL1273)	+= snd-soc-wl1273.o
 obj-$(CONFIG_SND_SOC_WM1250_EV1) += snd-soc-wm1250-ev1.o
 obj-$(CONFIG_SND_SOC_WM8350)	+= snd-soc-wm8350.o
@@ -172,6 +180,7 @@ obj-$(CONFIG_SND_SOC_WM9705)	+= snd-soc-wm9705.o
 obj-$(CONFIG_SND_SOC_WM9712)	+= snd-soc-wm9712.o
 obj-$(CONFIG_SND_SOC_WM9713)	+= snd-soc-wm9713.o
 obj-$(CONFIG_SND_SOC_WM_HUBS)	+= snd-soc-wm-hubs.o
+obj-$(CONFIG_SND_SOC_MSM_STUB)  += snd-soc-msm-stub.o
 
 # Amp
 obj-$(CONFIG_SND_SOC_LM4857)	+= snd-soc-lm4857.o
@@ -179,3 +188,8 @@ obj-$(CONFIG_SND_SOC_MAX9877)	+= snd-soc-max9877.o
 obj-$(CONFIG_SND_SOC_TPA6130A2)	+= snd-soc-tpa6130a2.o
 obj-$(CONFIG_SND_SOC_WM2000)	+= snd-soc-wm2000.o
 obj-$(CONFIG_SND_SOC_WM9090)	+= snd-soc-wm9090.o
+
+# CONFIG_LGE_AUDIO
+# tarzan.park@lge.com
+obj-$(CONFIG_LGE_AUDIO_TPA2028D) += tpa2028d.o
+obj-$(CONFIG_LGE_AUDIO) += fsa8008.o

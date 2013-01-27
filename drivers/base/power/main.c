@@ -27,6 +27,7 @@
 #include <linux/sched.h>
 #include <linux/async.h>
 #include <linux/suspend.h>
+#include <linux/timer.h>
 
 #include "../base.h"
 #include "power.h"
@@ -48,6 +49,12 @@ LIST_HEAD(dpm_noirq_list);
 
 static DEFINE_MUTEX(dpm_list_mtx);
 static pm_message_t pm_transition;
+
+static void dpm_drv_timeout(unsigned long data);
+struct dpm_drv_wd_data {
+	struct device *dev;
+	struct task_struct *tsk;
+};
 
 static int async_error;
 
@@ -505,6 +512,7 @@ static int legacy_resume(struct device *dev, int (*cb)(struct device *dev))
 static int device_resume(struct device *dev, pm_message_t state, bool async)
 {
 	int error = 0;
+	bool put = false;
 
 	TRACE_DEVICE(dev);
 	TRACE_RESUME(0);
@@ -520,6 +528,9 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
 
 	if (!dev->power.is_suspended)
 		goto Unlock;
+
+	pm_runtime_enable(dev);
+	put = true;
 
 	if (dev->pwr_domain) {
 		pm_dev_dbg(dev, state, "power domain ");
@@ -563,6 +574,10 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
 	complete_all(&dev->power.completion);
 
 	TRACE_RESUME(error);
+
+	if (put)
+		pm_runtime_put_sync(dev);
+
 	return error;
 }
 
@@ -581,6 +596,30 @@ static bool is_async(struct device *dev)
 {
 	return dev->power.async_suspend && pm_async_enabled
 		&& !pm_trace_is_enabled();
+}
+
+/**
+ *	dpm_drv_timeout - Driver suspend / resume watchdog handler
+ *	@data: struct device which timed out
+ *
+ * 	Called when a driver has timed out suspending or resuming.
+ * 	There's not much we can do here to recover so
+ * 	BUG() out for a crash-dump
+ *
+ */
+static void dpm_drv_timeout(unsigned long data)
+{
+	struct dpm_drv_wd_data *wd_data = (void *)data;
+	struct device *dev = wd_data->dev;
+	struct task_struct *tsk = wd_data->tsk;
+
+	printk(KERN_EMERG "**** DPM device timeout: %s (%s)\n", dev_name(dev),
+	       (dev->driver ? dev->driver->name : "no driver"));
+
+	printk(KERN_EMERG "dpm suspend stack:\n");
+	show_stack(tsk, NULL);
+
+	BUG();
 }
 
 /**
@@ -841,17 +880,33 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
 static int __device_suspend(struct device *dev, pm_message_t state, bool async)
 {
 	int error = 0;
+	struct timer_list timer;
+	struct dpm_drv_wd_data data;
 
 	dpm_wait_for_children(dev, async);
-	device_lock(dev);
 
 	if (async_error)
-		goto Unlock;
+		return 0;
+
+	pm_runtime_get_noresume(dev);
+	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+		pm_wakeup_event(dev, 0);
 
 	if (pm_wakeup_pending()) {
+		pm_runtime_put_sync(dev);
 		async_error = -EBUSY;
-		goto Unlock;
+		return 0;
 	}
+
+	data.dev = dev;
+	data.tsk = get_current();
+	init_timer_on_stack(&timer);
+	timer.expires = jiffies + HZ * 12;
+	timer.function = dpm_drv_timeout;
+	timer.data = (unsigned long)&data;
+	add_timer(&timer);
+
+	device_lock(dev);
 
 	if (dev->pwr_domain) {
 		pm_dev_dbg(dev, state, "power domain ");
@@ -890,12 +945,19 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
  End:
 	dev->power.is_suspended = !error;
 
- Unlock:
 	device_unlock(dev);
+
+	del_timer_sync(&timer);
+	destroy_timer_on_stack(&timer);
+
 	complete_all(&dev->power.completion);
 
-	if (error)
+	if (error) {
+		pm_runtime_put_sync(dev);
 		async_error = error;
+	} else if (dev->power.is_suspended) {
+		__pm_runtime_disable(dev, false);
+	}
 
 	return error;
 }
@@ -1035,13 +1097,7 @@ int dpm_prepare(pm_message_t state)
 		get_device(dev);
 		mutex_unlock(&dpm_list_mtx);
 
-		pm_runtime_get_noresume(dev);
-		if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
-			pm_wakeup_event(dev, 0);
-
-		pm_runtime_put_sync(dev);
-		error = pm_wakeup_pending() ?
-				-EBUSY : device_prepare(dev, state);
+		error = device_prepare(dev, state);
 
 		mutex_lock(&dpm_list_mtx);
 		if (error) {

@@ -52,10 +52,6 @@ struct gether {
 	struct usb_ep			*in_ep;
 	struct usb_ep			*out_ep;
 
-	/* descriptors match device speed at gether_connect() time */
-	struct usb_endpoint_descriptor	*in;
-	struct usb_endpoint_descriptor	*out;
-
 	bool				is_zlp_ok;
 
 	u16				cdc_filter;
@@ -66,6 +62,9 @@ struct gether {
 	bool				is_fixed;
 	u32				fixed_out_len;
 	u32				fixed_in_len;
+/* Max number of SKB packets to be used to create Multi Packet RNDIS */
+#define TX_SKB_HOLD_THRESHOLD		3
+	bool				multi_pkt_xfer;
 	struct sk_buff			*(*wrap)(struct gether *port,
 						struct sk_buff *skb);
 	int				(*unwrap)(struct gether *port,
@@ -86,6 +85,9 @@ struct gether {
 /* netdev setup/teardown as directed by the gadget driver */
 int gether_setup(struct usb_gadget *g, u8 ethaddr[ETH_ALEN]);
 void gether_cleanup(void);
+/* variant of gether_setup that allows customizing network device name */
+int gether_setup_name(struct usb_gadget *g, u8 ethaddr[ETH_ALEN],
+		const char *netname);
 
 /* connect/disconnect is handled by individual functions */
 struct net_device *gether_connect(struct gether *);
@@ -112,12 +114,14 @@ int eem_bind_config(struct usb_configuration *c);
 
 #ifdef USB_ETH_RNDIS
 
-int rndis_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN]);
+int rndis_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN],
+				u32 vendorID, const char *manufacturer);
 
 #else
 
 static inline int
-rndis_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN])
+rndis_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN],
+				u32 vendorID, const char *manufacturer)
 {
 	return 0;
 }

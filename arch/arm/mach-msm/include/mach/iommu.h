@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -8,11 +8,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA.
  */
 
 #ifndef MSM_IOMMU_H
@@ -20,16 +15,12 @@
 
 #include <linux/interrupt.h>
 #include <linux/clk.h>
+#include <mach/socinfo.h>
 
-/* Sharability attributes of MSM IOMMU mappings */
-#define MSM_IOMMU_ATTR_NON_SH		0x0
-#define MSM_IOMMU_ATTR_SH		0x4
+extern pgprot_t     pgprot_kernel;
 
-/* Cacheability attributes of MSM IOMMU mappings */
-#define MSM_IOMMU_ATTR_NONCACHED	0x0
-#define MSM_IOMMU_ATTR_CACHED_WB_WA	0x1
-#define MSM_IOMMU_ATTR_CACHED_WB_NWA	0x2
-#define MSM_IOMMU_ATTR_CACHED_WT	0x3
+/* Domain attributes */
+#define MSM_IOMMU_DOMAIN_PT_CACHEABLE	0x1
 
 /* Mask for the cache policy attribute */
 #define MSM_IOMMU_CP_MASK		0x03
@@ -50,6 +41,7 @@
 struct msm_iommu_dev {
 	const char *name;
 	int ncb;
+	int ttbr_split;
 };
 
 /**
@@ -81,10 +73,11 @@ struct msm_iommu_ctx_dev {
  */
 struct msm_iommu_drvdata {
 	void __iomem *base;
-	int irq;
 	int ncb;
+	int ttbr_split;
 	struct clk *clk;
 	struct clk *pclk;
+	const char *name;
 };
 
 /**
@@ -101,14 +94,9 @@ struct msm_iommu_ctx_drvdata {
 	int num;
 	struct platform_device *pdev;
 	struct list_head attached_elm;
+	struct iommu_domain *attached_domain;
+	const char *name;
 };
-
-/*
- * Look up an IOMMU context device by its context name. NULL if none found.
- * Useful for testing and drivers that do not yet fully have IOMMU stuff in
- * their platform devices.
- */
-struct device *msm_iommu_get_ctx(const char *ctx_name);
 
 /*
  * Interrupt handler for the IOMMU context fault interrupt. Hooking the
@@ -117,4 +105,76 @@ struct device *msm_iommu_get_ctx(const char *ctx_name);
  */
 irqreturn_t msm_iommu_fault_handler(int irq, void *dev_id);
 
+enum {
+	PROC_APPS,
+	PROC_GPU,
+	PROC_MAX
+};
+
+/* Expose structure to allow kgsl iommu driver to use the same structure to
+ * communicate to GPU the addresses of the flag and turn variables.
+ */
+struct remote_iommu_petersons_spinlock {
+	uint32_t flag[PROC_MAX];
+	uint32_t turn;
+};
+
+void *msm_iommu_lock_initalize(void);
+void msm_iommu_mutex_lock(void);
+void msm_iommu_mutex_unlock(void);
+
+#ifdef CONFIG_MSM_IOMMU_GPU_SYNC
+void msm_iommu_remote_p0_spin_lock(void);
+void msm_iommu_remote_p0_spin_unlock(void);
+
+#define msm_iommu_remote_lock_init() _msm_iommu_remote_spin_lock_init()
+#define msm_iommu_remote_spin_lock() msm_iommu_remote_p0_spin_lock()
+#define msm_iommu_remote_spin_unlock() msm_iommu_remote_p0_spin_unlock()
+#else
+#define msm_iommu_remote_lock_init()
+#define msm_iommu_remote_spin_lock()
+#define msm_iommu_remote_spin_unlock()
 #endif
+
+/* Allows kgsl iommu driver to acquire lock */
+#define msm_iommu_lock() \
+	do { \
+		msm_iommu_mutex_lock(); \
+		msm_iommu_remote_spin_lock(); \
+	} while (0)
+
+#define msm_iommu_unlock() \
+	do { \
+		msm_iommu_remote_spin_unlock(); \
+		msm_iommu_mutex_unlock(); \
+	} while (0)
+
+#ifdef CONFIG_MSM_IOMMU
+/*
+ * Look up an IOMMU context device by its context name. NULL if none found.
+ * Useful for testing and drivers that do not yet fully have IOMMU stuff in
+ * their platform devices.
+ */
+struct device *msm_iommu_get_ctx(const char *ctx_name);
+#else
+static inline struct device *msm_iommu_get_ctx(const char *ctx_name)
+{
+	return NULL;
+}
+#endif
+
+#endif
+
+static inline int msm_soc_version_supports_iommu(void)
+{
+	if (cpu_is_msm8960() &&
+	    SOCINFO_VERSION_MAJOR(socinfo_get_version()) < 2)
+		return 0;
+
+	if (cpu_is_msm8x60() &&
+	    (SOCINFO_VERSION_MAJOR(socinfo_get_version()) != 2 ||
+	    SOCINFO_VERSION_MINOR(socinfo_get_version()) < 1))	{
+		return 0;
+	}
+	return 1;
+}

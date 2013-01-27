@@ -1136,17 +1136,22 @@ EXPORT_SYMBOL(dev_load);
 static int __dev_open(struct net_device *dev)
 {
 	const struct net_device_ops *ops = dev->netdev_ops;
-	int ret;
+	//bill.jung@lge.com - Temp
+	//int ret;
+	int ret = 0;
 
 	ASSERT_RTNL();
 
 	if (!netif_device_present(dev))
 		return -ENODEV;
 
+//bill.jung@lge.com - Temp
+#if 0
 	ret = call_netdevice_notifiers(NETDEV_PRE_UP, dev);
 	ret = notifier_to_errno(ret);
 	if (ret)
 		return ret;
+#endif
 
 	set_bit(__LINK_STATE_START, &dev->state);
 

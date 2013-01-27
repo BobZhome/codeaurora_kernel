@@ -322,6 +322,20 @@ extern int func_ptr_is_kernel_text(void *ptr);
 struct pid;
 extern struct pid *session_of_pgrp(struct pid *pgrp);
 
+#ifdef CONFIG_LGE_HANDLE_PANIC
+extern void set_crash_store_enable(void);
+extern void set_crash_store_disable(void);
+extern void store_crash_log(char* p);
+extern void lge_set_kernel_crash_magic(void);
+#ifdef CONFIG_CPU_CP15_MMU
+/* LGE_CHANGE 
+ * save cpu and mmu registers to support simulation when debugging
+ * taehung.kim@lge.com 2011-10-13
+ */
+extern void lge_save_ctx(struct pt_regs*,unsigned int, unsigned int, unsigned int);
+#endif
+#endif
+
 unsigned long int_sqrt(unsigned long);
 
 extern void bust_spinlocks(int yes);
@@ -735,5 +749,8 @@ extern int __build_bug_on_failed;
 #ifdef CONFIG_FTRACE_MCOUNT_RECORD
 # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
 #endif
+
+/* To identify board information in panic logs, set this */
+extern char *mach_panic_string;
 
 #endif

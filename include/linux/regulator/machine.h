@@ -95,7 +95,7 @@ struct regulator_state {
  */
 struct regulation_constraints {
 
-	char *name;
+	const char *name;
 
 	/* voltage output range (inclusive) - for voltage control */
 	int min_uV;
@@ -192,12 +192,17 @@ int regulator_suspend_finish(void);
 #ifdef CONFIG_REGULATOR
 void regulator_has_full_constraints(void);
 void regulator_use_dummy_regulator(void);
+void regulator_suppress_info_printing(void);
 #else
 static inline void regulator_has_full_constraints(void)
 {
 }
 
 static inline void regulator_use_dummy_regulator(void)
+{
+}
+
+static inline void regulator_suppress_info_printing(void)
 {
 }
 #endif

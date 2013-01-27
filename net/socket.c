@@ -467,7 +467,7 @@ static struct socket *sock_alloc(void)
 	struct inode *inode;
 	struct socket *sock;
 
-	inode = new_inode(sock_mnt->mnt_sb);
+	inode = new_inode_pseudo(sock_mnt->mnt_sb);
 	if (!inode)
 		return NULL;
 
@@ -1530,6 +1530,10 @@ SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
 	if (err < 0)
 		goto out_fd;
 
+	if (ccs_socket_post_accept_permission(sock, newsock)) {
+		err = -EAGAIN; /* Hope less harmful than -EPERM. */
+		goto out_fd;
+	}
 	if (upeer_sockaddr) {
 		if (newsock->ops->getname(newsock, (struct sockaddr *)&address,
 					  &len, 2) < 0) {

@@ -16,6 +16,7 @@
 #include <linux/delay.h>
 #include <linux/highmem.h>
 #include <linux/io.h>
+#include <linux/module.h>
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
 #include <linux/scatterlist.h>
@@ -1044,7 +1045,7 @@ static void sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
 	u16 clk = 0;
 	unsigned long timeout;
 
-	if (clock == host->clock)
+	if (clock && clock == host->clock)
 		return;
 
 	if (host->ops->set_clock) {
@@ -2451,6 +2452,22 @@ int sdhci_add_host(struct sdhci_host *host)
 	if (caps[0] & SDHCI_TIMEOUT_CLK_UNIT)
 		host->timeout_clk *= 1000;
 
+ 	/*
+	 * In case of Host Controller v3.00, find out whether clock
+	 * multiplier is supported.
+	 */
+	host->clk_mul = (caps[1] & SDHCI_CLOCK_MUL_MASK) >>
+		SDHCI_CLOCK_MUL_SHIFT;
+
+	/*
+	 * In case the value in Clock Multiplier is 0, then programmable
+	 * clock mode is not supported, otherwise the actual clock
+	 * multiplier is one more than the value of Clock Multiplier
+	 * in the Capabilities Register.
+	 */
+	if (host->clk_mul)
+		host->clk_mul += 1;
+
 	/*
 	 * In case of Host Controller v3.00, find out whether clock
 	 * multiplier is supported.
@@ -2539,6 +2556,15 @@ int sdhci_add_host(struct sdhci_host *host)
 		mmc->caps |= MMC_CAP_DRIVER_TYPE_C;
 	if (caps[1] & SDHCI_DRIVER_TYPE_D)
 		mmc->caps |= MMC_CAP_DRIVER_TYPE_D;
+
+	/*
+	 * If Power Off Notify capability is enabled by the host,
+	 * set notify to short power off notify timeout value.
+	 */
+	if (mmc->caps2 & MMC_CAP2_POWEROFF_NOTIFY)
+		mmc->power_notify_type = MMC_HOST_PW_NOTIFY_SHORT;
+	else
+		mmc->power_notify_type = MMC_HOST_PW_NOTIFY_NONE;
 
 	/* Initial value for re-tuning timer count */
 	host->tuning_count = (caps[1] & SDHCI_RETUNING_TIMER_COUNT_MASK) >>

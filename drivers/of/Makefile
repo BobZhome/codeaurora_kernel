@@ -10,3 +10,5 @@ obj-$(CONFIG_OF_NET)	+= of_net.o
 obj-$(CONFIG_OF_SPI)	+= of_spi.o
 obj-$(CONFIG_OF_MDIO)	+= of_mdio.o
 obj-$(CONFIG_OF_PCI)	+= of_pci.o
+obj-$(CONFIG_OF_SPMI)	+= of_spmi.o
+obj-$(CONFIG_OF_SLIMBUS)	+= of_slimbus.o

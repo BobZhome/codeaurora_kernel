@@ -4,10 +4,14 @@
  */
 
 #include <asm-generic/vmlinux.lds.h>
+#include <asm/cache.h>
 #include <asm/thread_info.h>
 #include <asm/memory.h>
 #include <asm/page.h>
-	
+#ifdef CONFIG_STRICT_MEMORY_RWX
+#include <asm/pgtable.h>
+#endif
+
 #define PROC_INFO							\
 	VMLINUX_SYMBOL(__proc_info_begin) = .;				\
 	*(.proc.info.init)						\
@@ -21,7 +25,8 @@
 #define ARM_CPU_KEEP(x)
 #endif
 
-#if defined(CONFIG_SMP_ON_UP) && !defined(CONFIG_DEBUG_SPINLOCK)
+#if (defined(CONFIG_SMP_ON_UP) && !defined(CONFIG_DEBUG_SPINLOCK)) || \
+	defined(CONFIG_GENERIC_BUG)
 #define ARM_EXIT_KEEP(x)	x
 #else
 #define ARM_EXIT_KEEP(x)
@@ -82,11 +87,13 @@ SECTIONS
 #endif
 	}
 
-	PERCPU_SECTION(32)
+	PERCPU_SECTION(L1_CACHE_BYTES)
 
 #ifndef CONFIG_XIP_KERNEL
 	. = ALIGN(PAGE_SIZE);
+#ifndef CONFIG_STRICT_MEMORY_RWX
 	__init_end = .;
+#endif
 #endif
 
 	/*
@@ -108,6 +115,10 @@ SECTIONS
 #endif
 	}
 
+#ifdef CONFIG_STRICT_MEMORY_RWX
+	. = ALIGN(1<<SECTION_SHIFT);
+	__init_end = .;
+#endif
 	.text : {			/* Real text segment		*/
 		_text = .;		/* Text and read-only data	*/
 			__exception_text_start = .;
@@ -130,6 +141,9 @@ SECTIONS
 		*(.got)			/* Global offset table		*/
 			ARM_CPU_KEEP(PROC_INFO)
 	}
+#ifdef CONFIG_STRICT_MEMORY_RWX
+	. = ALIGN(1<<SECTION_SHIFT);
+#endif
 
 	RO_DATA(PAGE_SIZE)
 
@@ -156,7 +170,11 @@ SECTIONS
 	__data_loc = ALIGN(4);		/* location in binary */
 	. = PAGE_OFFSET + TEXT_OFFSET;
 #else
+#ifdef CONFIG_STRICT_MEMORY_RWX
+	. = ALIGN(1<<SECTION_SHIFT);
+#else
 	. = ALIGN(THREAD_SIZE);
+#endif
 	__data_loc = .;
 #endif
 
@@ -180,13 +198,13 @@ SECTIONS
 #endif
 
 		NOSAVE_DATA
-		CACHELINE_ALIGNED_DATA(32)
-		READ_MOSTLY_DATA(32)
+		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+		READ_MOSTLY_DATA(L1_CACHE_BYTES)
 
 		/*
 		 * The exception fixup table (might need resorting at runtime)
 		 */
-		. = ALIGN(32);
+		. = ALIGN(L1_CACHE_BYTES);
 		__start___ex_table = .;
 #ifdef CONFIG_MMU
 		*(__ex_table)

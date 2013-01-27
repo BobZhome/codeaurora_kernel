@@ -2797,6 +2797,15 @@ static int kswapd(void *p)
 			order = balance_pgdat(pgdat, order, &classzone_idx);
 		}
 	}
+/*
+	In kswapd(), set current->reclaim_state to NULL before returning, as
+	current->reclaim_state holds reference to variable on kswapd()'s stack.
+
+	In rare cases, while returning from kswapd() during memory offlining,
+	__free_slab() and freepages() can access the dangling pointer of
+	current->reclaim_state.
+*/
+	current->reclaim_state = NULL;
 	return 0;
 }
 

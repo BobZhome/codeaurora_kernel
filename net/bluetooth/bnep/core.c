@@ -55,6 +55,9 @@
 #include "bnep.h"
 
 #define VERSION "1.3"
+/* As this feature is dummy for BNEP net device
+** disabling support */
+#undef CONFIG_BT_BNEP_MC_FILTER
 
 static int compress_src = 1;
 static int compress_dst = 1;
@@ -484,13 +487,18 @@ static int bnep_session(void *arg)
 
 	init_waitqueue_entry(&wait, current);
 	add_wait_queue(sk_sleep(sk), &wait);
-	while (!kthread_should_stop()) {
+	while (1) {
 		set_current_state(TASK_INTERRUPTIBLE);
 
+		if (atomic_read(&s->terminate))
+			break;
 		/* RX */
 		while ((skb = skb_dequeue(&sk->sk_receive_queue))) {
 			skb_orphan(skb);
-			bnep_rx_frame(s, skb);
+			if (!skb_linearize(skb))
+				bnep_rx_frame(s, skb);
+			else
+				kfree_skb(skb);
 		}
 
 		if (sk->sk_state != BT_CONNECTED)
@@ -640,9 +648,10 @@ int bnep_del_connection(struct bnep_conndel_req *req)
 	down_read(&bnep_session_sem);
 
 	s = __bnep_get_session(req->dst);
-	if (s)
-		kthread_stop(s->task);
-	else
+	if (s) {
+		atomic_inc(&s->terminate);
+		wake_up_process(s->task);
+	} else
 		err = -ENOENT;
 
 	up_read(&bnep_session_sem);

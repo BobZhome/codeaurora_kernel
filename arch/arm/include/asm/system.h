@@ -62,12 +62,7 @@
 
 #include <asm/outercache.h>
 
-#define __exception	__attribute__((section(".exception.text")))
-#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-#define __exception_irq_entry	__irq_entry
-#else
-#define __exception_irq_entry	__exception
-#endif
+void cpu_idle_wait(void);
 
 struct thread_info;
 struct task_struct;
@@ -97,7 +92,6 @@ void hook_ifault_code(int nr, int (*fn)(unsigned long, unsigned int,
 #define xchg(ptr,x) \
 	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
 
-extern asmlinkage void __backtrace(void);
 extern asmlinkage void c_backtrace(unsigned long fp, int pmode);
 
 struct mm_struct;
@@ -141,7 +135,7 @@ extern unsigned int user_debug;
 #define dsb() __asm__ __volatile__ ("mcr p15, 0, %0, c7, c10, 4" \
 				    : : "r" (0) : "memory")
 #define dmb() __asm__ __volatile__ ("mcr p15, 0, %0, c7, c10, 5" \
-				    : : "r" (0) : "memory")
+				: : "r" (0) : "memory")
 #elif defined(CONFIG_CPU_FA526)
 #define isb() __asm__ __volatile__ ("mcr p15, 0, %0, c7, c5, 4" \
 				    : : "r" (0) : "memory")

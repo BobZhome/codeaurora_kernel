@@ -246,6 +246,12 @@ void tcp_select_initial_window(int __space, __u32 mss,
 			*rcv_wnd = min(*rcv_wnd, init_cwnd * mss);
 	}
 
+/* LGE_CHANGE_S, [LGE_DATA_US_001] d3sw1-data@lge.com */
+#ifdef CONFIG_TCP_WINDOW_SIZE_FIX
+	(*rcv_wnd) = space;
+#endif
+/* LGE_CHANGE_E, [LGE_DATA_US_001] d3sw1-data@lge.com */
+
 	/* Set the clamp no higher than max representable value */
 	(*window_clamp) = min(65535U << (*rcv_wscale), *window_clamp);
 }

@@ -1,0 +1,86 @@
+config BCMDHD
+	tristate "Broadcom 4330/34 wireless cards support"
+	depends on MMC
+	---help---
+	  This module adds support for wireless adapters based on
+	  Broadcom 4330/34 chipset.
+
+	  This driver uses the kernel's wireless extensions subsystem.
+
+	  If you choose to build a module, it'll be called dhd. Say M if
+	  unsure.
+
+config BCMDHD_FW_PATH
+	depends on BCMDHD
+	string "Firmware path"
+	default "/system/firmware/fw_bcmdhd.bin"
+	---help---
+	  Path to the firmware file.
+		
+config BCMDHD_NVRAM_PATH
+	depends on BCMDHD
+	string "NVRAM path"
+	default "/system/etc/wifi/bcmdhd.cal"
+	---help---
+	  Path to the calibration file.
+
+config BCMDHD_WEXT
+	bool "Enable WEXT support"
+	depends on BCMDHD && CFG80211 = n
+	select WIRELESS_EXT
+	select WEXT_PRIV
+	---help---
+	  Enables WEXT support
+
+config LGE_BCM433X_PATCH
+	bool "BCM433X Patch by LGE"
+	default y
+	depends on BCMDHD
+
+config BCMDHD_CONFIG_PATH
+	string "Config path"
+	default "/data/misc/wifi/config"
+	---help---
+	  Path to the config file.
+		
+config BCMDHD_GPIO_WL_RESET
+	depends on BCMDHD
+	int "GPIO to the Reset"
+	default 82
+	---help---
+	  GPIO to the Reset
+
+config BCMDHD_HOSTWAKEUP_USE_GPIO
+	depends on BCMDHD
+	bool "Use GPIO to Host Wakeup"
+	select BCMDHD_HW_OOB
+	---help---
+	  Use GPIO to Host Wakeup
+
+config BCMDHD_HOSTWAKEUP_USE_SDIO
+	depends on BCMDHD && BCMDHD_HOSTWAKEUP_USE_GPIO = n
+	bool "Use SDIO pin to the Host Wakeup"
+	---help---
+	  Use SDIO pin to the Host Wakeup
+
+config BCMDHD_GPIO_WL_HOSTWAKEUP
+	depends on BCMDHD && BCMDHD_HOSTWAKEUP_USE_GPIO = y
+	int "GPIO to the Host Wakeup"
+	default 81
+	---help---
+	  GPIO to the Host Wakeup
+
+config BCMDHD_HW_OOB
+	depends on BCMDHD
+	bool "Use H/W OOB to the Host Wakeup"
+	default n
+	---help---
+	  Use H/W OOB to the Host Wakeup
+
+config BCMDHD_USE_STATIC_BUF
+	depends on BCMDHD
+	bool "Use static buffer in os_malloc"
+	default n
+	---help---
+	  Use static buffer in os_malloc
+

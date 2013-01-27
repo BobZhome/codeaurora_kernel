@@ -277,9 +277,10 @@ static void cfg80211_rfkill_poll(struct rfkill *rfkill, void *data)
 
 	rdev->ops->rfkill_poll(&rdev->wiphy);
 }
-
+//sangjun.bae@lge.com suspend /resume problem patch [start]
 static int cfg80211_rfkill_set_block(void *data, bool blocked)
 {
+#if 0
 	struct cfg80211_registered_device *rdev = data;
 	struct wireless_dev *wdev;
 
@@ -294,9 +295,11 @@ static int cfg80211_rfkill_set_block(void *data, bool blocked)
 
 	mutex_unlock(&rdev->devlist_mtx);
 	rtnl_unlock();
+#endif
 
 	return 0;
 }
+//sangjun.bae@lge.com suspend /resume problem patch [end]
 
 static void cfg80211_rfkill_sync_work(struct work_struct *work)
 {
@@ -487,6 +490,10 @@ int wiphy_register(struct wiphy *wiphy)
 	bool have_band = false;
 	int i;
 	u16 ifmodes = wiphy->interface_modes;
+
+	if (WARN_ON(wiphy->ap_sme_capa &&
+		!(wiphy->flags & WIPHY_FLAG_HAVE_AP_SME)))
+		return -EINVAL;
 
 	if (WARN_ON(wiphy->addresses && !wiphy->n_addresses))
 		return -EINVAL;
